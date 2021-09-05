@@ -17,10 +17,10 @@ class Client extends Discord.Client {
         this.commands = new Discord.Collection();
         this.prefix = process.env.PREFIX
         this.clientId = '881243621293170738';
-        this.guildId = "735090312694988801";
+        this.guildId = "883828008316723231";
         this.languages = {};
         this.wait = require('util').promisify(setTimeout);
-
+        this.random = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
     }
 
