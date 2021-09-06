@@ -1,3 +1,4 @@
+const { Console } = require('console');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 
 const Command = require('../Structures/Command.js');
@@ -5,13 +6,20 @@ const Command = require('../Structures/Command.js');
 const row = new MessageActionRow()
     .addComponents(
         new MessageButton()
-            .setCustomId('primary')
-            .setLabel('Beginning')
+            .setCustomId('back')
+            //.setLabel('Beginning')
+            .setEmoji('755733114042449950')
             .setStyle('PRIMARY'),
         new MessageButton()
-            .setCustomId('primary2')
-            .setLabel('Ending')
+            .setCustomId('next')
+            //.setLabel('Ending')
+            .setEmoji('755733114537508894')
             .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('download')
+            //.setLabel('Ending')
+            .setEmoji('📁')
+            .setStyle('SUCCESS'),
     );
 
 module.exports = new Command({
@@ -77,7 +85,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     message += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
     let message_damage = "";
     await interaction.editReply({ embeds: [blueEmbed(message, "**Engaging Combat with XY**")] });
-    let log = [message, "**Engaging Combat with XY**"];
+    let log_message = [[message, "**Engaging Combat with XY**"]];
     let message_ammo = "";
     user_laser_config.push([-1, 0, 0, 1000000, "No AMMO"]);
     user_laser_config = user_laser_config.sort(function (a, b) {
@@ -341,7 +349,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
 
         message_damage += `\`\`\`**\`\`\`diff\n+ ${laser_shield_absorption + hellstorm_shield_absorption} Shield Absorbed`;
         message_damage += `\`\`\`**\`\`\`css\n[Alien Damage: ${alien_hp_damage}/${alien_shield_damage}]\`\`\``;
-        log.push(message + message_damage, `\n__Turn ${turn_counter}__`);
+        log_message.push([message + message_damage, `\n__Turn ${turn_counter}__`]);
         //await interaction.editReply({ embeds: [blueEmbed(message + message_damage, `\n__Turn ${turn_counter}__`)] });
 
         if (interaction.client.random(0, 95) <= chance_to_encounter_new_alien) {
@@ -349,7 +357,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             alien_list.push(enemy_stats.slice());
             total_aliens_damage += enemy_stats[0];
             await interaction.editReply({ embeds: [yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
-            log[turn_counter][0] += "\n\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`";
+            log_message[turn_counter][0] += "\n\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`";
             await interaction.client.wait(1000);
             let message_update = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[2]}**`;
             message_update += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
@@ -362,8 +370,53 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     await interaction.client.wait(1000);
     if (user_stats[1] > 0) {
         await interaction.editReply({ embeds: [greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row] });
+        log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!"]);
+        buttonHandler(interaction, interaction.user.id, log_message);
     }
     else {
         await interaction.editReply({ embeds: [redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row] });
     }
+}
+
+function buttonHandler(interaction, userID, log_message){
+    let maxIndex = log_message.length -1;
+    let index = maxIndex;
+    let downloaded = false;
+    const filter = i => (i.customId === 'back' || i.customId === 'next' || i.customId === 'download') && i.user.id === userID;
+
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+
+    collector.on('collect', async i => {
+        if (i.customId === 'back') {
+            if(index === 0)
+                index = maxIndex;
+            else
+                index--;
+            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row] });
+        }
+        else if (i.customId === 'next'){
+            if(index === maxIndex)
+                index = 0;
+            else
+                index++;
+            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row] });
+        }
+        else{
+            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]});
+            downloaded = true;
+        }
+    });
+
+    var fs = require('fs');
+
+    var file = fs.createWriteStream(`./User_Log/${userID}.txt`);
+    file.on('error', function(err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
+    log_message.forEach(function(v) { file.write(v.join('\n\n ') + '\n'); });
+    file.end();
+
+    collector.on('end', collected => { 
+        if(!downloaded)
+        interaction.editReply({ embeds: [blueEmbed(log_message[maxIndex][0], log_message[maxIndex][1])], components: []})
+        //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
+    });
 }
