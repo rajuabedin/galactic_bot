@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const MessageEmbed = require('discord.js');
 const Command = require('./Command.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
@@ -94,6 +95,41 @@ class Client extends Discord.Client {
         return this.languages[language][word];
     }
 
+    blueEmbed(text, tittle ="") {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x009dff')
+            .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+    
+    greenEmbed(text, tittle = "") {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x14e188')
+            .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+    
+    redEmbed(text, tittle = "") {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0xe1143d')
+            .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+    
+    yellowEmbed(text, tittle = "") {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0xffff00')
+            .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
 }
 
 module.exports = Client;

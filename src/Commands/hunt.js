@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const {MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
 
 const Command = require('../Structures/Command.js');
 
@@ -79,51 +79,15 @@ module.exports = new Command({
 
 })
 
-function blueEmbed(text, tittle ="") {
-    const textToEmbed = new MessageEmbed()
-        .setColor('0x009dff')
-        .setTitle(tittle)
-        .setURL('https://obelisk.club/')
-        .setDescription(text)
-    return textToEmbed
-}
-
-function greenEmbed(text, tittle = "") {
-    const textToEmbed = new MessageEmbed()
-        .setColor('0x14e188')
-        .setTitle(tittle)
-        .setURL('https://obelisk.club/')
-        .setDescription(text)
-    return textToEmbed
-}
-
-function redEmbed(text, tittle = "") {
-    const textToEmbed = new MessageEmbed()
-        .setColor('0xe1143d')
-        .setTitle(tittle)
-        .setURL('https://obelisk.club/')
-        .setDescription(text)
-    return textToEmbed
-}
-
-function yellowEmbed(text, tittle = "") {
-    const textToEmbed = new MessageEmbed()
-        .setColor('0xffff00')
-        .setTitle(tittle)
-        .setURL('https://obelisk.club/')
-        .setDescription(text)
-    return textToEmbed
-}
-
 async function battle(user_laser_config, user_missile_config, user_hellstorm_config, user_stats, enemy_stats, interaction) {
-    await interaction.reply({ embeds: [blueEmbed("", "Looking for an aliens...")] });
+    await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
     await interaction.client.wait(1000);
     let alien_list = [enemy_stats.slice()];
     //let message = "**Engaging Combat with XY**";
     let message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
     message += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
     let message_damage = "";
-    await interaction.editReply({ embeds: [blueEmbed(message, "**Engaging Combat with XY**")] });
+    await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, "**Engaging Combat with XY**")] });
     let log_message = [[message, "**Engaging Combat with XY**"]];
     let message_ammo = "";
     user_laser_config.push([-1, 0, 0, 1000000, "No AMMO"]);
@@ -395,12 +359,12 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             await interaction.client.wait(1000);
             alien_list.push(enemy_stats.slice());
             total_aliens_damage += enemy_stats[0];
-            await interaction.editReply({ embeds: [yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
+            await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
             log_message[turn_counter][0] += "\n\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`";
             await interaction.client.wait(1000);
             let message_update = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
             message_update += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
-            await interaction.editReply({ embeds: [blueEmbed(message_update, "**Engaging Combat with XY**")] });
+            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message_update, "**Engaging Combat with XY**")] });
         }
     }
     //await wait(1000);
@@ -408,11 +372,11 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     message_user_info += `**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
     await interaction.client.wait(1000 + 5 * turn_counter);
     if (user_stats[1] > 0) {
-        await interaction.editReply({ embeds: [greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row, row1] });
+        await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row, row1] });
         log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!"]);
     }
     else {
-        await interaction.editReply({ embeds: [redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row, row1] });
+        await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row, row1] });
         log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!"]);
     }
     buttonHandler(interaction, interaction.user.id, log_message);
@@ -433,7 +397,7 @@ function buttonHandler(interaction, userID, log_message){
                 index = maxIndex;
             else
                 index--;
-            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
+            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
         else if (i.customId === 'next'){
             collector.resetTimer({time: 10000});
@@ -441,7 +405,7 @@ function buttonHandler(interaction, userID, log_message){
                 index = 0;
             else
                 index++;
-            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
+            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
         else if (i.customId === 'select'){   
             collector.resetTimer({time: 10000});         
@@ -461,7 +425,7 @@ function buttonHandler(interaction, userID, log_message){
                 index -= maxIndex;
             else if (index < 0)
                 index += maxIndex;
-            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
+            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
         else{
             await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]});
