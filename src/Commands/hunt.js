@@ -1,5 +1,4 @@
-const { Console } = require('console');
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
 
 const Command = require('../Structures/Command.js');
 
@@ -20,20 +19,60 @@ const row = new MessageActionRow()
             //.setLabel('Ending')
             .setEmoji('📁')
             .setStyle('SUCCESS'),
+        
     );
+
+const row1 = new MessageActionRow()
+        .addComponents(
+            new MessageSelectMenu()
+            .setCustomId('select')
+            .setPlaceholder('Select battle turn')
+            .addOptions([
+                {
+                    label: 'Turn 0',
+                    description: 'Return to the beginning',
+                    value: '0',
+                },
+                {
+                    label: '+ 5 turns',
+                    description: 'move forward by 5',
+                    value: '+5',
+                },
+                {
+                    label: '+ 10 turns',
+                    description: 'move forward by 10',
+                    value: '+10',
+                },
+                {
+                    label: '- 10 turns',
+                    description: 'move backward by 10',
+                    value: '-10',
+                },
+                {
+                    label: '- 5 turns',
+                    description: 'move backward by 5',
+                    value: '-5',
+                },
+                {
+                    label: 'Battle end',
+                    description: 'move to the end of the battle',
+                    value: 'end',
+                },
+            ]),
+        )
 
 module.exports = new Command({
     name: "hunt",
     description: "Hunt allien",
 
     async run(interaction) {
-        let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
+        //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
         //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
         let user_laser_config = [[-2, 2, 0, 10000, "x2"], [0, 1, 0, 10000, "x1"], [20, 3, 0, 14900, "x3"], [80, 4, 0, 14900, "x4"], [140, 0, 2, 25000, "xS1"]];
         let user_missile_config = [[0, 1000, 100, "m1"], [60, 2000, 100, "m2"], [100, 4000, 100, "m3"], [150, 6000, 100, "m4"]];
         let user_hellstorm_config = [[0, 10000, 0, 900, "l1"], [50, 20000, 0, 1000, "l2"], [100, 0, 12500, 1100, "lS1"], [140, 0, 30000, 4, "lS2"]];
-        // Damage, HP, Shield, Speed, Penetration, Shield absorb rate, laser quantity
-        let user_stats = [2000, 250000, 350000, 350, 0, 0.8, 30];
+        // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
+        let user_stats = [2000, 250000,350000, 350000, 350, 0, 0.8, 30];
         let alien_stats = [280, 80000, 80000, 280, 0, 0.8];
         await battle(user_laser_config, user_missile_config, user_hellstorm_config, user_stats, alien_stats, interaction);
     }
@@ -81,7 +120,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     await interaction.client.wait(1000);
     let alien_list = [enemy_stats.slice()];
     //let message = "**Engaging Combat with XY**";
-    let message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[2]}**`;
+    let message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
     message += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
     let message_damage = "";
     await interaction.editReply({ embeds: [blueEmbed(message, "**Engaging Combat with XY**")] });
@@ -123,17 +162,17 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     let minimum_accuracy_user = 80;
     let minimum_accuracy_alien = 80;
 
-    if (user_stats[3] > enemy_stats[3]) {
-        minimum_accuracy_user = 90 - (user_stats[3] - enemy_stats[3]) / 5;
-        minimum_accuracy_alien = 85 + (enemy_stats[3] - user_stats[3]) / 2.5;
+    if (user_stats[4] > enemy_stats[3]) {
+        minimum_accuracy_user = 90 - (user_stats[4] - enemy_stats[3]) / 5;
+        minimum_accuracy_alien = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
     }
-    else if (user_stats[3] == enemy_stats[3]) {
+    else if (user_stats[4] == enemy_stats[3]) {
         minimum_accuracy_user = 80;
         minimum_accuracy_alien = 80;
     }
     else {
-        minimum_accuracy_user = 85 + (enemy_stats[3] - user_stats[3]) / 2.5;
-        minimum_accuracy_alien = 90 - (user_stats[3] - enemy_stats[3]) / 5;
+        minimum_accuracy_user = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
+        minimum_accuracy_alien = 90 - (user_stats[4] - enemy_stats[3]) / 5;
     }
     while (user_stats[1] > 0 && alien_list.length > 0) {
         let alien_stats = alien_list[0];
@@ -141,7 +180,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
         let accuracy_alien = interaction.client.random(minimum_accuracy_alien, 100) / 100;
         //await wait(1000);
         turn_counter += 1;
-        let has_laser_ammo = laser[3] / user_stats[6] >= 1;
+        let has_laser_ammo = laser[3] / user_stats[7] >= 1;
         let has_missile_ammo = missile[2] / 2 >= 1;
         let has_hellstorm_ammo = hellstorm[3] / 5 >= 1;
 
@@ -166,7 +205,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             }
             laser_counter -= 1;
             laser = user_laser_config[laser_counter];
-            has_laser_ammo = laser[3] / user_stats[6] >= 1;
+            has_laser_ammo = laser[3] / user_stats[7] >= 1;
         }
 
         while (!has_missile_ammo || threshold <= missile[0]) {
@@ -197,18 +236,18 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             }
 
         if (alien_stats[2] > 0) {
-            laser[3] -= user_stats[6];
+            laser[3] -= user_stats[7];
             laser_shield_absorption = Math.trunc(laser[2] * user_stats[0] * accuracy_user);
-            laser_shield_damage = Math.trunc((alien_stats[5] - user_stats[4]) * laser[1] * user_stats[0] * accuracy_user);
+            laser_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * laser[1] * user_stats[0] * accuracy_user);
             laser_hp_damage = Math.trunc(laser[1] * user_stats[0] * accuracy_user - laser_shield_damage);
             if (alien_stats[2] <= laser_shield_absorption) {
-                user_stats[2] += alien_stats[2];
+                user_stats[3] += alien_stats[2];
                 laser_shield_absorption = Math.trunc(alien_stats[2] * accuracy_user);
                 alien_stats[2] = 0;
                 laser_hp_damage = laser[1] * user_stats[0];
             }
             else {
-                user_stats[2] += laser_shield_absorption;
+                user_stats[3] += laser_shield_absorption;
                 alien_stats[2] -= laser_shield_absorption;
                 if (alien_stats[2] <= laser_shield_damage) {
                     laser_hp_damage += laser_shield_damage - alien_stats[2];
@@ -225,7 +264,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
 
             if (turn_counter % missile_launch_after_turns == 0) {
                 missile[2] -= 1;
-                missile_shield_damage = Math.trunc((alien_stats[5] - user_stats[4]) * missile[1] * accuracy_user);
+                missile_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * missile[1] * accuracy_user);
                 missile_hp_damage = Math.trunc(missile[1] * accuracy_user - missile_shield_damage);
                 if (alien_stats[2] <= missile_shield_damage) {
                     missile_hp_damage += missile_shield_damage - alien_stats[2];
@@ -240,16 +279,16 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             if (can_use_hellstorm && turn_counter % 6 == 0) {
                 hellstorm[3] -= 5;
                 hellstorm_shield_absorption = Math.trunc(hellstorm[2] * accuracy_user);
-                hellstorm_shield_damage = Math.trunc((alien_stats[5] - user_stats[4]) * hellstorm[1] * accuracy_user);
+                hellstorm_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * hellstorm[1] * accuracy_user);
                 hellstorm_hp_damage = Math.trunc(hellstorm[1] * accuracy_user - hellstorm_shield_damage);
                 if (alien_stats[2] <= hellstorm_shield_absorption) {
-                    user_stats[2] += alien_stats[2];
+                    user_stats[3] += alien_stats[2];
                     hellstorm_shield_absorption = alien_stats[2];
                     alien_stats[2] = 0;
                     hellstorm_hp_damage = hellstorm[1];
                 }
                 else {
-                    user_stats[2] += hellstorm_shield_absorption;
+                    user_stats[3] += hellstorm_shield_absorption;
                     alien_stats[2] -= hellstorm_shield_absorption;
                     if (alien_stats[2] <= hellstorm_shield_damage) {
                         hellstorm_hp_damage += hellstorm_shield_damage - alien_stats[2];
@@ -266,7 +305,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             }
         }
         else {
-            laser[3] -= user_stats[6];
+            laser[3] -= user_stats[7];
             laser_shield_absorption = 0;
             laser_hp_damage = Math.trunc(laser[1] * user_stats[0] * accuracy_user);
             alien_stats[1] -= laser_hp_damage;
@@ -287,18 +326,18 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
                 message_damage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstorm_hp_damage}/0]`;
             }
         }
-        let alien_shield_damage = Math.trunc((user_stats[5] - alien_stats[4]) * total_aliens_damage * accuracy_alien);
+        let alien_shield_damage = Math.trunc((user_stats[6] - alien_stats[4]) * total_aliens_damage * accuracy_alien);
         let alien_hp_damage = Math.trunc(total_aliens_damage * accuracy_alien - alien_shield_damage);
-        if (user_stats[2] <= alien_shield_damage) {
-            alien_hp_damage += alien_shield_damage - user_stats[2];
-            alien_shield_damage = user_stats[2];
-            user_stats[2] = 0;
+        if (user_stats[3] <= alien_shield_damage) {
+            alien_hp_damage += alien_shield_damage - user_stats[3];
+            alien_shield_damage = user_stats[3];
+            user_stats[3] = 0;
         }
         else
-            user_stats[2] -= alien_shield_damage;
+            user_stats[3] -= alien_shield_damage;
         user_stats[1] -= alien_hp_damage;
-        if (user_stats[2] > user_max_shield)
-            user_stats[2] = user_max_shield;
+        if (user_stats[3] > user_max_shield)
+            user_stats[3] = user_max_shield;
 
         if (alien_stats[1] <= 0) {
             alien_stats[1] = 0;
@@ -323,17 +362,17 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
                 else
                     can_use_hellstorm = true;
 
-                if (user_stats[3] > alien_stats[3]) {
-                    minimum_accuracy_user = 90 - (user_stats[3] - alien_stats[3]) / 5;
-                    minimum_accuracy_alien = 85 + (alien_stats[3] - user_stats[3]) / 2.5;
+                if (user_stats[4] > alien_stats[3]) {
+                    minimum_accuracy_user = 90 - (user_stats[4] - alien_stats[3]) / 5;
+                    minimum_accuracy_alien = 85 + (alien_stats[3] - user_stats[4]) / 2.5;
                 }
-                else if (user_stats[3] == alien_stats[3]) {
+                else if (user_stats[4] == alien_stats[3]) {
                     minimum_accuracy_user = 80;
                     minimum_accuracy_alien = 80;
                 }
                 else {
-                    minimum_accuracy_user = 85 + (alien_stats[3] - user_stats[3]) / 2.5;
-                    minimum_accuracy_alien = 90 - (user_stats[3] - alien_stats[3]) / 5;
+                    minimum_accuracy_user = 85 + (alien_stats[3] - user_stats[4]) / 2.5;
+                    minimum_accuracy_alien = 90 - (user_stats[4] - alien_stats[3]) / 5;
                 }
             }
         }
@@ -344,7 +383,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             chance_to_encounter_new_alien = 10;
 
         //message = `\n__Turn ${turn_counter}__`;
-        message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[2]}**`;
+        message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
         message += `\n**Alien Info**:\nHP: **${alien_stats[1]}**\tShield: **${alien_stats[2]}**`;
 
         message_damage += `\`\`\`**\`\`\`diff\n+ ${laser_shield_absorption + hellstorm_shield_absorption} Shield Absorbed`;
@@ -359,51 +398,75 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
             await interaction.editReply({ embeds: [yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
             log_message[turn_counter][0] += "\n\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`";
             await interaction.client.wait(1000);
-            let message_update = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[2]}**`;
+            let message_update = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
             message_update += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
             await interaction.editReply({ embeds: [blueEmbed(message_update, "**Engaging Combat with XY**")] });
         }
     }
     //await wait(1000);
     let message_user_info = `**Battle ended after ${turn_counter} turns**\n`;
-    message_user_info += `**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[2]}**`;
-    await interaction.client.wait(1000);
+    message_user_info += `**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
+    await interaction.client.wait(1000 + 5 * turn_counter);
     if (user_stats[1] > 0) {
-        await interaction.editReply({ embeds: [greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row] });
+        await interaction.editReply({ embeds: [greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row, row1] });
         log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!"]);
-        buttonHandler(interaction, interaction.user.id, log_message);
     }
     else {
-        await interaction.editReply({ embeds: [redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row] });
+        await interaction.editReply({ embeds: [redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row, row1] });
+        log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!"]);
     }
+    buttonHandler(interaction, interaction.user.id, log_message);
 }
 
 function buttonHandler(interaction, userID, log_message){
     let maxIndex = log_message.length -1;
     let index = maxIndex;
     let downloaded = false;
-    const filter = i => (i.customId === 'back' || i.customId === 'next' || i.customId === 'download') && i.user.id === userID;
+    const filter = i => i.user.id === userID;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
         if (i.customId === 'back') {
+            collector.resetTimer({time: 10000});
             if(index === 0)
                 index = maxIndex;
             else
                 index--;
-            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row] });
+            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
         else if (i.customId === 'next'){
+            collector.resetTimer({time: 10000});
             if(index === maxIndex)
                 index = 0;
             else
                 index++;
-            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row] });
+            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
+        }
+        else if (i.customId === 'select'){   
+            collector.resetTimer({time: 10000});         
+            if(i.component.options.value === "0")
+                index = 0;
+            else if (i.values[0] === "+5")
+                index += 5;
+            else if (i.values[0] === "+10")
+                index += 10;
+            else if (i.values[0] === "-10")
+                index -= 10;
+            else if (i.values[0] === "-5")
+                index -= 5;
+            else 
+                index = maxIndex;
+            if(index > maxIndex)
+                index -= maxIndex;
+            else if (index < 0)
+                index += maxIndex;
+            await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
         else{
             await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]});
             downloaded = true;
+            collector.stop("Download")
         }
     });
 
@@ -416,7 +479,7 @@ function buttonHandler(interaction, userID, log_message){
 
     collector.on('end', collected => { 
         if(!downloaded)
-        interaction.editReply({ embeds: [blueEmbed(log_message[maxIndex][0], log_message[maxIndex][1])], components: []})
+        interaction.editReply({components: []})
         //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
     });
 }
