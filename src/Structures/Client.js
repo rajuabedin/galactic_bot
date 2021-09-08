@@ -33,7 +33,6 @@ class Client extends Discord.Client {
              *@type {Command}
              */
             const command = require(`../Commands/${file}`);
-            console.log(`Command ${command.name} added!`)
             this.commands.set(command.name, command)
             commands.push(
                 { name: command.name, description: command.description}
@@ -46,7 +45,6 @@ class Client extends Discord.Client {
              *@type {Event}
              */
             const event = require(`../Events/${file}`);
-            console.log(`Event ${event.event} loaded!`)
             this.on(event.event, event.run.bind(null, this));
         });
 

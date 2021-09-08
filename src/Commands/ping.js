@@ -1,11 +1,18 @@
 const Command = require('../Structures/Command.js');
+const Discord = require('discord.js');
 
 module.exports = new Command({
     name: "ping",
-    description: "testing command",
+    description: "Ping command",
 
     async run(interaction) {
-        await interaction.reply(`${interaction.client.getWordLanguage("eng","ping")}: ${interaction.client.ws.ping} ms.`);
+        const exampleEmbed = new Discord.MessageEmbed({
+            title: `${interaction.client.getWordLanguage("eng","ping")}: `,
+            description: `${interaction.client.ws.ping} ms`,
+            type: 'rich',
+            hexColor: '0xe1143d',
+          });
+        await interaction.reply({ embeds: [exampleEmbed] });
     }
 
 })
