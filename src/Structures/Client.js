@@ -34,12 +34,6 @@ class Client extends Discord.Client {
     }
 
     async start(token) {
-
-        var data = await this.databaseSelcetData("update users set user_damage = ? where user_id = ?", [9999999, 125]);
-
-        console.log(data);
-
-
         const commands = [];
         // LOAD COMMANDS
         fs.readdirSync("./Commands").filter(file => file.endsWith(".js")).forEach(file => {
@@ -145,6 +139,18 @@ class Client extends Discord.Client {
     }
 
 
+    /**
+     * 
+     * @param {String} user_id 
+     * @returns 
+     */
+
+    async getUserAccount(user_id) {
+        var result = await this.databaseSelcetData("SELECT * from users WHERE user_id = ?", [user_id]);
+        return result[0];
+    }
+
+
     async usePooledConnectionAsync(actionAsync) {
         const connection = await new Promise((resolve, reject) => {
             this.pool.getConnection((ex, connection) => {
@@ -211,6 +217,7 @@ class Client extends Discord.Client {
 
         return queryCompleted;
     }
+
 }
 
 module.exports = Client;
