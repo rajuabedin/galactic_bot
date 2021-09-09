@@ -4,12 +4,13 @@ const Command = require('./Command.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const Event = require('./Event.js');
+const mysql = require('mysql');
 const fs = require("fs");
 require('dotenv').config();
 
 class Client extends Discord.Client {
     constructor() {
-        super({intents: [Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILDS]});
+        super({ intents: [Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILDS] });
 
         /**
          *
@@ -23,11 +24,23 @@ class Client extends Discord.Client {
         this.wait = require('util').promisify(setTimeout);
         this.random = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
+        this.pool = mysql.createPool({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE,
+        });
+
     }
 
-    start(token) {
-        const commands = [];
+    async start(token) {
 
+        var data = await this.databaseSelcetData("update users set user_damage = ? where user_id = ?", [9999999, 125]);
+
+        console.log(data);
+
+
+        const commands = [];
         // LOAD COMMANDS
         fs.readdirSync("./Commands").filter(file => file.endsWith(".js")).forEach(file => {
             /**
@@ -36,7 +49,7 @@ class Client extends Discord.Client {
             const command = require(`../Commands/${file}`);
             this.commands.set(command.name, command)
             commands.push(
-                { name: command.name, description: command.description}
+                { name: command.name, description: command.description }
             );
         });
 
@@ -54,9 +67,9 @@ class Client extends Discord.Client {
             /**
              *@type {JSON}
              */
-             const language = require(`../Languages/${file}`);
-             const name = file.replace(".json","");
-             this.addLanguage(name, language);
+            const language = require(`../Languages/${file}`);
+            const name = file.replace(".json", "");
+            this.addLanguage(name, language);
         });
 
         const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
@@ -64,12 +77,12 @@ class Client extends Discord.Client {
         (async () => {
             try {
                 console.log('Started refreshing application (/) commands.');
-        
+
                 await rest.put(
                     Routes.applicationGuildCommands(this.clientId, this.guildId),
                     { body: commands },
                 );
-        
+
                 console.log('Successfully reloaded application (/) commands.');
             } catch (error) {
                 console.error(error);
@@ -79,23 +92,23 @@ class Client extends Discord.Client {
         this.login(token)
     }
 
-    getApp (guildId) {
+    getApp(guildId) {
         const app = this.api.applications(this.user.id)
-        if (guildId){
+        if (guildId) {
             app.guilds(guildId)
         }
         return app;
     }
 
-    addLanguage (key, value) {
+    addLanguage(key, value) {
         this.languages[key] = value;
     }
 
-    getWordLanguage (language, word) {
+    getWordLanguage(language, word) {
         return this.languages[language][word];
     }
 
-    blueEmbed(text, tittle ="") {
+    blueEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0x009dff')
             .setTitle(tittle)
@@ -103,7 +116,7 @@ class Client extends Discord.Client {
             .setDescription(text)
         return textToEmbed
     }
-    
+
     greenEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0x14e188')
@@ -112,7 +125,7 @@ class Client extends Discord.Client {
             .setDescription(text)
         return textToEmbed
     }
-    
+
     redEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0xe1143d')
@@ -121,7 +134,7 @@ class Client extends Discord.Client {
             .setDescription(text)
         return textToEmbed
     }
-    
+
     yellowEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0xffff00')
@@ -129,6 +142,74 @@ class Client extends Discord.Client {
             .setURL('https://obelisk.club/')
             .setDescription(text)
         return textToEmbed
+    }
+
+
+    async usePooledConnectionAsync(actionAsync) {
+        const connection = await new Promise((resolve, reject) => {
+            this.pool.getConnection((ex, connection) => {
+                if (ex) {
+                    reject(ex);
+                } else {
+                    resolve(connection);
+                }
+            });
+        });
+        try {
+            return await actionAsync(connection);
+        } finally {
+            connection.release();
+        }
+    }
+
+    /**
+     * 
+     * @param {String} query 
+     * @param {Array} args 
+     * @returns 
+     */
+
+    async databaseSelcetData(query, args) {
+        var result = await this.usePooledConnectionAsync(async connection => {
+            const rows = await new Promise((resolve, reject) => {
+                connection.query(query, args, function (error, results, fields) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                });
+            });
+            return rows;
+        });
+        return result;
+    }
+
+    /**
+     * 
+     * @param {String} query 
+     * @param {Array} args 
+     * @returns 
+     */
+    async databaseEditData(query, args) {
+        var result = await this.usePooledConnectionAsync(async connection => {
+            const rowsCount = await new Promise((resolve, reject) => {
+                connection.query(query, args, function (error, results, fields) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results.affectedRows);
+                    }
+                });
+            });
+            return rowsCount;
+        });
+        var queryCompleted = false;
+        if (result > 0) {
+            queryCompleted = true;
+        }
+
+        return queryCompleted;
     }
 }
 
