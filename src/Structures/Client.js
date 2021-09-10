@@ -41,10 +41,8 @@ class Client extends Discord.Client {
              *@type {Command}
              */
             const command = require(`../Commands/${file}`);
-            this.commands.set(command.name, command)
-            commands.push(
-                { name: command.name, description: command.description }
-            );
+            this.commands.set(command.data.name, command)
+            commands.push(command.data.toJSON());
         });
 
         // LOAD EVENTS
@@ -216,6 +214,17 @@ class Client extends Discord.Client {
         }
 
         return queryCompleted;
+    }
+
+    async makeid(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
     }
 
 }

@@ -1,7 +1,16 @@
 const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+<<<<<<< HEAD
 const errorLog = require('../Utility/logger').logger;
+=======
+const { SlashCommandBuilder } = require('@discordjs/builders');
+>>>>>>> test
 const Command = require('../Structures/Command.js');
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('hunt')
+        .setDescription('Hunt Allien!'),
 
+<<<<<<< HEAD
 const row = new MessageActionRow()
     .addComponents(
         new MessageButton()
@@ -123,10 +132,108 @@ module.exports = new Command({
             if (alien_max_hp + alien_max_shield < 12000 || alien_max_hp / user_stats[0] <= 7) {
                 can_use_hellstorm = false;
                 hellstorm = [-1, 0, 0, 100000, "Disabled"];
+=======
+    async execute(interaction) {
+        //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
+        //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
+        //[a] -3 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
+        let user_laser_config = [[-3, 2, 0, 10000, "x2"], [-1, 1, 0, 10000, "x1"], [-3, 3, 0, 14900, "x3"], [-3, 4, 0, 14900, "x4"], [-3, 0, 2, 25000, "xS1"]];
+        let user_missile_config = [[0, 1000, 0, "m1"], [60, 2000, 0, "m2"], [100, 4000, 0, "m3"], [150, 6000, 0, "m4"]];
+        let user_hellstorm_config = [[0, 10000, 0, 0, "l1"], [50, 20000, 0, 0, "l2"], [100, 0, 12500, 0, "lS1"], [140, 0, 30000, 0, "lS2"]];
+        // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
+        let user_stats = [1200, 180000, 120000, 120000, 380, 0, 0.8, 30];
+        let enemy_stats = [1500, 250000, 150000, 310, 0, 0.8];
+        await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
+        await interaction.client.wait(1000);
+        let alien_list = [enemy_stats.slice()];
+        //let message = "**Engaging Combat with XY**";
+        let message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
+        message += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
+        let message_damage = "";
+        await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, "**Engaging Combat with XY**")] });
+        let log_message = [[message, "**Engaging Combat with XY**"]];
+        let message_ammo = "";
+        user_laser_config.push([-2, 0, 0, 1000000, "No AMMO"]);
+        user_laser_config = user_laser_config.sort(function (a, b) {
+            return a[0] - b[0];
+        });
+        let laser_counter = user_laser_config.length - 1;
+        user_missile_config.push([-2, 0, 100000, "No AMMO"]);
+        user_missile_config = user_missile_config.sort(function (a, b) {
+            return a[0] - b[0];
+        });
+        let missile_counter = user_missile_config.length - 1;
+        user_hellstorm_config.push([-2, 0, 0, 100000, "No AMMO"]);
+        user_hellstorm_config = user_hellstorm_config.sort(function (a, b) {
+            return a[0] - b[0];
+        });
+        let hellstorm_counter = user_hellstorm_config.length - 1;
+
+        let missile_launch_after_turns = 3;
+        let laser = user_laser_config[laser_counter];
+        let missile = user_missile_config[missile_counter];
+        let hellstorm = user_hellstorm_config[hellstorm_counter];
+        let turn_counter = 0;
+
+        let can_use_hellstorm = true;
+        let user_max_shield = user_stats[2];
+        let alien_max_hp = enemy_stats[1];
+        let alien_max_shield = enemy_stats[2];
+
+        let total_aliens_damage = enemy_stats[0];
+
+        if (alien_max_hp + alien_max_shield < 12000 || alien_max_hp / user_stats[0] <= 7) {
+            can_use_hellstorm = false;
+            hellstorm = [-1, 0, 0, 100000, "Disabled"];
+        }
+        let minimum_accuracy_user = 80;
+        let minimum_accuracy_alien = 80;
+
+        if (user_stats[4] > enemy_stats[3]) {
+            minimum_accuracy_user = 90 - (user_stats[4] - enemy_stats[3]) / 5;
+            minimum_accuracy_alien = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
+        }
+        else if (user_stats[4] == enemy_stats[3]) {
+            minimum_accuracy_user = 80;
+            minimum_accuracy_alien = 80;
+        }
+        else {
+            minimum_accuracy_user = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
+            minimum_accuracy_alien = 90 - (user_stats[4] - enemy_stats[3]) / 5;
+        }
+        while (user_stats[1] > 0 && alien_list.length > 0) {
+            let alien_stats = alien_list[0];
+            let accuracy_user = interaction.client.random(minimum_accuracy_user, 100) / 100;
+            let accuracy_alien = interaction.client.random(minimum_accuracy_alien, 100) / 100;
+            //await wait(1000);
+            turn_counter += 1;
+            let has_laser_ammo = laser[3] / user_stats[7] >= 1;
+            let has_missile_ammo = missile[2] / 2 >= 1;
+            let has_hellstorm_ammo = hellstorm[3] / 5 >= 1;
+
+            let laser_shield_absorption = 0;
+            let laser_shield_damage = 0;
+            let laser_hp_damage = 0;
+            let missile_hp_damage = 0;
+            let missile_shield_damage = 0;
+            let hellstorm_hp_damage = 0;
+            let hellstorm_shield_damage = 0;
+            let hellstorm_shield_absorption = 0;
+
+            let threshold = 100 / alien_max_hp * alien_stats[1] + 100 / alien_max_shield * alien_stats[2];
+
+            while (!has_laser_ammo || threshold <= laser[0]) {
+                if (!has_laser_ammo)
+                    message_ammo += `\n- Laser (${laser[4]}) out of AMMO`;
+                laser_counter -= 1;
+                laser = user_laser_config[laser_counter];
+                has_laser_ammo = laser[3] / user_stats[7] >= 1;
+>>>>>>> test
             }
             let minimum_accuracy_user = 80;
             let minimum_accuracy_alien = 80;
 
+<<<<<<< HEAD
             if (user_stats[4] > enemy_stats[3]) {
                 minimum_accuracy_user = 90 - (user_stats[4] - enemy_stats[3]) / 5;
                 minimum_accuracy_alien = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
@@ -166,6 +273,23 @@ module.exports = new Command({
                     laser_counter -= 1;
                     laser = user_laser_config[laser_counter];
                     has_laser_ammo = laser[3] / user_stats[7] >= 1;
+=======
+            while (!has_missile_ammo || threshold <= missile[0]) {
+                if (!has_missile_ammo)
+                    message_ammo += `\n- Missile (${missile[3]}) out of AMMO`;
+                missile_counter -= 1;
+                missile = user_missile_config[missile_counter];
+                has_missile_ammo = missile[2] >= 1;
+            }
+
+            if (can_use_hellstorm)
+                while (!has_hellstorm_ammo || threshold <= hellstorm[0]) {
+                    if (!has_hellstorm_ammo)
+                        message_ammo += `\n- Hellstorm (${hellstorm[4]}) out of AMMO`;
+                    hellstorm_counter -= 1;
+                    hellstorm = user_hellstorm_config[hellstorm_counter];
+                    has_hellstorm_ammo = hellstorm[3] / 5 >= 1;
+>>>>>>> test
                 }
 
                 while (!has_missile_ammo || threshold <= missile[0]) {
@@ -374,9 +498,77 @@ module.exports = new Command({
         }
 
     }
+}
 
-})
+const row = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('back')
+            //.setLabel('Beginning')
+            .setEmoji('755733114042449950')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('next')
+            //.setLabel('Ending')
+            .setEmoji('755733114537508894')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('download')
+            //.setLabel('Ending')
+            .setEmoji('📁')
+            .setStyle('SUCCESS'),
+        new MessageButton()
+            .setCustomId('end')
+            //.setLabel('Ending')
+            .setEmoji('🔚')
+            .setStyle('DANGER'),
 
+    );
+
+const row1 = new MessageActionRow()
+    .addComponents(
+        new MessageSelectMenu()
+            .setCustomId('select')
+            .setPlaceholder('Select battle turn')
+            .addOptions([
+                {
+                    label: 'Turn 0',
+                    description: 'Return to the beginning',
+                    value: '0',
+                },
+                {
+                    label: '+ 5 turns',
+                    description: 'move forward by 5',
+                    value: '+5',
+                },
+                {
+                    label: '+ 10 turns',
+                    description: 'move forward by 10',
+                    value: '+10',
+                },
+                {
+                    label: '- 10 turns',
+                    description: 'move backward by 10',
+                    value: '-10',
+                },
+                {
+                    label: '- 5 turns',
+                    description: 'move backward by 5',
+                    value: '-5',
+                },
+                {
+                    label: 'Battle end',
+                    description: 'move to the end of the battle',
+                    value: 'end',
+                },
+            ]),
+    )
+
+
+<<<<<<< HEAD
+=======
+
+>>>>>>> test
 function buttonHandler(interaction, userID, log_message) {
     let maxIndex = log_message.length - 1;
     let index = maxIndex;
