@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { MessageActionRow, MessageButton } = require('discord.js');
 
 const Command = require('../Structures/Command.js');
 
@@ -7,28 +7,48 @@ module.exports = new Command({
     description: "testing hanger",
 
     async run(interaction) {
-        let max_equipable_laser = 10;
+        let max_equipable_laser = 6;
         let laser_items_to_equip = [[150,"lf3_1","q1"], [100,"lf2_1","q2"], [150,"lf3_1","q3"], [155,"lf3_2","q4"], [165,"lf3_4","q5"], [160,"lf3_3","q6"]];
         let laser_items_equipped = [[50,"lf1_1","q1"], [60,"lf1_3","q2"], [55,"lf1_2","q1"], [70,"lf1_5","q2"], [80,"lf1_7","q1"], [65,"lf1_4","q2"]];
         let equipped_laser_length = laser_items_equipped.length -1;
 
         let userID = interaction.user.id;         
 
-        let [row, row1, row2, row3, message] = await buttonHandler(laser_items_to_equip, laser_items_equipped);         
+        let [row, row1, row2, row3, message] = [0, 0, 0, 0, 0];
+        if (equipped_laser_length===max_equipable_laser - 1)
+            [row, row1, row2, row3, message] = await buttonHandler(laser_items_to_equip, laser_items_equipped, "DANGER");  
+        else
+            [row, row1, row2, row3, message] = await buttonHandler(laser_items_to_equip, laser_items_equipped);   
 
-        let equipped_laser_message = `**You have equipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers**\n`;
-        await interaction.reply({ content: equipped_laser_message + message,ephemeral: true, components: [row, row1, row2, row3] });
+        let equipped_laser_message = `**You have equipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers**`;
+        let stored_message = `**Data returned to:**\nEquipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers\n ${message}`;
+        await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, equipped_laser_message)], ephemeral: true, components: [row, row1, row2, row3, row4] });
         
         const filter = i => i.user.id === userID;
     
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });  
 
+        let discarded_message = true;
+
         collector.on('collect', async i => {            
             collector.resetTimer({time: 10000});            
             let index = parseInt(i.customId);         
             //console.log(i.component.style);
-            if (i.component.label === " "){ 
-                await i.update({ content: equipped_laser_message + message, components: [row, row1, row2, row3]});
+            if(i.component.customId === "save"){
+                await i.update({ embeds: [interaction.client.greenEmbed(`${equipped_laser_message}\n${message}`,"SAVED")], components: []});                
+                discarded_message = false;
+
+                //Send data to database
+                
+                collector.stop("Saved");                
+            }
+            else if (i.component.customId === "discard"){
+                await i.update({ embeds: [interaction.client.redEmbed(stored_message,"DISCARDED")], components: []});                
+                discarded_message = false;
+                collector.stop("Discarded");
+            }
+            else if (i.component.label === "          " || i.component.label === "            "){ 
+                await i.update({ });
             }
             else if (i.component.style === "PRIMARY"){
                 equipped_laser_length++;      
@@ -38,22 +58,25 @@ module.exports = new Command({
                 else   
                     [row, row1, row2, row3, message] = await buttonHandler(laser_items_to_equip, laser_items_equipped);   
                 equipped_laser_message = `**You have equipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers**\n`;              
-                await i.update({ content: equipped_laser_message + message, components: [row, row1, row2, row3]});
+                await i.update({ embeds: [interaction.client.greenEmbed(message, equipped_laser_message)], components: [row, row1, row2, row3, row4]});
             }
             else if (i.component.style === "SUCCESS"){                
                 equipped_laser_length--;
                 laser_items_to_equip = laser_items_to_equip.concat(laser_items_equipped.splice(index, 1));                
                 [row, row1, row2, row3, message] = await buttonHandler(laser_items_to_equip, laser_items_equipped); 
                 equipped_laser_message = `**You have equipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers**\n`;
-                await i.update({ content: equipped_laser_message + message, components: [row, row1, row2, row3]});
+                await i.update({ embeds: [interaction.client.blueEmbed(message, equipped_laser_message)], components: [row, row1, row2, row3, row4]});
             }
             else{
-                await i.update({ content: "**ERROR! Max capacity reached!**\n" + message, components: [row, row1, row2, row3]});
+                await i.update({ embeds: [interaction.client.redEmbed(message, "**ERROR! Max capacity reached!**")], components: [row, row1, row2, row3, row4]});
             }
         });
     
         collector.on('end', collected => { 
-            interaction.editReply({components: []})
+            if (discarded_message)
+                interaction.editReply({ embeds: [interaction.client.redEmbed(stored_message,"DISCARDED")], components: []});
+            else
+                interaction.editReply({components: []})
             //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
         });    
     }
@@ -73,7 +96,7 @@ async function buttonHandler(laser_items_to_equip, laser_items_equipped, button_
     let array_length = laser_items.length;
     if (array_length < 20){            
         laser_items.length = 20;
-        laser_items.fill([0 , " ", " "], array_length);
+        laser_items.fill([0 , "          ", "          "], array_length);
         //console.log(laser_items);
     } 
 
@@ -170,7 +193,7 @@ async function buttonHandler(laser_items_to_equip, laser_items_equipped, button_
             .setCustomId("19")
             .setLabel(laser_items[19][1])
             .setStyle(button_styile),
-    );
+    );    
 
     let index = 0;
 
@@ -212,4 +235,28 @@ async function buttonHandler(laser_items_to_equip, laser_items_equipped, button_
 
     return [row, row1, row2, row3, message];
 }
+
+const row4 = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId("discard")
+            .setEmoji("🗑️")
+            .setStyle("DANGER"),
+        new MessageButton()
+            .setCustomId("20")
+            .setLabel("            ")
+            .setStyle("PRIMARY"),
+        new MessageButton()
+            .setCustomId("21")
+            .setLabel("            ")
+            .setStyle("PRIMARY"),
+        new MessageButton()
+            .setCustomId("22")
+            .setLabel("            ")
+            .setStyle("PRIMARY"),
+        new MessageButton()
+            .setCustomId("save")
+            .setEmoji("💾")
+            .setStyle("SUCCESS"),
+    );
 
