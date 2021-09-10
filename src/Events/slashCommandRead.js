@@ -5,9 +5,9 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
     try {
         if (!interaction.isCommand()) return;
 
-        const command = client.commands.find(cmd => cmd.name == interaction.commandName);
+        const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
 
-        command.run(interaction);
+        command.execute(interaction);
     } catch (error) {
         console.error(error)
     }

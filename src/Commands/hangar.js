@@ -1,12 +1,12 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
-
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const Command = require('../Structures/Command.js');
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('hanger')
+        .setDescription('Equipment Hanger'),
 
-module.exports = new Command({
-    name: "hanger",
-    description: "testing hanger",
-
-    async run(interaction) {
+    async execute(interaction) {
         let max_equipable_laser = 10;
         let laser_items_to_equip = [[150,"lf3_1","q1"], [100,"lf2_1","q2"], [150,"lf3_1","q3"], [155,"lf3_2","q4"], [165,"lf3_4","q5"], [160,"lf3_3","q6"]];
         let laser_items_equipped = [[50,"lf1_1","q1"], [60,"lf1_3","q2"], [55,"lf1_2","q1"], [70,"lf1_5","q2"], [80,"lf1_7","q1"], [65,"lf1_4","q2"]];
@@ -55,9 +55,9 @@ module.exports = new Command({
         collector.on('end', collected => { 
             interaction.editReply({components: []})
             //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
-        });    
+        });  
     }
-})
+}
 
 async function buttonHandler(laser_items_to_equip, laser_items_equipped, button_styile = "PRIMARY") {
     

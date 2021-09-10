@@ -1,6 +1,24 @@
-const {MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
-
+const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const Command = require('../Structures/Command.js');
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('hunt')
+        .setDescription('Hunt Allien!'),
+
+    async execute(interaction) {
+        //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
+        //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
+        let user_laser_config = [[-2, 2, 0, 10000, "x2"], [0, 1, 0, 10000, "x1"], [20, 3, 0, 14900, "x3"], [80, 4, 0, 14900, "x4"], [140, 0, 2, 25000, "xS1"]];
+        let user_missile_config = [[0, 1000, 100, "m1"], [60, 2000, 100, "m2"], [100, 4000, 100, "m3"], [150, 6000, 100, "m4"]];
+        let user_hellstorm_config = [[0, 10000, 0, 900, "l1"], [50, 20000, 0, 1000, "l2"], [100, 0, 12500, 1100, "lS1"], [140, 0, 30000, 4, "lS2"]];
+        // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
+        let user_stats = [2000, 250000, 350000, 350000, 350, 0, 0.8, 30];
+        let alien_stats = [280, 80000, 80000, 280, 0, 0.8];
+        await battle(user_laser_config, user_missile_config, user_hellstorm_config, user_stats, alien_stats, interaction);
+    }
+}
 
 const row = new MessageActionRow()
     .addComponents(
@@ -19,12 +37,12 @@ const row = new MessageActionRow()
             //.setLabel('Ending')
             .setEmoji('📁')
             .setStyle('SUCCESS'),
-        
+
     );
 
 const row1 = new MessageActionRow()
-        .addComponents(
-            new MessageSelectMenu()
+    .addComponents(
+        new MessageSelectMenu()
             .setCustomId('select')
             .setPlaceholder('Select battle turn')
             .addOptions([
@@ -59,25 +77,8 @@ const row1 = new MessageActionRow()
                     value: 'end',
                 },
             ]),
-        )
+    )
 
-module.exports = new Command({
-    name: "hunt",
-    description: "Hunt allien",
-
-    async run(interaction) {
-        //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
-        //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
-        let user_laser_config = [[-2, 2, 0, 10000, "x2"], [0, 1, 0, 10000, "x1"], [20, 3, 0, 14900, "x3"], [80, 4, 0, 14900, "x4"], [140, 0, 2, 25000, "xS1"]];
-        let user_missile_config = [[0, 1000, 100, "m1"], [60, 2000, 100, "m2"], [100, 4000, 100, "m3"], [150, 6000, 100, "m4"]];
-        let user_hellstorm_config = [[0, 10000, 0, 900, "l1"], [50, 20000, 0, 1000, "l2"], [100, 0, 12500, 1100, "lS1"], [140, 0, 30000, 4, "lS2"]];
-        // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
-        let user_stats = [2000, 250000,350000, 350000, 350, 0, 0.8, 30];
-        let alien_stats = [280, 80000, 80000, 280, 0, 0.8];
-        await battle(user_laser_config, user_missile_config, user_hellstorm_config, user_stats, alien_stats, interaction);
-    }
-
-})
 
 async function battle(user_laser_config, user_missile_config, user_hellstorm_config, user_stats, enemy_stats, interaction) {
     await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
@@ -155,7 +156,7 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
         let missile_shield_damage = 0;
         let hellstorm_hp_damage = 0;
         let hellstorm_shield_damage = 0;
-        let hellstorm_shield_absorption = 0;        
+        let hellstorm_shield_absorption = 0;
 
         let threshold = 100 / alien_max_hp * alien_stats[1] + 100 / alien_max_shield * alien_stats[2];
 
@@ -382,8 +383,8 @@ async function battle(user_laser_config, user_missile_config, user_hellstorm_con
     buttonHandler(interaction, interaction.user.id, log_message);
 }
 
-function buttonHandler(interaction, userID, log_message){
-    let maxIndex = log_message.length -1;
+function buttonHandler(interaction, userID, log_message) {
+    let maxIndex = log_message.length - 1;
     let index = maxIndex;
     let downloaded = false;
     const filter = i => i.user.id === userID;
@@ -392,24 +393,24 @@ function buttonHandler(interaction, userID, log_message){
 
     collector.on('collect', async i => {
         if (i.customId === 'back') {
-            collector.resetTimer({time: 10000});
-            if(index === 0)
+            collector.resetTimer({ time: 10000 });
+            if (index === 0)
                 index = maxIndex;
             else
                 index--;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else if (i.customId === 'next'){
-            collector.resetTimer({time: 10000});
-            if(index === maxIndex)
+        else if (i.customId === 'next') {
+            collector.resetTimer({ time: 10000 });
+            if (index === maxIndex)
                 index = 0;
             else
                 index++;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else if (i.customId === 'select'){   
-            collector.resetTimer({time: 10000});         
-            if(i.component.options.value === "0")
+        else if (i.customId === 'select') {
+            collector.resetTimer({ time: 10000 });
+            if (i.component.options.value === "0")
                 index = 0;
             else if (i.values[0] === "+5")
                 index += 5;
@@ -419,16 +420,16 @@ function buttonHandler(interaction, userID, log_message){
                 index -= 10;
             else if (i.values[0] === "-5")
                 index -= 5;
-            else 
+            else
                 index = maxIndex;
-            if(index > maxIndex)
+            if (index > maxIndex)
                 index -= maxIndex;
             else if (index < 0)
                 index += maxIndex;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else{
-            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]});
+        else {
+            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`] });
             downloaded = true;
             collector.stop("Download")
         }
@@ -437,13 +438,13 @@ function buttonHandler(interaction, userID, log_message){
     var fs = require('fs');
 
     var file = fs.createWriteStream(`./User_Log/${userID}.txt`);
-    file.on('error', function(err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
-    log_message.forEach(function(v) { file.write(v.join('\n\n ') + '\n'); });
+    file.on('error', function (err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
+    log_message.forEach(function (v) { file.write(v.join('\n\n ') + '\n'); });
     file.end();
 
-    collector.on('end', collected => { 
-        if(!downloaded)
-        interaction.editReply({components: []})
+    collector.on('end', collected => {
+        if (!downloaded)
+            interaction.editReply({ components: [] })
         //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
     });
 }
