@@ -7,6 +7,7 @@ HP: **250000**	Shield: **150000**
  **Engaging Combat with XY**
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **179820**	Shield: **119280**
 **Alien Info**:
 HP: **249793**	Shield: **149175**
@@ -14,11 +15,21 @@ HP: **249793**	Shield: **149175**
 [Laser Damage (x1): 207/825]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 180/720]```
+=======
+HP: **249946**	Shield: **350000**
+**Alien Info**:
+HP: **80000**	Shield: **76840**
+```ini
+[Laser Damage (xS1): 0/3160]```**```diff
++ 3160 Shield Absorbed```**```css
+[Alien Damage: 54/212]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 1__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **179631**	Shield: **118524**
 **Alien Info**:
 HP: **249593**	Shield: **148379**
@@ -26,11 +37,21 @@ HP: **249593**	Shield: **148379**
 [Laser Damage (x1): 200/796]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 189/756]```
+=======
+HP: **249907**	Shield: **350000**
+**Alien Info**:
+HP: **80000**	Shield: **73600**
+```ini
+[Laser Damage (xS1): 0/3240]```**```diff
++ 3240 Shield Absorbed```**```css
+[Alien Damage: 39/159]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 2__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **179433**	Shield: **117732**
 **Alien Info**:
 HP: **249410**	Shield: **147650**
@@ -39,11 +60,22 @@ HP: **249410**	Shield: **147650**
 [Missile Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 198/792]```
+=======
+HP: **249855**	Shield: **350000**
+**Alien Info**:
+HP: **78884**	Shield: **65416**
+```ini
+[Laser Damage (xS1): 0/3720]
+[Missile Damage (m4): 1116/4464]```**```diff
++ 3720 Shield Absorbed```**```css
+[Alien Damage: 52/208]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 3__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **179157**	Shield: **116628**
 **Alien Info**:
 HP: **249220**	Shield: **146892**
@@ -51,11 +83,21 @@ HP: **249220**	Shield: **146892**
 [Laser Damage (x1): 190/758]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 276/1104]```
+=======
+HP: **249813**	Shield: **350000**
+**Alien Info**:
+HP: **78884**	Shield: **61816**
+```ini
+[Laser Damage (xS1): 0/3600]```**```diff
++ 3600 Shield Absorbed```**```css
+[Alien Damage: 42/165]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 4__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **178968**	Shield: **115872**
 **Alien Info**:
 HP: **248987**	Shield: **145961**
@@ -63,11 +105,21 @@ HP: **248987**	Shield: **145961**
 [Laser Damage (x1): 233/931]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 189/756]```
+=======
+HP: **249777**	Shield: **350000**
+**Alien Info**:
+HP: **78884**	Shield: **58496**
+```ini
+[Laser Damage (xS1): 0/3320]```**```diff
++ 3320 Shield Absorbed```**```css
+[Alien Damage: 36/143]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 5__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **178758**	Shield: **115032**
 **Alien Info**:
 HP: **248792**	Shield: **145184**
@@ -77,11 +129,23 @@ HP: **248792**	Shield: **145184**
 [Hellstorm Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 210/840]```
+=======
+HP: **249728**	Shield: **350000**
+**Alien Info**:
+HP: **74204**	Shield: **36176**
+```ini
+[Laser Damage (xS1): 0/3600]
+[Missile Damage (m4): 1080/4320]
+[Hellstorm Damage (l2): 3600/14400]```**```diff
++ 3600 Shield Absorbed```**```css
+[Alien Damage: 49/197]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 6__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **178566**	Shield: **114264**
 **Alien Info**:
 HP: **248561**	Shield: **144263**
@@ -89,11 +153,21 @@ HP: **248561**	Shield: **144263**
 [Laser Damage (x1): 231/921]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 192/768]```
+=======
+HP: **249683**	Shield: **349821**
+**Alien Info**:
+HP: **72748**	Shield: **30352**
+```ini
+[Laser Damage (x4): 1456/5824]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 45/179]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 7__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **178272**	Shield: **113088**
 **Alien Info**:
 HP: **248349**	Shield: **143419**
@@ -101,11 +175,21 @@ HP: **248349**	Shield: **143419**
 [Laser Damage (x1): 212/844]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 294/1176]```
+=======
+HP: **249630**	Shield: **349606**
+**Alien Info**:
+HP: **71212**	Shield: **24208**
+```ini
+[Laser Damage (x4): 1536/6144]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 53/215]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 8__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **178074**	Shield: **112296**
 **Alien Info**:
 HP: **248147**	Shield: **142613**
@@ -114,23 +198,44 @@ HP: **248147**	Shield: **142613**
 [Missile Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 198/792]```
+=======
+HP: **249590**	Shield: **349445**
+**Alien Info**:
+HP: **68980**	Shield: **15280**
+```ini
+[Laser Damage (x4): 1488/5952]
+[Missile Damage (m3): 744/2976]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 40/161]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 9__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **177876**	Shield: **111504**
 **Alien Info**:
 HP: **247962**	Shield: **141874**
+=======
+HP: **249539**	Shield: **349239**
+**Alien Info**:
+HP: **67588**	Shield: **9712**
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 ```ini
 [Laser Damage (x1): 185/739]```**```diff
 + 0 Shield Absorbed```**```css
+<<<<<<< HEAD
 [Alien Damage: 198/792]```
+=======
+[Alien Damage: 51/206]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 10__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **177600**	Shield: **110400**
 **Alien Info**:
 HP: **247750**	Shield: **141030**
@@ -138,11 +243,21 @@ HP: **247750**	Shield: **141030**
 [Laser Damage (x1): 212/844]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 276/1104]```
+=======
+HP: **249493**	Shield: **349056**
+**Alien Info**:
+HP: **66100**	Shield: **3760**
+```ini
+[Laser Damage (x4): 1488/5952]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 46/183]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 11__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **177366**	Shield: **109464**
 **Alien Info**:
 HP: **247534**	Shield: **140166**
@@ -152,11 +267,23 @@ HP: **247534**	Shield: **140166**
 [Hellstorm Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 234/936]```
+=======
+HP: **249446**	Shield: **348871**
+**Alien Info**:
+HP: **41360**	Shield: **0**
+```ini
+[Laser Damage (x4): 3040/3760]
+[Missile Damage (m2): 1700/0]
+[Hellstorm Damage (l2): 20000/13600]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 47/185]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 12__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **177147**	Shield: **108588**
 **Alien Info**:
 HP: **247298**	Shield: **139226**
@@ -164,23 +291,43 @@ HP: **247298**	Shield: **139226**
 [Laser Damage (x1): 236/940]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 219/876]```
+=======
+HP: **249397**	Shield: **348677**
+**Alien Info**:
+HP: **36380**	Shield: **0**
+```ini
+[Laser Damage (x3): 4980/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 49/194]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 13__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **176970**	Shield: **107880**
 **Alien Info**:
 HP: **247106**	Shield: **138458**
+=======
+HP: **249359**	Shield: **348525**
+**Alien Info**:
+HP: **30740**	Shield: **0**
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 ```ini
 [Laser Damage (x1): 192/768]```**```diff
 + 0 Shield Absorbed```**```css
+<<<<<<< HEAD
 [Alien Damage: 177/708]```
+=======
+[Alien Damage: 38/152]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 14__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **176748**	Shield: **106992**
 **Alien Info**:
 HP: **246902**	Shield: **137642**
@@ -189,11 +336,22 @@ HP: **246902**	Shield: **137642**
 [Missile Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 222/888]```
+=======
+HP: **249307**	Shield: **348317**
+**Alien Info**:
+HP: **25210**	Shield: **0**
+```ini
+[Laser Damage (x3): 4740/0]
+[Missile Damage (m1): 790/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 52/208]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 15__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **176553**	Shield: **106212**
 **Alien Info**:
 HP: **246666**	Shield: **136702**
@@ -201,11 +359,21 @@ HP: **246666**	Shield: **136702**
 [Laser Damage (x1): 236/940]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 195/780]```
+=======
+HP: **249269**	Shield: **348165**
+**Alien Info**:
+HP: **19450**	Shield: **0**
+```ini
+[Laser Damage (x3): 5760/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 38/152]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 16__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **176352**	Shield: **105408**
 **Alien Info**:
 HP: **246433**	Shield: **135771**
@@ -213,11 +381,21 @@ HP: **246433**	Shield: **135771**
 [Laser Damage (x1): 233/931]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 201/804]```
+=======
+HP: **249232**	Shield: **348020**
+**Alien Info**:
+HP: **14170**	Shield: **0**
+```ini
+[Laser Damage (x3): 5280/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 37/145]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 17__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **176097**	Shield: **104388**
 **Alien Info**:
 HP: **246238**	Shield: **134994**
@@ -227,11 +405,23 @@ HP: **246238**	Shield: **134994**
 [Hellstorm Damage (No AMMO): 0/0]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 255/1020]```
+=======
+HP: **249187**	Shield: **347844**
+**Alien Info**:
+HP: **1950**	Shield: **0**
+```ini
+[Laser Damage (x1): 1880/0]
+[Missile Damage (m1): 940/0]
+[Hellstorm Damage (l1): 9400/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 45/176]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 18__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **175896**	Shield: **103584**
 **Alien Info**:
 HP: **246042**	Shield: **134207**
@@ -239,11 +429,21 @@ HP: **246042**	Shield: **134207**
 [Laser Damage (x1): 196/787]```**```diff
 + 0 Shield Absorbed```**```css
 [Alien Damage: 201/804]```
+=======
+HP: **249153**	Shield: **347708**
+**Alien Info**:
+HP: **250**	Shield: **0**
+```ini
+[Laser Damage (x1): 1700/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 34/136]```
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 
  
 __Turn 19__
 
 **Your Info**:
+<<<<<<< HEAD
 HP: **175641**	Shield: **102564**
 **Alien Info**:
 HP: **245852**	Shield: **133449**
@@ -519,9 +719,13 @@ __Turn 41__
 
 **Your Info**:
 HP: **170301**	Shield: **81205**
+=======
+HP: **249101**	Shield: **347500**
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 **Alien Info**:
 HP: **241281**	Shield: **115187**
 ```ini
+<<<<<<< HEAD
 [Laser Damage (x1): 214/854]
 [Missile Damage (No AMMO): 0/0]
 [Hellstorm Damage (No AMMO): 0/0]```**```diff
@@ -3195,6 +3399,17 @@ __Turn 255__
 **Battle ended after 255 turns**
 **Your Info**:
 HP: **-660**	Shield: **0**
+=======
+[Laser Damage (x1): 1520/0]```**```diff
++ 0 Shield Absorbed```**```css
+[Alien Damage: 52/208]```
+
+ 
+__Turn 20__
+**Battle ended after 20 turns**
+**Your Info**:
+HP: **249101**	Shield: **347500**
+>>>>>>> 174f4605ece25d3be0b82774b980f6eaf6889d81
 ```diff
 
 - Missile (m4) out of AMMO
