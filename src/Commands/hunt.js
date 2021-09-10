@@ -1,76 +1,12 @@
-const {MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
-
+const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const Command = require('../Structures/Command.js');
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('hunt')
+        .setDescription('Hunt Allien!'),
 
-const row = new MessageActionRow()
-    .addComponents(
-        new MessageButton()
-            .setCustomId('back')
-            //.setLabel('Beginning')
-            .setEmoji('755733114042449950')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('next')
-            //.setLabel('Ending')
-            .setEmoji('755733114537508894')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('download')
-            //.setLabel('Ending')
-            .setEmoji('📁')
-            .setStyle('SUCCESS'),
-        new MessageButton()
-            .setCustomId('end')
-            //.setLabel('Ending')
-            .setEmoji('🔚')
-            .setStyle('DANGER'),           
-        
-    );
-
-const row1 = new MessageActionRow()
-        .addComponents(
-            new MessageSelectMenu()
-            .setCustomId('select')
-            .setPlaceholder('Select battle turn')
-            .addOptions([
-                {
-                    label: 'Turn 0',
-                    description: 'Return to the beginning',
-                    value: '0',
-                },
-                {
-                    label: '+ 5 turns',
-                    description: 'move forward by 5',
-                    value: '+5',
-                },
-                {
-                    label: '+ 10 turns',
-                    description: 'move forward by 10',
-                    value: '+10',
-                },
-                {
-                    label: '- 10 turns',
-                    description: 'move backward by 10',
-                    value: '-10',
-                },
-                {
-                    label: '- 5 turns',
-                    description: 'move backward by 5',
-                    value: '-5',
-                },
-                {
-                    label: 'Battle end',
-                    description: 'move to the end of the battle',
-                    value: 'end',
-                },
-            ]),
-        )
-
-module.exports = new Command({
-    name: "hunt",
-    description: "Hunt allien",
-
-    async run(interaction) {
+    async execute(interaction) {
         //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
         //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
         //[a] -3 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
@@ -78,7 +14,7 @@ module.exports = new Command({
         let user_missile_config = [[0, 1000, 0, "m1"], [60, 2000, 0, "m2"], [100, 4000, 0, "m3"], [150, 6000, 0, "m4"]];
         let user_hellstorm_config = [[0, 10000, 0, 0, "l1"], [50, 20000, 0, 0, "l2"], [100, 0, 12500, 0, "lS1"], [140, 0, 30000, 0, "lS2"]];
         // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
-        let user_stats = [1200, 180000,120000, 120000, 380, 0, 0.8, 30];
+        let user_stats = [1200, 180000, 120000, 120000, 380, 0, 0.8, 30];
         let enemy_stats = [1500, 250000, 150000, 310, 0, 0.8];
         await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
         await interaction.client.wait(1000);
@@ -155,12 +91,12 @@ module.exports = new Command({
             let missile_shield_damage = 0;
             let hellstorm_hp_damage = 0;
             let hellstorm_shield_damage = 0;
-            let hellstorm_shield_absorption = 0;        
+            let hellstorm_shield_absorption = 0;
 
             let threshold = 100 / alien_max_hp * alien_stats[1] + 100 / alien_max_shield * alien_stats[2];
 
             while (!has_laser_ammo || threshold <= laser[0]) {
-                if (!has_laser_ammo) 
+                if (!has_laser_ammo)
                     message_ammo += `\n- Laser (${laser[4]}) out of AMMO`;
                 laser_counter -= 1;
                 laser = user_laser_config[laser_counter];
@@ -168,7 +104,7 @@ module.exports = new Command({
             }
 
             while (!has_missile_ammo || threshold <= missile[0]) {
-                if (!has_missile_ammo) 
+                if (!has_missile_ammo)
                     message_ammo += `\n- Missile (${missile[3]}) out of AMMO`;
                 missile_counter -= 1;
                 missile = user_missile_config[missile_counter];
@@ -177,7 +113,7 @@ module.exports = new Command({
 
             if (can_use_hellstorm)
                 while (!has_hellstorm_ammo || threshold <= hellstorm[0]) {
-                    if (!has_hellstorm_ammo) 
+                    if (!has_hellstorm_ammo)
                         message_ammo += `\n- Hellstorm (${hellstorm[4]}) out of AMMO`;
                     hellstorm_counter -= 1;
                     hellstorm = user_hellstorm_config[hellstorm_counter];
@@ -366,11 +302,76 @@ module.exports = new Command({
         }
         buttonHandler(interaction, interaction.user.id, log_message);
     }
+}
 
-})
+const row = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('back')
+            //.setLabel('Beginning')
+            .setEmoji('755733114042449950')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('next')
+            //.setLabel('Ending')
+            .setEmoji('755733114537508894')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('download')
+            //.setLabel('Ending')
+            .setEmoji('📁')
+            .setStyle('SUCCESS'),
+        new MessageButton()
+            .setCustomId('end')
+            //.setLabel('Ending')
+            .setEmoji('🔚')
+            .setStyle('DANGER'),
 
-function buttonHandler(interaction, userID, log_message){
-    let maxIndex = log_message.length -1;
+    );
+
+const row1 = new MessageActionRow()
+    .addComponents(
+        new MessageSelectMenu()
+            .setCustomId('select')
+            .setPlaceholder('Select battle turn')
+            .addOptions([
+                {
+                    label: 'Turn 0',
+                    description: 'Return to the beginning',
+                    value: '0',
+                },
+                {
+                    label: '+ 5 turns',
+                    description: 'move forward by 5',
+                    value: '+5',
+                },
+                {
+                    label: '+ 10 turns',
+                    description: 'move forward by 10',
+                    value: '+10',
+                },
+                {
+                    label: '- 10 turns',
+                    description: 'move backward by 10',
+                    value: '-10',
+                },
+                {
+                    label: '- 5 turns',
+                    description: 'move backward by 5',
+                    value: '-5',
+                },
+                {
+                    label: 'Battle end',
+                    description: 'move to the end of the battle',
+                    value: 'end',
+                },
+            ]),
+    )
+
+
+
+function buttonHandler(interaction, userID, log_message) {
+    let maxIndex = log_message.length - 1;
     let index = maxIndex;
     let downloaded = false;
     const filter = i => i.user.id === userID;
@@ -379,24 +380,24 @@ function buttonHandler(interaction, userID, log_message){
 
     collector.on('collect', async i => {
         if (i.customId === 'back') {
-            collector.resetTimer({time: 10000});
-            if(index === 0)
+            collector.resetTimer({ time: 10000 });
+            if (index === 0)
                 index = maxIndex;
             else
                 index--;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else if (i.customId === 'next'){
-            collector.resetTimer({time: 10000});
-            if(index === maxIndex)
+        else if (i.customId === 'next') {
+            collector.resetTimer({ time: 10000 });
+            if (index === maxIndex)
                 index = 0;
             else
                 index++;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else if (i.customId === 'select'){   
-            collector.resetTimer({time: 10000});         
-            if(i.values[0] === "0")
+        else if (i.customId === 'select') {
+            collector.resetTimer({ time: 10000 });
+            if (i.values[0] === "0")
                 index = 0;
             else if (i.values[0] === "+5")
                 index += 5;
@@ -406,20 +407,20 @@ function buttonHandler(interaction, userID, log_message){
                 index -= 10;
             else if (i.values[0] === "-5")
                 index -= 5;
-            else 
+            else
                 index = maxIndex;
-            if(index > maxIndex)
+            if (index > maxIndex)
                 index -= maxIndex;
             else if (index < 0)
                 index += maxIndex;
             await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
-        else if (i.customId === 'download'){
-            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]});
+        else if (i.customId === 'download') {
+            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`] });
             downloaded = true;
             collector.stop("Download");
         }
-        else{
+        else {
             collector.stop("Ended");
         }
     });
@@ -427,13 +428,13 @@ function buttonHandler(interaction, userID, log_message){
     var fs = require('fs');
 
     var file = fs.createWriteStream(`./User_Log/${userID}.txt`);
-    file.on('error', function(err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
-    log_message.forEach(function(v) { file.write(v.join('\n\n ') + '\n'); });
+    file.on('error', function (err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
+    log_message.forEach(function (v) { file.write(v.join('\n\n ') + '\n'); });
     file.end();
 
-    collector.on('end', collected => { 
-        if(!downloaded)
-        interaction.editReply({components: []})
+    collector.on('end', collected => {
+        if (!downloaded)
+            interaction.editReply({ components: [] })
         //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
     });
 }
