@@ -12,17 +12,17 @@ module.exports = new Command({
             new MessageButton()
                 .setCustomId('Earth')
                 //.setLabel('Beginning')
-                .setEmoji(interaction.client.earthIcon)
+                .setEmoji("🌏")
                 .setStyle('SUCCESS'),
             new MessageButton()
                 .setCustomId('Moon')
                 //.setLabel('Ending')
-                .setEmoji(interaction.client.moonIcon)
+                .setEmoji("🌑")
                 .setStyle('SUCCESS'),
             new MessageButton()
                 .setCustomId('Mars')
                 //.setLabel('Ending')
-                .setEmoji(interaction.client.marsIcon)
+                .setEmoji("🍅")
                 .setStyle('SUCCESS'),                
             
         );
