@@ -1,7 +1,6 @@
-const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const { MessageActionRow, MessageButton, MessageEmbed} = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const Command = require('../Structures/Command.js');
-
+const errorLog = require('../Utility/logger').logger;
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('hunt')
@@ -9,300 +8,316 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            let [credits, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
+
+            let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+            let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
+            let user = await interaction.client.databaseSelcetData("SELECT * FROM users WHERE user_id = ?", [interaction.user.id]);
+            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user[0].map_id]);
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
             //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
-            //[a] -3 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
-            let user_laser_config = [[-3, 2, 0, 10000, "x2"], [-1, 1, 0, 10000, "x1"], [-3, 3, 0, 14900, "x3"], [-3, 4, 0, 14900, "x4"], [-3, 0, 2, 25000, "xS1"]];
-            let user_missile_config = [[0, 1000, 0, "m1"], [60, 2000, 0, "m2"], [100, 4000, 0, "m3"], [150, 6000, 0, "m4"]];
-            let user_hellstorm_config = [[0, 10000, 0, 0, "l1"], [50, 20000, 0, 0, "l2"], [100, 0, 12500, 0, "lS1"], [140, 0, 30000, 0, "lS2"]];
-            // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity
-            let user_stats = [1200, 180000, 120000, 120000, 380, 0, 0.8, 30];
-            let enemy_stats = [1500, 250000, 150000, 310, 0, 0.8];
+            //[a] -4 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
+            let userLaserConfig = [[huntConfiguration[0].x2, 2, 0, ammunition[0].x2_magazine, "x2"], [huntConfiguration[0].x1, 1, 0, ammunition[0].x1_magazine, "x1"], [huntConfiguration[0].x3, 3, 0, ammunition[0].x4_magazine, "x3"], [huntConfiguration[0].x4, 4, 0, ammunition[0].x4_magazine, "x4"], [huntConfiguration[0].xS1, 0, 2, ammunition[0].xS1_magazine, "xS1"]];
+            let userMissileConfig = [[huntConfiguration[0].m1, 1000, ammunition[0].m1_magazine, "m1"], [huntConfiguration[0].m2, 2000, ammunition[0].m2_magazine, "m2"], [huntConfiguration[0].m3, 4000, ammunition[0].m3_magazine, "m3"], [huntConfiguration[0].m4, 6000, ammunition[0].m4_magazine, "m4"]];
+            let userGellstormConfig = [[huntConfiguration[0].h1, 10000, 0, ammunition[0].h1_magazine, "h1"], [huntConfiguration[0].h2, 20000, 0, ammunition[0].h2_magazine, "h2"], [huntConfiguration[0].hS1, 0, 12500, ammunition[0].hS1_magazine, "hS1"], [huntConfiguration[0].hS2, 0, 30000, ammunition[0].hS2_magazine, "hS2"]];
+            // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity            
+            let userStats = [user[0].user_damage, user[0].user_hp, user[0].max_shield, user[0].user_shield, user[0].user_speed, user[0].user_penetration / 100, user[0].absorption_rate / 100, user[0].laser_quantity];
+
+            let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
             await interaction.client.wait(1000);
-            let alien_list = [enemy_stats.slice()];
+            let alienList = [enemyStats.slice()];
             //let message = "**Engaging Combat with XY**";
-            let message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
-            message += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
-            let message_damage = "";
-            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, "**Engaging Combat with XY**")] });
-            let log_message = [[message, "**Engaging Combat with XY**"]];
-            let message_ammo = "";
-            user_laser_config.push([-2, 0, 0, 1000000, "No AMMO"]);
-            user_laser_config = user_laser_config.sort(function (a, b) {
+            let message = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
+            message += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
+            let messageDamage = "";
+            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ${enemyStats[6]}**`)] });
+            let logMessage = [[message, `**Engaging Combat with ${enemyStats[6]}**`]];
+            let messageAmmo = "";
+            userLaserConfig.push([-4, 0, 0, 1000000, "No AMMO"]);
+            userLaserConfig = userLaserConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
-            let laser_counter = user_laser_config.length - 1;
-            user_missile_config.push([-2, 0, 100000, "No AMMO"]);
-            user_missile_config = user_missile_config.sort(function (a, b) {
+            let laserCounter = userLaserConfig.length - 1;
+            userMissileConfig.push([-4, 0, 100000, "No AMMO"]);
+            userMissileConfig = userMissileConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
-            let missile_counter = user_missile_config.length - 1;
-            user_hellstorm_config.push([-2, 0, 0, 100000, "No AMMO"]);
-            user_hellstorm_config = user_hellstorm_config.sort(function (a, b) {
+            let missileCounter = userMissileConfig.length - 1;
+            userGellstormConfig.push([-4, 0, 0, 100000, "No AMMO"]);
+            userGellstormConfig = userGellstormConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
-            let hellstorm_counter = user_hellstorm_config.length - 1;
+            let hellstorm_counter = userGellstormConfig.length - 1;
 
-            let missile_launch_after_turns = 3;
-            let laser = user_laser_config[laser_counter];
-            let missile = user_missile_config[missile_counter];
-            let hellstorm = user_hellstorm_config[hellstorm_counter];
-            let turn_counter = 0;
+            let missileLaunchAfterTurns = 3;
+            let laser = userLaserConfig[laserCounter];
+            let missile = userMissileConfig[missileCounter];
+            let hellstorm = userGellstormConfig[hellstorm_counter];
+            let turnCounter = 0;
 
-            let can_use_hellstorm = true;
-            let user_max_shield = user_stats[2];
-            let alien_max_hp = enemy_stats[1];
-            let alien_max_shield = enemy_stats[2];
+            let canUseHellstorm = true;
+            let userMaxShield = userStats[2];
+            let alienMaxHp = enemyStats[1];
+            let alienMaxShield = enemyStats[2];
 
-            let total_aliens_damage = enemy_stats[0];
+            let totalAliensDamage = enemyStats[0];
 
-            if (alien_max_hp + alien_max_shield < 12000 || alien_max_hp / user_stats[0] <= 7) {
-                can_use_hellstorm = false;
-                hellstorm = [-1, 0, 0, 100000, "Disabled"];
+            if (alienMaxHp + alienMaxShield < 12000 || alienMaxHp / userStats[0] <= 7) {
+                canUseHellstorm = false;
+                hellstorm = [0, 0, 0, 100000, "Disabled"];
             }
-            let minimum_accuracy_user = 80;
-            let minimum_accuracy_alien = 80;
+            let minimumAccuracyUser = 80;
+            let minimumAccuracyAlien = 80;
 
-            if (user_stats[4] > enemy_stats[3]) {
-                minimum_accuracy_user = 90 - (user_stats[4] - enemy_stats[3]) / 5;
-                minimum_accuracy_alien = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
+            if (userStats[4] > enemyStats[3]) {
+                minimumAccuracyUser = 90 - (userStats[4] - enemyStats[3]) / 5;
+                minimumAccuracyAlien = 85 + (enemyStats[3] - userStats[4]) / 2.5;
             }
-            else if (user_stats[4] == enemy_stats[3]) {
-                minimum_accuracy_user = 80;
-                minimum_accuracy_alien = 80;
+            else if (userStats[4] == enemyStats[3]) {
+                minimumAccuracyUser = 80;
+                minimumAccuracyAlien = 80;
             }
             else {
-                minimum_accuracy_user = 85 + (enemy_stats[3] - user_stats[4]) / 2.5;
-                minimum_accuracy_alien = 90 - (user_stats[4] - enemy_stats[3]) / 5;
+                minimumAccuracyUser = 85 + (enemyStats[3] - userStats[4]) / 2.5;
+                minimumAccuracyAlien = 90 - (userStats[4] - enemyStats[3]) / 5;
             }
-            while (user_stats[1] > 0 && alien_list.length > 0) {
-                let alien_stats = alien_list[0];
-                let accuracy_user = interaction.client.random(minimum_accuracy_user, 100) / 100;
-                let accuracy_alien = interaction.client.random(minimum_accuracy_alien, 100) / 100;
+            while (userStats[1] > 0 && alienList.length > 0) {
+                let alienStats = alienList[0];
+                let accuracyUser = interaction.client.random(minimumAccuracyUser, 100) / 100;
+                let accuracyAlien = interaction.client.random(minimumAccuracyAlien, 100) / 100;
                 //await wait(1000);
-                turn_counter += 1;
-                let has_laser_ammo = laser[3] / user_stats[7] >= 1;
-                let has_missile_ammo = missile[2] / 2 >= 1;
-                let has_hellstorm_ammo = hellstorm[3] / 5 >= 1;
+                turnCounter += 1;
+                let hasLaserAmmo = laser[3] / userStats[7] >= 1;
+                let hasMissileAmmo = missile[2] / 2 >= 1;
+                let hasHellstormAmmo = hellstorm[3] / 5 >= 1;
 
-                let laser_shield_absorption = 0;
-                let laser_shield_damage = 0;
-                let laser_hp_damage = 0;
-                let missile_hp_damage = 0;
-                let missile_shield_damage = 0;
-                let hellstorm_hp_damage = 0;
-                let hellstorm_shield_damage = 0;
-                let hellstorm_shield_absorption = 0;
+                let laserShieldAbsorption = 0;
+                let laserShieldDamage = 0;
+                let laserHpDamage = 0;
+                let missileHpDamage = 0;
+                let missileShieldDamage = 0;
+                let hellstormHpDamage = 0;
+                let hellstormShieldDamage = 0;
+                let hellstormShieldAbsorption = 0;
 
-                let threshold = 100 / alien_max_hp * alien_stats[1] + 100 / alien_max_shield * alien_stats[2];
+                let threshold = 100 / alienMaxHp * alienStats[1] + 100 / alienMaxShield * alienStats[2];
 
-                while (!has_laser_ammo || threshold <= laser[0]) {
-                    if (!has_laser_ammo)
-                        message_ammo += `\n- Laser (${laser[4]}) out of AMMO`;
-                    laser_counter -= 1;
-                    laser = user_laser_config[laser_counter];
-                    has_laser_ammo = laser[3] / user_stats[7] >= 1;
+                while (!hasLaserAmmo || threshold <= laser[0]) {
+                    if (!hasLaserAmmo)
+                        messageAmmo += `\n- Laser (${laser[4]}) out of AMMO`;
+                    laserCounter -= 1;
+                    laser = userLaserConfig[laserCounter];
+                    hasLaserAmmo = laser[3] / userStats[7] >= 1;
                 }
 
-                while (!has_missile_ammo || threshold <= missile[0]) {
-                    if (!has_missile_ammo)
-                        message_ammo += `\n- Missile (${missile[3]}) out of AMMO`;
-                    missile_counter -= 1;
-                    missile = user_missile_config[missile_counter];
-                    has_missile_ammo = missile[2] >= 1;
+                while (!hasMissileAmmo || threshold <= missile[0]) {
+                    if (!hasMissileAmmo)
+                        messageAmmo += `\n- Missile (${missile[3]}) out of AMMO`;
+                    missileCounter -= 1;
+                    missile = userMissileConfig[missileCounter];
+                    hasMissileAmmo = missile[2] >= 1;
                 }
 
-                if (can_use_hellstorm)
-                    while (!has_hellstorm_ammo || threshold <= hellstorm[0]) {
-                        if (!has_hellstorm_ammo)
-                            message_ammo += `\n- Hellstorm (${hellstorm[4]}) out of AMMO`;
+                if (canUseHellstorm)
+                    while (!hasHellstormAmmo || threshold <= hellstorm[0]) {
+                        if (!hasHellstormAmmo)
+                            messageAmmo += `\n- Hellstorm (${hellstorm[4]}) out of AMMO`;
                         hellstorm_counter -= 1;
-                        hellstorm = user_hellstorm_config[hellstorm_counter];
-                        has_hellstorm_ammo = hellstorm[3] / 5 >= 1;
+                        hellstorm = userGellstormConfig[hellstorm_counter];
+                        hasHellstormAmmo = hellstorm[3] / 5 >= 1;
                     }
 
-                if (alien_stats[2] > 0) {
-                    laser[3] -= user_stats[7];
-                    laser_shield_absorption = Math.trunc(laser[2] * user_stats[0] * accuracy_user);
-                    laser_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * laser[1] * user_stats[0] * accuracy_user);
-                    laser_hp_damage = Math.trunc(laser[1] * user_stats[0] * accuracy_user - laser_shield_damage);
-                    if (alien_stats[2] <= laser_shield_absorption) {
-                        user_stats[3] += alien_stats[2];
-                        laser_shield_absorption = Math.trunc(alien_stats[2] * accuracy_user);
-                        alien_stats[2] = 0;
-                        laser_hp_damage = laser[1] * user_stats[0];
+                if (alienStats[2] > 0) {
+                    laser[3] -= userStats[7];
+                    laserShieldAbsorption = Math.trunc(laser[2] * userStats[0] * accuracyUser);
+                    laserShieldDamage = Math.trunc((alienStats[5] - userStats[5]) * laser[1] * userStats[0] * accuracyUser);
+                    laserHpDamage = Math.trunc(laser[1] * userStats[0] * accuracyUser - laserShieldDamage);
+                    if (alienStats[2] <= laserShieldAbsorption) {
+                        userStats[3] += alienStats[2];
+                        laserShieldAbsorption = Math.trunc(alienStats[2] * accuracyUser);
+                        alienStats[2] = 0;
+                        laserHpDamage = laser[1] * userStats[0];
                     }
                     else {
-                        user_stats[3] += laser_shield_absorption;
-                        alien_stats[2] -= laser_shield_absorption;
-                        if (alien_stats[2] <= laser_shield_damage) {
-                            laser_hp_damage += laser_shield_damage - alien_stats[2];
-                            laser_shield_damage = alien_stats[2] + laser_shield_absorption;
-                            alien_stats[2] = 0;
+                        userStats[3] += laserShieldAbsorption;
+                        alienStats[2] -= laserShieldAbsorption;
+                        if (alienStats[2] <= laserShieldDamage) {
+                            laserHpDamage += laserShieldDamage - alienStats[2];
+                            laserShieldDamage = alienStats[2] + laserShieldAbsorption;
+                            alienStats[2] = 0;
                         }
                         else {
-                            alien_stats[2] -= laser_shield_damage;
-                            laser_shield_damage += laser_shield_absorption;
+                            alienStats[2] -= laserShieldDamage;
+                            laserShieldDamage += laserShieldAbsorption;
                         }
                     }
-                    alien_stats[1] -= laser_hp_damage;
-                    message_damage = `\n\`\`\`ini\n[Laser Damage (${laser[4]}): ${laser_hp_damage}/${laser_shield_damage}]`;
+                    alienStats[1] -= laserHpDamage;
+                    messageDamage = `\n\`\`\`ini\n[Laser Damage (${laser[4]}): ${laserHpDamage}/${laserShieldDamage}]`;
 
-                    if (turn_counter % missile_launch_after_turns == 0) {
+                    if (turnCounter % missileLaunchAfterTurns == 0) {
                         missile[2] -= 1;
-                        missile_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * missile[1] * accuracy_user);
-                        missile_hp_damage = Math.trunc(missile[1] * accuracy_user - missile_shield_damage);
-                        if (alien_stats[2] <= missile_shield_damage) {
-                            missile_hp_damage += missile_shield_damage - alien_stats[2];
-                            missile_shield_damage = alien_stats[2];
-                            alien_stats[2] = 0;
+                        missileShieldDamage = Math.trunc((alienStats[5] - userStats[5]) * missile[1] * accuracyUser);
+                        missileHpDamage = Math.trunc(missile[1] * accuracyUser - missileShieldDamage);
+                        if (alienStats[2] <= missileShieldDamage) {
+                            missileHpDamage += missileShieldDamage - alienStats[2];
+                            missileShieldDamage = alienStats[2];
+                            alienStats[2] = 0;
                         }
                         else
-                            alien_stats[2] -= missile_shield_damage;
-                        alien_stats[1] -= missile_hp_damage;
-                        message_damage += `\n[Missile Damage (${missile[3]}): ${missile_hp_damage}/${missile_shield_damage}]`;
+                            alienStats[2] -= missileShieldDamage;
+                        alienStats[1] -= missileHpDamage;
+                        messageDamage += `\n[Missile Damage (${missile[3]}): ${missileHpDamage}/${missileShieldDamage}]`;
                     }
-                    if (can_use_hellstorm && turn_counter % 6 == 0) {
+                    if (canUseHellstorm && turnCounter % 6 == 0) {
                         hellstorm[3] -= 5;
-                        hellstorm_shield_absorption = Math.trunc(hellstorm[2] * accuracy_user);
-                        hellstorm_shield_damage = Math.trunc((alien_stats[5] - user_stats[5]) * hellstorm[1] * accuracy_user);
-                        hellstorm_hp_damage = Math.trunc(hellstorm[1] * accuracy_user - hellstorm_shield_damage);
-                        if (alien_stats[2] <= hellstorm_shield_absorption) {
-                            user_stats[3] += alien_stats[2];
-                            hellstorm_shield_absorption = alien_stats[2];
-                            alien_stats[2] = 0;
-                            hellstorm_hp_damage = hellstorm[1];
+                        hellstormShieldAbsorption = Math.trunc(hellstorm[2] * accuracyUser);
+                        hellstormShieldDamage = Math.trunc((alienStats[5] - userStats[5]) * hellstorm[1] * accuracyUser);
+                        hellstormHpDamage = Math.trunc(hellstorm[1] * accuracyUser - hellstormShieldDamage);
+                        if (alienStats[2] <= hellstormShieldAbsorption) {
+                            userStats[3] += alienStats[2];
+                            hellstormShieldAbsorption = alienStats[2];
+                            alienStats[2] = 0;
+                            hellstormHpDamage = hellstorm[1];
                         }
                         else {
-                            user_stats[3] += hellstorm_shield_absorption;
-                            alien_stats[2] -= hellstorm_shield_absorption;
-                            if (alien_stats[2] <= hellstorm_shield_damage) {
-                                hellstorm_hp_damage += hellstorm_shield_damage - alien_stats[2];
-                                hellstorm_shield_damage = alien_stats[2] + hellstorm_shield_absorption;
-                                alien_stats[2] = 0;
+                            userStats[3] += hellstormShieldAbsorption;
+                            alienStats[2] -= hellstormShieldAbsorption;
+                            if (alienStats[2] <= hellstormShieldDamage) {
+                                hellstormHpDamage += hellstormShieldDamage - alienStats[2];
+                                hellstormShieldDamage = alienStats[2] + hellstormShieldAbsorption;
+                                alienStats[2] = 0;
                             }
                             else {
-                                alien_stats[2] -= hellstorm_shield_damage;
-                                hellstorm_shield_damage += hellstorm_shield_absorption;
+                                alienStats[2] -= hellstormShieldDamage;
+                                hellstormShieldDamage += hellstormShieldAbsorption;
                             }
                         }
-                        alien_stats[1] -= hellstorm_hp_damage;
-                        message_damage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstorm_hp_damage}/${hellstorm_shield_damage}]`;
+                        alienStats[1] -= hellstormHpDamage;
+                        messageDamage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstormHpDamage}/${hellstormShieldDamage}]`;
                     }
                 }
                 else {
-                    laser[3] -= user_stats[7];
-                    laser_shield_absorption = 0;
-                    laser_hp_damage = Math.trunc(laser[1] * user_stats[0] * accuracy_user);
-                    alien_stats[1] -= laser_hp_damage;
-                    message_damage = `\n\`\`\`ini\n[Laser Damage (${laser[4]}): ${laser_hp_damage}/0]`;
+                    laser[3] -= userStats[7];
+                    laserShieldAbsorption = 0;
+                    laserHpDamage = Math.trunc(laser[1] * userStats[0] * accuracyUser);
+                    alienStats[1] -= laserHpDamage;
+                    messageDamage = `\n\`\`\`ini\n[Laser Damage (${laser[4]}): ${laserHpDamage}/0]`;
 
-                    if (turn_counter % missile_launch_after_turns == 0) {
+                    if (turnCounter % missileLaunchAfterTurns == 0) {
                         missile[2] -= 1;
-                        missile_hp_damage = Math.trunc(missile[1] * accuracy_user);
-                        alien_stats[1] -= missile_hp_damage;
-                        message_damage += `\n[Missile Damage (${missile[3]}): ${missile_hp_damage}/0]`;
+                        missileHpDamage = Math.trunc(missile[1] * accuracyUser);
+                        alienStats[1] -= missileHpDamage;
+                        messageDamage += `\n[Missile Damage (${missile[3]}): ${missileHpDamage}/0]`;
                     }
 
-                    if (turn_counter % 6 == 0 && can_use_hellstorm) {
+                    if (turnCounter % 6 == 0 && canUseHellstorm) {
                         hellstorm[3] -= 5;
-                        hellstorm_shield_absorption = 0;
-                        hellstorm_hp_damage = Math.trunc(hellstorm[1] * accuracy_user);
-                        alien_stats[1] -= hellstorm_hp_damage;
-                        message_damage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstorm_hp_damage}/0]`;
+                        hellstormShieldAbsorption = 0;
+                        hellstormHpDamage = Math.trunc(hellstorm[1] * accuracyUser);
+                        alienStats[1] -= hellstormHpDamage;
+                        messageDamage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstormHpDamage}/0]`;
                     }
                 }
-                let alien_shield_damage = Math.trunc((user_stats[6] - alien_stats[4]) * total_aliens_damage * accuracy_alien);
-                let alien_hp_damage = Math.trunc(total_aliens_damage * accuracy_alien - alien_shield_damage);
-                if (user_stats[3] <= alien_shield_damage) {
-                    alien_hp_damage += alien_shield_damage - user_stats[3];
-                    alien_shield_damage = user_stats[3];
-                    user_stats[3] = 0;
+                let alien_shield_damage = Math.trunc((userStats[6] - alienStats[4]) * totalAliensDamage * accuracyAlien);
+                let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);
+                if (userStats[3] <= alien_shield_damage) {
+                    alien_hp_damage += alien_shield_damage - userStats[3];
+                    alien_shield_damage = userStats[3];
+                    userStats[3] = 0;
                 }
                 else
-                    user_stats[3] -= alien_shield_damage;
-                user_stats[1] -= alien_hp_damage;
-                if (user_stats[3] > user_max_shield)
-                    user_stats[3] = user_max_shield;
+                    userStats[3] -= alien_shield_damage;
+                userStats[1] -= alien_hp_damage;
+                if (userStats[3] > userMaxShield)
+                    userStats[3] = userMaxShield;
 
-                if (alien_stats[1] <= 0) {
-                    alien_stats[1] = 0;
-                    total_aliens_damage -= alien_stats[0];
-                    alien_list.shift();
+                if (alienStats[1] <= 0) {
+                    alienStats[1] = 0;
+                    totalAliensDamage -= alienStats[0];
+                    credits += alienStats[7];
+                    units += alienStats[8];
+                    exp_reward += alienStats[9];
+                    honor += alienStats[10];
+                    resources += alienStats[11];
+                    
+                    alienList.shift();                    
 
-                    if (alien_list.length > 0) {
-                        alien_max_hp = alien_list[0][1];
-                        alien_max_shield = alien_list[0][2];
+                    if (alienList.length > 0) {
+                        alienMaxHp = alienList[0][1];
+                        alienMaxShield = alienList[0][2];
 
-                        laser_counter = user_laser_config.length - 1;
-                        missile_counter = user_missile_config.length - 1;
-                        hellstorm_counter = user_hellstorm_config.length - 1;
-                        laser = user_laser_config[laser_counter];
-                        missile = user_missile_config[missile_counter];
-                        hellstorm = user_hellstorm_config[hellstorm_counter];
+                        laserCounter = userLaserConfig.length - 1;
+                        missileCounter = userMissileConfig.length - 1;
+                        hellstorm_counter = userGellstormConfig.length - 1;
+                        laser = userLaserConfig[laserCounter];
+                        missile = userMissileConfig[missileCounter];
+                        hellstorm = userGellstormConfig[hellstorm_counter];
 
-                        if (alien_max_hp + alien_max_shield < 12000 || alien_max_hp / user_stats[0] <= 7) {
-                            can_use_hellstorm = false;
+                        if (alienMaxHp + alienMaxShield < 12000 || alienMaxHp / userStats[0] <= 7) {
+                            canUseHellstorm = false;
                             hellstorm = [-1, 0, 0, 100000, "Disabled"];
                         }
                         else
-                            can_use_hellstorm = true;
+                            canUseHellstorm = true;
 
-                        if (user_stats[4] > alien_stats[3]) {
-                            minimum_accuracy_user = 90 - (user_stats[4] - alien_stats[3]) / 5;
-                            minimum_accuracy_alien = 85 + (alien_stats[3] - user_stats[4]) / 2.5;
+                        if (userStats[4] > alienStats[3]) {
+                            minimumAccuracyUser = 90 - (userStats[4] - alienStats[3]) / 5;
+                            minimumAccuracyAlien = 85 + (alienStats[3] - userStats[4]) / 2.5;
                         }
-                        else if (user_stats[4] == alien_stats[3]) {
-                            minimum_accuracy_user = 80;
-                            minimum_accuracy_alien = 80;
+                        else if (userStats[4] == alienStats[3]) {
+                            minimumAccuracyUser = 80;
+                            minimumAccuracyAlien = 80;
                         }
                         else {
-                            minimum_accuracy_user = 85 + (alien_stats[3] - user_stats[4]) / 2.5;
-                            minimum_accuracy_alien = 90 - (user_stats[4] - alien_stats[3]) / 5;
+                            minimumAccuracyUser = 85 + (alienStats[3] - userStats[4]) / 2.5;
+                            minimumAccuracyAlien = 90 - (userStats[4] - alienStats[3]) / 5;
                         }
                     }
                 }
-                new_threshold = 100 / alien_max_hp * alien_stats[1] + 100 / alien_max_shield * alien_stats[2];
-                let chance_to_encounter_new_alien = (threshold - new_threshold - (turn_counter - 1) * 40) / 2;
+                new_threshold = 100 / alienMaxHp * alienStats[1] + 100 / alienMaxShield * alienStats[2];
+                let chance_to_encounter_new_alien = (threshold - new_threshold - (turnCounter - 1) * 40) / 2;
 
-                if (chance_to_encounter_new_alien < 10 && turn_counter <= 11)
+                if (chance_to_encounter_new_alien < 10 && turnCounter <= 11)
                     chance_to_encounter_new_alien = 10;
 
                 //message = `\n__Turn ${turn_counter}__`;
-                message = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
-                message += `\n**Alien Info**:\nHP: **${alien_stats[1]}**\tShield: **${alien_stats[2]}**`;
+                message = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
+                message += `\n**Alien Info**:\nHP: **${alienStats[1]}**\tShield: **${alienStats[2]}**`;
 
-                message_damage += `\`\`\`**\`\`\`diff\n+ ${laser_shield_absorption + hellstorm_shield_absorption} Shield Absorbed`;
-                message_damage += `\`\`\`**\`\`\`css\n[Alien Damage: ${alien_hp_damage}/${alien_shield_damage}]\`\`\``;
-                log_message.push([message + message_damage, `\n__Turn ${turn_counter}__`]);
+                messageDamage += `\`\`\`**\`\`\`diff\n+ ${laserShieldAbsorption + hellstormShieldAbsorption} Shield Absorbed`;
+                messageDamage += `\`\`\`**\`\`\`css\n[Alien Damage: ${alien_hp_damage}/${alien_shield_damage}]\`\`\``;
+                logMessage.push([message + messageDamage, `\n__Turn ${turnCounter}__`]);
                 //await interaction.editReply({ embeds: [blueEmbed(message + message_damage, `\n__Turn ${turn_counter}__`)] });
 
                 if (interaction.client.random(1, 95) <= chance_to_encounter_new_alien) {
                     await interaction.client.wait(1000);
-                    alien_list.push(enemy_stats.slice());
-                    total_aliens_damage += enemy_stats[0];
+                    let newAlien = await getAlien(aliens);
+                    alienList.push(newAlien.slice());
+                    totalAliensDamage += newAlien[0];
                     await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
-                    log_message[turn_counter][0] += "\n\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`";
+                    logMessage[turnCounter][0] += `\n\`\`\`json\n\"${newAlien[6]} joined the fight !!!\"\n\`\`\``;
                     await interaction.client.wait(1000);
-                    let message_update = `\n**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
-                    message_update += `\n**Alien Info**:\nHP: **${enemy_stats[1]}**\tShield: **${enemy_stats[2]}**`;
+                    let message_update = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
+                    message_update += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
                     await interaction.editReply({ embeds: [interaction.client.blueEmbed(message_update, "**Engaging Combat with XY**")] });
                 }
             }
             //await wait(1000);
-            let message_user_info = `**Battle ended after ${turn_counter} turns**\n`;
-            message_user_info += `**Your Info**:\nHP: **${user_stats[1]}**\tShield: **${user_stats[3]}**`;
-            await interaction.client.wait(1000 + 5 * turn_counter);
-            if (user_stats[1] > 0) {
-                await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!")], components: [row, row1] });
-                log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "VICTORY!"]);
+            let message_user_info = `**Battle ended after ${turnCounter} turns**\n`;
+            message_user_info += `**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
+            await interaction.client.wait(1000 + 5 * turnCounter);
+            let messageReward = "\`\`\`yaml\n" + `EXP:\nCredits:\nUnits:\nHonor:`+ " \`\`\`";
+            let messageRewardValue = "\`\`\`yaml\n" + `${exp_reward}\n${credits}\n${units}\n${honor}`+ " \`\`\`";
+            if (userStats[1] > 0) {
+                await interaction.editReply({ embeds: [greenEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`", "VICTORY!", messageReward, messageRewardValue)], components: [row, row1] });
+                logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`", "VICTORY!", messageReward, messageRewardValue]);
             }
             else {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!")], components: [row, row1] });
-                log_message.push([message_user_info + "\n\`\`\`diff\n" + message_ammo + " \`\`\`", "DEFEAT! Ship is destroyed!"]);
+                await interaction.editReply({ embeds: [redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`", "DEFEAT! Ship is destroyed!", messageReward, messageRewardValue)], components: [row, row1] });
+                logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`", "DEFEAT! Ship is destroyed!", messageReward, messageRewardValue]);
             }
-            buttonHandler(interaction, interaction.user.id, log_message);
+            buttonHandler(interaction, interaction.user.id, logMessage);
         }
         catch (error) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
@@ -315,9 +330,19 @@ module.exports = {
 const row = new MessageActionRow()
     .addComponents(
         new MessageButton()
+            .setCustomId('end')
+            //.setLabel('Ending')
+            .setEmoji('🔚')
+            .setStyle('DANGER'),
+        new MessageButton()
             .setCustomId('back')
             //.setLabel('Beginning')
             .setEmoji('755733114042449950')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('space')
+            //.setLabel('Beginning')
+            .setEmoji('⏹️')
             .setStyle('PRIMARY'),
         new MessageButton()
             .setCustomId('next')
@@ -329,15 +354,40 @@ const row = new MessageActionRow()
             //.setLabel('Ending')
             .setEmoji('📁')
             .setStyle('SUCCESS'),
-        new MessageButton()
-            .setCustomId('end')
-            //.setLabel('Ending')
-            .setEmoji('🔚')
-            .setStyle('DANGER'),
 
     );
 
 const row1 = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('-10')
+            //.setLabel('Ending')
+            .setEmoji('⏪')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('-5')
+            //.setLabel('Beginning')
+            .setEmoji('◀️')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('0')
+            //.setLabel('Beginning')
+            .setEmoji('⏺️')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('+5')
+            //.setLabel('Ending')
+            .setEmoji('▶️')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('+10')
+            //.setLabel('Ending')
+            .setEmoji('⏩')
+            .setStyle('PRIMARY'),
+
+    );
+
+/*const row1 = new MessageActionRow()
     .addComponents(
         new MessageSelectMenu()
             .setCustomId('select')
@@ -374,7 +424,7 @@ const row1 = new MessageActionRow()
                     value: 'end',
                 },
             ]),
-    )
+    )*/
 
 
 function buttonHandler(interaction, userID, log_message) {
@@ -383,52 +433,52 @@ function buttonHandler(interaction, userID, log_message) {
     let downloaded = false;
     const filter = i => i.user.id === userID;
 
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
 
     collector.on('collect', async i => {
-        if (i.customId === 'back') {
-            collector.resetTimer({ time: 10000 });
-            if (index === 0)
-                index = maxIndex;
-            else
-                index--;
-            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
-        }
-        else if (i.customId === 'next') {
-            collector.resetTimer({ time: 10000 });
-            if (index === maxIndex)
-                index = 0;
-            else
-                index++;
-            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
-        }
-        else if (i.customId === 'select') {
-            collector.resetTimer({ time: 10000 });
-            if (i.values[0] === "0")
-                index = 0;
-            else if (i.values[0] === "+5")
-                index += 5;
-            else if (i.values[0] === "+10")
-                index += 10;
-            else if (i.values[0] === "-10")
-                index -= 10;
-            else if (i.values[0] === "-5")
-                index -= 5;
-            else
-                index = maxIndex;
-            if (index > maxIndex)
-                index -= maxIndex;
-            else if (index < 0)
-                index += maxIndex;
-            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
-        }
-        else if (i.customId === 'download') {
+        collector.resetTimer({ time: 10000 });
+        if (i.customId === 'download') {
             await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`] });
             downloaded = true;
             collector.stop("Download");
         }
+        else if (i.customId === 'back') {
+            index--;
+        }
+        else if (i.customId === 'next') {
+            index++;
+        }
+
+        else if (i.customId === '-10') {
+            index -= 10;
+        }
+        else if (i.customId === '-5') {
+            index -= 5;
+        }
+        else if (i.customId === '0') {
+            index = 0;
+        }
+        else if (i.customId === '+5') {
+            index += 5;
+        }
+        else if (i.customId === '+10') {
+            index += 10;
+        }
         else {
-            collector.stop("Ended");
+            await i.update({});
+            return;
+        }
+        while (index < 0) {
+            index += maxIndex + 1;
+        }
+        while (index > maxIndex) {
+            index -= maxIndex + 1;
+        }
+        if (!downloaded){            
+            if (index === maxIndex) {
+                await i.update({ embeds: [blueEmbed(log_message[index][0], log_message[index][1], log_message[index][2], log_message[index][3]) ], components: [row, row1] });
+            }else
+            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
         }
     });
 
@@ -444,4 +494,54 @@ function buttonHandler(interaction, userID, log_message) {
             interaction.editReply({ components: [] })
         //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
     });
+}
+
+async function getAlien(aliens) {
+    let indexList = [];
+    let index = 0;
+    for (index; index < aliens.length; index++) {
+        indexList = indexList.concat(Array(aliens[index].encounter_chance).fill(index));
+    }
+    indexList = indexList.sort(() => Math.random() - 0.5)
+    index = indexList[Math.floor(Math.random() * (100))];
+    return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration/100, aliens[index].shield_absortion_rate/100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, aliens[index].resources];
+}
+
+function greenEmbed(text, tittle, fieldOne, fieldTwo) {
+    const textToEmbed = new MessageEmbed()
+        .setColor('0x14e188')
+        .setTitle(tittle)
+        .setURL('https://obelisk.club/')
+        .setDescription(text)
+        .addFields(
+            { name: '**__You Earned:__**', value: fieldOne, inline: true },
+            { name: '\u200B', value: fieldTwo, inline: true },
+        )
+    return textToEmbed
+}
+
+function redEmbed(text, tittle, fieldOne, fieldTwo) {
+    const textToEmbed = new MessageEmbed()
+        .setColor('0xe1143d')
+        .setTitle(tittle)
+        .setURL('https://obelisk.club/')
+        .setDescription(text)
+        .addFields(
+            { name: '**__You Earned:__**', value: fieldOne, inline: true },
+            { name: '\u200B', value: fieldTwo, inline: true },
+        )
+    return textToEmbed
+}
+
+function blueEmbed(text, tittle, fieldOne, fieldTwo) {
+    const textToEmbed = new MessageEmbed()
+        .setColor('0x009dff')
+        .setTitle(tittle)
+        .setURL('https://obelisk.club/')
+        .setDescription(text)
+        .addFields(
+            { name: '**__You Earned:__**', value: fieldOne, inline: true },
+            { name: '\u200B', value: fieldTwo, inline: true },
+        )
+    return textToEmbed
 }
