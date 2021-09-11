@@ -5,16 +5,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
     try {
         if (!interaction.isCommand()) return;
 
-<<<<<<< HEAD
-        const command = client.commands.find(cmd => cmd.name == interaction.commandName);
+        const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
 
-        command.run(interaction);
+        command.execute(interaction);
     } catch (error) {
-        console.error(error)
+        await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+        errorLog.error(error.message, { 'command_name': interaction.commandName });
     }
-=======
-	const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
-
-    command.execute(interaction);
->>>>>>> test
 });
