@@ -10,7 +10,6 @@ module.exports = {
         .setDescription('Configure laser, missiles and hellstorm in hunt!'),
 
     async execute(interaction) {
-
         let [hp, sh, setting_row] = await buttonHandler();
         let message = "Select which ammunition you want to configure";
         await interaction.reply({ embeds: [interaction.client.yellowEmbed(message)], ephemeral: true, components: [hp, sh, row, setting_row] });

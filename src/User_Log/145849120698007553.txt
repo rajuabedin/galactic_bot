@@ -1,50 +1,58 @@
 
 **Your Info**:
-HP: **180000**	Shield: **120000**
+HP: **179710**	Shield: **120000**
 **Alien Info**:
 HP: **800**	Shield: **400**
 
  **Engaging Combat with L1**
 
 **Your Info**:
-HP: **179998**	Shield: **120000**
+HP: **179707**	Shield: **120000**
 **Alien Info**:
 HP: **800**	Shield: **0**
 ```ini
 [Laser Damage (xS1): 0/0]```**```diff
-+ 348 Shield Absorbed```**```css
-[Alien Damage: 2/7]```
++ 304 Shield Absorbed```**```css
+[Alien Damage: 3/10]```
+```json
+"L1 joined the fight !!!"
+```
 
  
 __Turn 1__
 
 **Your Info**:
-HP: **179996**	Shield: **119992**
+HP: **179699**	Shield: **119969**
 **Alien Info**:
 HP: **0**	Shield: **0**
 ```ini
-[Laser Damage (x4): 3696/0]```**```diff
+[Laser Damage (x4): 4464/0]```**```diff
 + 0 Shield Absorbed```**```css
-[Alien Damage: 2/8]```
+[Alien Damage: 8/31]```
 
  
 __Turn 2__
-**Battle ended after 2 turns**
+
 **Your Info**:
-HP: **179996**	Shield: **119992**
+HP: **179695**	Shield: **120000**
+**Alien Info**:
+HP: **0**	Shield: **0**
+```ini
+[Laser Damage (xS1): 0/0]
+[Missile Damage (m4): 5160/0]```**```diff
++ 344 Shield Absorbed```**```css
+[Alien Damage: 4/15]```
+
+ 
+__Turn 3__
+**Battle ended after 3 turns**
+**Your Info**:
+HP: **179695**	Shield: **120000**
 ```diff
- ```
+ ``````yaml
+EXP      :  800
+Credits  :  800
+Units    :  8
+Honor    :  12 ```
 
  VICTORY!
-
- ```yaml
-EXP:
-Credits:
-Units:
-Honor: ```
-
- ```yaml
-400
-400
-4
-6 ```
