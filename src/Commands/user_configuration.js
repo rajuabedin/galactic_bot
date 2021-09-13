@@ -14,10 +14,10 @@ module.exports = {
         let message = "Select which ammunition you want to configure";
         await interaction.reply({ embeds: [interaction.client.yellowEmbed(message)], ephemeral: true, components: [hp, sh, row, setting_row] });
         message = null;
-        const filter = i => i.user.id === interaction.user.id;
+        let timestamp = Math.floor(interaction.createdTimestamp /1000);
+        const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
 
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
-
         collector.on('collect', async i => {
             collector.resetTimer({ time: 10000 });
             if (i.customId === "select") {
@@ -218,3 +218,5 @@ const row = new MessageActionRow()
                 },
             ]),
     )
+
+    

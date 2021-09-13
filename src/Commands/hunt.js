@@ -437,7 +437,8 @@ function buttonHandler(interaction, userID, log_message) {
     let maxIndex = log_message.length - 1;
     let index = maxIndex;
     let downloaded = false;
-    const filter = i => i.user.id === userID;
+    let timestamp = Math.floor(interaction.createdTimestamp /1000);
+    const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
 

@@ -17,7 +17,8 @@ module.exports = {
         else
             interaction.reply("You already posses an account");
 
-        const filter = i => i.user.id === interaction.user.id;
+        let timestamp = Math.floor(interaction.createdTimestamp /1000);
+        const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
 
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 

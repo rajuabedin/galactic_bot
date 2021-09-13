@@ -24,7 +24,8 @@ module.exports = {
         let stored_message = `**Data returned to:**\nEquipped ${equipped_laser_length + 1}/${max_equipable_laser} lasers\n ${message}`;
         await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, equipped_laser_message)], ephemeral: true, components: [row, row1, row2, row3, row4] });
 
-        const filter = i => i.user.id === userID;
+        let timestamp = Math.floor(interaction.createdTimestamp /1000);
+        const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
 
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
 
@@ -69,7 +70,7 @@ module.exports = {
             }
             else {
                 await i.update({ embeds: [interaction.client.redEmbed(message, "**ERROR! Max capacity reached!**")], components: [row, row1, row2, row3, row4] });
-            }
+            }            
         });
 
         collector.on('end', collected => {

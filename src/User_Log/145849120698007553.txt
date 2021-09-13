@@ -1,19 +1,19 @@
 
 **Your Info**:
-HP: **179710**	Shield: **120000**
+HP: **180000**	Shield: **120000**
 **Alien Info**:
 HP: **800**	Shield: **400**
 
  **Engaging Combat with L1**
 
 **Your Info**:
-HP: **179707**	Shield: **120000**
+HP: **179997**	Shield: **120000**
 **Alien Info**:
 HP: **800**	Shield: **0**
 ```ini
 [Laser Damage (xS1): 0/0]```**```diff
 + 304 Shield Absorbed```**```css
-[Alien Damage: 3/10]```
+[Alien Damage: 3/11]```
 ```json
 "L1 joined the fight !!!"
 ```
@@ -22,32 +22,32 @@ HP: **800**	Shield: **0**
 __Turn 1__
 
 **Your Info**:
-HP: **179699**	Shield: **119969**
+HP: **179990**	Shield: **119975**
 **Alien Info**:
 HP: **0**	Shield: **0**
 ```ini
-[Laser Damage (x4): 4464/0]```**```diff
+[Laser Damage (x4): 4272/0]```**```diff
 + 0 Shield Absorbed```**```css
-[Alien Damage: 8/31]```
+[Alien Damage: 7/25]```
 
  
 __Turn 2__
 
 **Your Info**:
-HP: **179695**	Shield: **120000**
+HP: **179988**	Shield: **120000**
 **Alien Info**:
 HP: **0**	Shield: **0**
 ```ini
 [Laser Damage (xS1): 0/0]
-[Missile Damage (m4): 5160/0]```**```diff
-+ 344 Shield Absorbed```**```css
-[Alien Damage: 4/15]```
+[Missile Damage (m4): 4740/0]```**```diff
++ 316 Shield Absorbed```**```css
+[Alien Damage: 2/10]```
 
  
 __Turn 3__
 **Battle ended after 3 turns**
 **Your Info**:
-HP: **179695**	Shield: **120000**
+HP: **179988**	Shield: **120000**
 ```diff
  ``````yaml
 EXP      :  800
