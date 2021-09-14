@@ -1,7 +1,6 @@
-const Command = require('../Structures/Command.js');
 const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
-
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const errorLog = require('../Utility/logger').logger;
 
 
 module.exports = {
@@ -10,50 +9,68 @@ module.exports = {
         .setDescription('Configure laser, missiles and hellstorm in hunt!'),
 
     async execute(interaction) {
-        let [hp, sh, setting_row] = await buttonHandler();
-        let message = "Select which ammunition you want to configure";
-        await interaction.reply({ embeds: [interaction.client.yellowEmbed(message)], ephemeral: true, components: [hp, sh, row, setting_row] });
-        message = null;
-        let timestamp = Math.floor(interaction.createdTimestamp /1000);
-        const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
+        try {
 
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
-        collector.on('collect', async i => {
-            collector.resetTimer({ time: 10000 });
-            if (i.customId === "select") {
-                message = `**${i.values[0]}:`;
-                [hp, sh, setting_row] = await buttonHandler();
-                await i.update({ embeds: [interaction.client.yellowEmbed(message + "     HP: 0     SH: 0**")], components: [hp, sh, row, setting_row] });
+            let timestamp = Math.floor(interaction.createdTimestamp / 1000);
+            const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
+
+            let user = await interaction.client.getUserAccount(interaction.user.id);
+            if (typeof user === 'undefined') {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
+                return;
             }
-            else if (message !== null) {
-                let index = parseInt(i.customId);
-                if (i.customId === "disable") {
-                    [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
-                    await i.update({ embeds: [interaction.client.redEmbed(message + ` is DISABLED**`)], components: [hp, sh, row, setting_row] });
-                }
-                else if (i.customId === "empty") {
+            let [hp, sh, setting_row] = await buttonHandler();
+            let message = "Select which ammunition you want to configure";
+            await interaction.reply({ embeds: [interaction.client.yellowEmbed(message)], ephemeral: true, components: [hp, sh, row, setting_row] });
+            message = null;
+
+            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
+            collector.on('collect', async i => {
+                collector.resetTimer({ time: 10000 });
+                if (i.customId === "select") {
+                    message = `**${i.values[0]}:`;
                     [hp, sh, setting_row] = await buttonHandler();
                     await i.update({ embeds: [interaction.client.yellowEmbed(message + "     HP: 0     SH: 0**")], components: [hp, sh, row, setting_row] });
                 }
-                else if (index < 5) {
-                    [hp, sh, setting_row] = await buttonHandler(index);
-                    await i.update({ embeds: [interaction.client.greenEmbed(message + `     HP: ${index * 20 + 20}     SH: 0**`)], components: [hp, sh, row, setting_row] });
-                }
-                else if (index < 10) {
-                    [hp, sh, setting_row] = await buttonHandler(index);
-                    await i.update({ embeds: [interaction.client.blueEmbed(message + `     HP: 100     SH: ${(index - 4) * 20}**`)], components: [hp, sh, row, setting_row] });
+                else if (message !== null) {
+                    let index = parseInt(i.customId);
+                    if (i.customId === "disable") {
+                        [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
+                        await i.update({ embeds: [interaction.client.redEmbed(message + ` is DISABLED**`)], components: [hp, sh, row, setting_row] });
+                    }
+                    else if (i.customId === "empty") {
+                        [hp, sh, setting_row] = await buttonHandler();
+                        await i.update({ embeds: [interaction.client.yellowEmbed(message + "     HP: 0     SH: 0**")], components: [hp, sh, row, setting_row] });
+                    }
+                    else if (index < 5) {
+                        [hp, sh, setting_row] = await buttonHandler(index);
+                        await i.update({ embeds: [interaction.client.greenEmbed(message + `     HP: ${index * 20 + 20}     SH: 0**`)], components: [hp, sh, row, setting_row] });
+                    }
+                    else if (index < 10) {
+                        [hp, sh, setting_row] = await buttonHandler(index);
+                        await i.update({ embeds: [interaction.client.blueEmbed(message + `     HP: 100     SH: ${(index - 4) * 20}**`)], components: [hp, sh, row, setting_row] });
+                    }
+                    else
+                        await i.update({});
                 }
                 else
                     await i.update({});
+                if (i.customId === "discard")
+                    collector.stop("Ended");
+            });
+            collector.on('end', collected => {
+                interaction.editReply({ components: [] });
+            });
+        }
+        catch (error) {
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
             }
-            else
-                await i.update({});
-            if (i.customId === "discard")
-                collector.stop("Ended");
-        });
-        collector.on('end', collected => {
-            interaction.editReply({ components: [] });
-        });
+
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
+        }
     }
 }
 
@@ -219,4 +236,3 @@ const row = new MessageActionRow()
             ]),
     )
 
-    

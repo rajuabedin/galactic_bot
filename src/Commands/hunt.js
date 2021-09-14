@@ -1,6 +1,8 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
+
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('hunt')
@@ -8,12 +10,21 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            let user = await interaction.client.getUserAccount(interaction.user.id);
+            await interaction.client.databaseEditData("UPDATE users SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
+            if (typeof user === 'undefined') {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
+                return;
+            }
+            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(user.last_hunt)) / 1000);
+            if (elapsedTimeFromHunt < 60) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
+                return;
+            }
             let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
-
             let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
             let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
-            let user = await interaction.client.databaseSelcetData("SELECT * FROM users WHERE user_id = ?", [interaction.user.id]);
-            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user[0].map_id]);
+            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user.map_id]);
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
             //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
             //[a] -4 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
@@ -22,10 +33,10 @@ module.exports = {
             let userHellstormConfig = [[huntConfiguration[0].h1, 10000, 0, ammunition[0].h1_magazine, "h1"], [huntConfiguration[0].h2, 20000, 0, ammunition[0].h2_magazine, "h2"], [huntConfiguration[0].hS1, 0, 12500, ammunition[0].hS1_magazine, "hS1"], [huntConfiguration[0].hS2, 0, 30000, ammunition[0].hS2_magazine, "hS2"]];
 
             // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity            
-            let user_hp = Math.trunc(user[0].user_hp + user[0].repair_rate * (Date.now() - Date.parse(user[0].last_hunt)) / 60000)
-            if (user_hp > user[0].max_hp)
-                user_hp = user[0].max_hp;
-            let userStats = [user[0].user_damage, user_hp, user[0].max_shield, user[0].user_shield, user[0].user_speed, user[0].user_penetration / 100, user[0].absorption_rate / 100, user[0].laser_quantity];
+            let user_hp = Math.trunc(user.user_hp + user.repair_rate * (Date.now() - Date.parse(user.last_repair)) / 60000)
+            if (user_hp > user.max_hp)
+                user_hp = user.max_hp;
+            let userStats = [user.user_damage, user_hp, user.max_shield, user.user_shield, user.user_speed, user.user_penetration / 100, user.absorption_rate / 100, user.laser_quantity];
 
             let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
@@ -291,7 +302,7 @@ module.exports = {
 
                 messageDamage += `\`\`\`**\`\`\`diff\n+ ${laserShieldAbsorption + hellstormShieldAbsorption} Shield Absorbed`;
                 messageDamage += `\`\`\`**\`\`\`css\n[Alien Damage: ${alien_hp_damage}/${alien_shield_damage}]\`\`\``;
-                logMessage.push([message + messageDamage, `\n__Turn ${turnCounter}__`]);
+                logMessage.push([message + messageDamage, `__Turn ${turnCounter}__`]);
                 //await interaction.editReply({ embeds: [blueEmbed(message + message_damage, `\n__Turn ${turn_counter}__`)] });
 
                 if (interaction.client.random(1, 95) <= chance_to_encounter_new_alien) {
@@ -320,23 +331,28 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row, row1] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
             }
-            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, last_hunt = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], new Date(), interaction.user.id]);
+            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, last_repair = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], new Date(), interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
             buttonHandler(interaction, interaction.user.id, logMessage);
         }
         catch (error) {
-            await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            }
+
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
 
     }
 }
 
-const row = new MessageActionRow()
+const row1 = new MessageActionRow()
     .addComponents(
         new MessageButton()
-            .setCustomId('end')
+            .setCustomId('close')
             //.setLabel('Ending')
             .setEmoji('🔚')
             .setStyle('DANGER'),
@@ -347,8 +363,8 @@ const row = new MessageActionRow()
             .setStyle('PRIMARY'),
         new MessageButton()
             .setCustomId('space')
-            //.setLabel('Beginning')
-            .setEmoji('⏹️')
+            .setLabel('       ')
+            //.setEmoji('⏹️')
             .setStyle('PRIMARY'),
         new MessageButton()
             .setCustomId('next')
@@ -363,7 +379,7 @@ const row = new MessageActionRow()
 
     );
 
-const row1 = new MessageActionRow()
+const row = new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setCustomId('-10')
@@ -433,12 +449,12 @@ const row1 = new MessageActionRow()
     )*/
 
 
-function buttonHandler(interaction, userID, log_message) {
-    let maxIndex = log_message.length - 1;
+function buttonHandler(interaction, userID, logMessage) {
+    let maxIndex = logMessage.length - 1;
     let index = maxIndex;
     let downloaded = false;
-    let timestamp = Math.floor(interaction.createdTimestamp /1000);
-    const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
+    let timestamp = Math.floor(interaction.createdTimestamp / 10000);
+    const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 10000) === timestamp;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
 
@@ -471,6 +487,9 @@ function buttonHandler(interaction, userID, log_message) {
         else if (i.customId === '+10') {
             index += 10;
         }
+        else if (i.customId === 'close') {
+            collector.stop("Ended");
+        }
         else {
             await i.update({});
             return;
@@ -481,16 +500,23 @@ function buttonHandler(interaction, userID, log_message) {
         while (index > maxIndex) {
             index -= maxIndex + 1;
         }
-        if (!downloaded) {
-            await i.update({ embeds: [interaction.client.blueEmbed(log_message[index][0], log_message[index][1])], components: [row, row1] });
+        if (!downloaded && i.customId !== 'close') {
+            await i.update({ embeds: [interaction.client.blueEmbed(logMessage[index][0], logMessage[index][1])], components: [row, row1] });
         }
     });
 
     var fs = require('fs');
 
-    var file = fs.createWriteStream(`./User_Log/${userID}.txt`);
+    var file = fs.createWriteStream(`./Last_hunt_log/${userID}.txt`);
     file.on('error', function (err) { console.log(`ERROR on creating log FILE for user: ${userID}`) });
-    log_message.forEach(function (v) { file.write(v.join('\n\n ') + '\n'); });
+
+    let newLogMessage = logMessage.slice();
+    for (index in logMessage) {
+        let message1 = logMessage[index][1].replaceAll("*", "").replaceAll("diff", "").replaceAll("`", "").replaceAll("ini", "").replaceAll("json", "").replaceAll("css", "").replaceAll("yaml", "").replaceAll("_", "");
+        let message2 = logMessage[index][0].replaceAll("*", "").replaceAll("diff", "").replaceAll("`", "").replaceAll("ini", "").replaceAll("json", "").replaceAll("css", "").replaceAll("yaml", "") + "\n\n----------------------------------\n";
+        newLogMessage[index] = [message1, message2];
+    }
+    newLogMessage.forEach(function (v) { file.write(v.join('\n\n ') + '\n'); });
     file.end();
 
     collector.on('end', collected => {
