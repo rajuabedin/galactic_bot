@@ -9,11 +9,9 @@ module.exports = {
         .setDescription('Configure laser, missiles and hellstorm in hunt!'),
 
     async execute(interaction) {
-        try {
-
-            let timestamp = Math.floor(interaction.createdTimestamp / 1000);
-            const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
+        try {            
             let discarded = false;
+
 
             let user = await interaction.client.getUserAccount(interaction.user.id);
             if (typeof user === 'undefined') {
@@ -28,6 +26,8 @@ module.exports = {
             let ammoValue = 0;
             await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, "**Select which ammunition you want to configure**")], ephemeral: true, components: [hp, sh, row, setting_row] });
             message = null;
+
+            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
             collector.on('collect', async i => {

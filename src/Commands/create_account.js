@@ -11,9 +11,6 @@ module.exports = {
     async execute(interaction) {
         try {
 
-            let timestamp = Math.floor(interaction.createdTimestamp / 1000);
-            const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
-
             let user = await interaction.client.getUserAccount(interaction.user.id);
             if (typeof user === 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
@@ -26,6 +23,7 @@ module.exports = {
             else
                 interaction.reply("You already posses an account");
 
+            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
             collector.on('collect', async i => {

@@ -453,15 +453,15 @@ function buttonHandler(interaction, userID, logMessage) {
     let maxIndex = logMessage.length - 1;
     let index = maxIndex;
     let downloaded = false;
-    let timestamp = Math.floor(interaction.createdTimestamp / 10000);
-    const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 10000) === timestamp;
+    
+    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
         if (i.customId === 'download') {
-            await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`] });
+            await interaction.editReply({ embeds: [], components: [], files: [`./Last_hunt_log/${userID}.txt`] });
             downloaded = true;
             collector.stop("Download");
         }
