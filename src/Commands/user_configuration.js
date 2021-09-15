@@ -13,53 +13,106 @@ module.exports = {
 
             let timestamp = Math.floor(interaction.createdTimestamp / 1000);
             const filter = i => i.user.id === interaction.user.id && Math.floor(i.message.createdTimestamp / 1000) === timestamp;
+            let discarded = false;
 
             let user = await interaction.client.getUserAccount(interaction.user.id);
             if (typeof user === 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
                 return;
             }
+            let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
             let [hp, sh, setting_row] = await buttonHandler();
-            let message = "Select which ammunition you want to configure";
-            await interaction.reply({ embeds: [interaction.client.yellowEmbed(message)], ephemeral: true, components: [hp, sh, row, setting_row] });
+            let message = "\n\n*Select __untill__ when to use selected ammo\nDisable: won't use selected ammo\nEmpty: will use the selected ammo till enemy dies*";
+            let storedMessage = "";
+            let selectedAmmo = "";
+            let ammoValue = 0;
+            await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, "**Select which ammunition you want to configure**")], ephemeral: true, components: [hp, sh, row, setting_row] });
             message = null;
 
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
+            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
             collector.on('collect', async i => {
-                collector.resetTimer({ time: 10000 });
+                let index = 0;
+                collector.resetTimer({ time: 15000 });
                 if (i.customId === "select") {
-                    message = `**${i.values[0]}:`;
-                    [hp, sh, setting_row] = await buttonHandler();
-                    await i.update({ embeds: [interaction.client.yellowEmbed(message + "     HP: 0     SH: 0**")], components: [hp, sh, row, setting_row] });
+                    message = `**${i.values[0]}:**`;
+                    selectedAmmo = `${i.values[0]}`;
+                    //console.log(huntConfiguration[0][i.values[0]]);
+                    index = (huntConfiguration[0][i.values[0]]) / 20;
+                    //console.log(index);
+                    if (index < 0) {
+                        [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
+                        await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
+                        storedMessage = `**(${i.values[0]})**` + "\t**DISABLED**";
+                    }
+                    else if (index === 0) {
+                        [hp, sh, setting_row] = await buttonHandler();
+                        await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, setting_row] });
+                        storedMessage = `**(${i.values[0]})**` + "\t**HP: 0 || SH: 0**";
+                    }
+                    else if (index < 5) {
+                        [hp, sh, setting_row] = await buttonHandler(index - 1);
+                        await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${index * 20} || SH: 0**`, message)], components: [hp, sh, row, setting_row] });
+                        storedMessage = `**(${i.values[0]})**` + `\t**HP: ${index * 20} || SH: 0**`;
+                    }
+                    else {
+                        [hp, sh, setting_row] = await buttonHandler(index - 1);
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${(index - 5) * 20}**`, message)], components: [hp, sh, row, setting_row] });
+                        storedMessage = `**(${i.values[0]})**` + `\t**HP: 100 || SH: ${(index - 5) * 20}**`;
+                    }
                 }
                 else if (message !== null) {
-                    let index = parseInt(i.customId);
-                    if (i.customId === "disable") {
+                    index = parseInt(i.customId);
+                    if (i.customId === "save") {
+                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
+                        if (ammoValue < 0) {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tDISABLED**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        }
+                        else if (ammoValue < 101) {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: ${ammoValue} || SH: 0**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        }
+                        else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: 100 || SH: ${ammoValue - 80}**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        }
+                    }
+                    else if (i.customId === "disable") {
                         [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
-                        await i.update({ embeds: [interaction.client.redEmbed(message + ` is DISABLED**`)], components: [hp, sh, row, setting_row] });
+                        await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
+                        ammoValue = -2;
                     }
                     else if (i.customId === "empty") {
                         [hp, sh, setting_row] = await buttonHandler();
-                        await i.update({ embeds: [interaction.client.yellowEmbed(message + "     HP: 0     SH: 0**")], components: [hp, sh, row, setting_row] });
+                        await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, setting_row] });
+                        ammoValue = 0;
                     }
                     else if (index < 5) {
                         [hp, sh, setting_row] = await buttonHandler(index);
-                        await i.update({ embeds: [interaction.client.greenEmbed(message + `     HP: ${index * 20 + 20}     SH: 0**`)], components: [hp, sh, row, setting_row] });
+                        ammoValue = (index + 1) * 20
+                        await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${ammoValue} || SH: 0**`, message)], components: [hp, sh, row, setting_row] });
                     }
                     else if (index < 10) {
                         [hp, sh, setting_row] = await buttonHandler(index);
-                        await i.update({ embeds: [interaction.client.blueEmbed(message + `     HP: 100     SH: ${(index - 4) * 20}**`)], components: [hp, sh, row, setting_row] });
+                        ammoValue = (index + 1) * 20
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${ammoValue - 100}**`, message)], components: [hp, sh, row, setting_row] });
+                    }
+                    else if (i.customId === "discard") {
+                        discarded = true;
+                        await i.update({ embeds: [interaction.client.redEmbed(storedMessage, "**Restored to previous state**")], components: [] });
+                        collector.stop("Ended");
                     }
                     else
                         await i.update({});
                 }
+                else if (i.customId === "discard") {
+                    discarded = true;
+                    await i.update({ embeds: [interaction.client.redEmbed("\n*Aborted by user*", "**Interaction aborted**")], components: [] });
+                    collector.stop("Ended");
+                }
                 else
                     await i.update({});
-                if (i.customId === "discard")
-                    collector.stop("Ended");
             });
             collector.on('end', collected => {
-                interaction.editReply({ components: [] });
+                if (!discarded)
+                    interaction.editReply({ embeds: [interaction.client.redEmbed("**Interaction time out**")], components: [] });
             });
         }
         catch (error) {
@@ -189,9 +242,9 @@ const row = new MessageActionRow()
                     value: 'x4',
                 },
                 {
-                    label: 'lS1',
-                    description: 'Use laser lS1 utill... ',
-                    value: 'lS1',
+                    label: 'xS1',
+                    description: 'Use laser xS1 utill... ',
+                    value: 'xS1',
                 },
                 {
                     label: 'm1',

@@ -27,7 +27,7 @@ module.exports = {
             let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user.map_id]);
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
             //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
-            //[a] -4 <= DISABLED, -2 <= ALL LASER NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
+            //[a] -3 <= DISABLED, -2 <= NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
             let userLaserConfig = [[huntConfiguration[0].x2, 2, 0, ammunition[0].x2_magazine, "x2"], [huntConfiguration[0].x1, 1, 0, ammunition[0].x1_magazine, "x1"], [huntConfiguration[0].x3, 3, 0, ammunition[0].x4_magazine, "x3"], [huntConfiguration[0].x4, 4, 0, ammunition[0].x4_magazine, "x4"], [huntConfiguration[0].xS1, 0, 2, ammunition[0].xS1_magazine, "xS1"]];
             let userMissileConfig = [[huntConfiguration[0].m1, 1000, ammunition[0].m1_magazine, "m1"], [huntConfiguration[0].m2, 2000, ammunition[0].m2_magazine, "m2"], [huntConfiguration[0].m3, 4000, ammunition[0].m3_magazine, "m3"], [huntConfiguration[0].m4, 6000, ammunition[0].m4_magazine, "m4"]];
             let userHellstormConfig = [[huntConfiguration[0].h1, 10000, 0, ammunition[0].h1_magazine, "h1"], [huntConfiguration[0].h2, 20000, 0, ammunition[0].h2_magazine, "h2"], [huntConfiguration[0].hS1, 0, 12500, ammunition[0].hS1_magazine, "hS1"], [huntConfiguration[0].hS2, 0, 30000, ammunition[0].hS2_magazine, "hS2"]];
@@ -49,17 +49,17 @@ module.exports = {
             await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ${enemyStats[6]}**`)] });
             let logMessage = [[message, `**Engaging Combat with ${enemyStats[6]}**`]];
             let messageAmmo = "";
-            userLaserConfig.push([-4, 0, 0, 1000000, "No AMMO"]);
+            userLaserConfig.push([-2, 0, 0, 1000000, "No AMMO"]);
             userLaserConfig = userLaserConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
             let laserCounter = userLaserConfig.length - 1;
-            userMissileConfig.push([-4, 0, 100000, "No AMMO"]);
+            userMissileConfig.push([-2, 0, 100000, "No AMMO"]);
             userMissileConfig = userMissileConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
             let missileCounter = userMissileConfig.length - 1;
-            userHellstormConfig.push([-4, 0, 0, 100000, "No AMMO"]);
+            userHellstormConfig.push([-2, 0, 0, 100000, "No AMMO"]);
             userHellstormConfig = userHellstormConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
@@ -456,10 +456,10 @@ function buttonHandler(interaction, userID, logMessage) {
     let timestamp = Math.floor(interaction.createdTimestamp / 10000);
     const filter = i => i.user.id === userID && Math.floor(i.message.createdTimestamp / 10000) === timestamp;
 
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 10000 });
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
-        collector.resetTimer({ time: 10000 });
+        collector.resetTimer({ time: 15000 });
         if (i.customId === 'download') {
             await interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`] });
             downloaded = true;
