@@ -18,7 +18,7 @@ module.exports = {
             await interaction.reply({ embeds: [exampleEmbed] });
         } catch (error) {
             await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
-            errorLog.warn(error.message, { 'command_name': interaction.commandName });
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     }
 }

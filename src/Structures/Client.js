@@ -100,6 +100,23 @@ class Client extends Discord.Client {
         return this.languages[language][word];
     }
 
+    /**
+     * 
+     * @param {String} text 
+     * @param {String} tittle 
+     * @param {Discord.User} user 
+     * @param {String} footer 
+     * @returns 
+     */
+    bluePagesEmbed(text, tittle = "", user, footer) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x009dff')
+            .setAuthor(tittle, user.avatarURL())
+            .setDescription(text)
+            .setFooter(footer)
+        return textToEmbed
+    }
+
     blueEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0x009dff')
