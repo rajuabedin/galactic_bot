@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('Configure laser, missiles and hellstorm in hunt!'),
 
     async execute(interaction) {
-        try {            
+        try {
             let discarded = false;
 
 
@@ -29,10 +29,10 @@ module.exports = {
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 20000 });
             collector.on('collect', async i => {
                 let index = 0;
-                collector.resetTimer({ time: 15000 });
+                collector.resetTimer({ time: 20000 });
                 if (i.customId === "select") {
                     message = `**${i.values[0]}:**`;
                     selectedAmmo = `${i.values[0]}`;
@@ -184,7 +184,7 @@ async function buttonHandler(selected_index = -1, button_styile = "SECONDARY") {
                 .setStyle("DANGER"),
             new MessageButton()
                 .setCustomId("disable")
-                .setEmoji("✖️")
+                .setEmoji("887979580013563914")
                 .setStyle("PRIMARY"),
             new MessageButton()
                 .setCustomId("21")
@@ -192,7 +192,7 @@ async function buttonHandler(selected_index = -1, button_styile = "SECONDARY") {
                 .setStyle("SECONDARY"),
             new MessageButton()
                 .setCustomId("empty")
-                .setEmoji("🗑️")
+                .setEmoji("887979579854168075")
                 .setStyle("PRIMARY"),
             new MessageButton()
                 .setCustomId("save")

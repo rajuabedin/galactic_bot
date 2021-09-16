@@ -9,22 +9,23 @@ module.exports = {
         .setDescription('Hunt Allien!'),
 
     async execute(interaction) {
-        try {
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            await interaction.client.databaseEditData("UPDATE users SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
+        //try {
+            let user = await interaction.client.getUserAccount(interaction.user.id);        
+            let userCd = await interaction.client.databaseSelcetData("SELECT * FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             if (typeof user === 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
                 return;
             }
-            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(user.last_hunt)) / 1000);
+            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
                 return;
             }
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
             let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
             let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
-            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user.map_id]);
+            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user.map_id]);            
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
             //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
             //[a] -3 <= DISABLED, -2 <= NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
@@ -32,11 +33,12 @@ module.exports = {
             let userMissileConfig = [[huntConfiguration[0].m1, 1000, ammunition[0].m1_magazine, "m1"], [huntConfiguration[0].m2, 2000, ammunition[0].m2_magazine, "m2"], [huntConfiguration[0].m3, 4000, ammunition[0].m3_magazine, "m3"], [huntConfiguration[0].m4, 6000, ammunition[0].m4_magazine, "m4"]];
             let userHellstormConfig = [[huntConfiguration[0].h1, 10000, 0, ammunition[0].h1_magazine, "h1"], [huntConfiguration[0].h2, 20000, 0, ammunition[0].h2_magazine, "h2"], [huntConfiguration[0].hS1, 0, 12500, ammunition[0].hS1_magazine, "hS1"], [huntConfiguration[0].hS2, 0, 30000, ammunition[0].hS2_magazine, "hS2"]];
 
-            // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity            
-            let user_hp = Math.trunc(user.user_hp + user.repair_rate * (Date.now() - Date.parse(user.last_repair)) / 60000)
-            if (user_hp > user.max_hp)
-                user_hp = user.max_hp;
-            let userStats = [user.user_damage, user_hp, user.max_shield, user.user_shield, user.user_speed, user.user_penetration / 100, user.absorption_rate / 100, user.laser_quantity];
+            // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity   
+            let userHp = Math.trunc(user.user_hp + user.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+            if (userHp > user.max_hp)
+                userHp = user.max_hp;
+            let userStats = [user.user_damage, userHp, user.max_shield, user.user_shield, user.user_speed, user.user_penetration / 100, user.absorption_rate / 100, user.laser_quantity];
+            
 
             let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
@@ -324,18 +326,19 @@ module.exports = {
             await interaction.client.wait(1000 + 5 * turnCounter);
             let messageReward = "\`\`\`yaml\n" + `EXP      :  ${exp_reward}\nCredits  :  ${credit}\nUnits    :  ${units}\nHonor    :  ${honor}` + " \`\`\`";
             if (userStats[1] > 0) {
-                await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!")], components: [row, row1] });
+                await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!")], components: [row] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!"]);
             }
             else {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row, row1] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
             }
-            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, last_repair = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], new Date(), interaction.user.id]);
+            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], interaction.user.id]);
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
             buttonHandler(interaction, interaction.user.id, logMessage);
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
@@ -344,42 +347,32 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
 
     }
 }
 
-const row1 = new MessageActionRow()
+const row = new MessageActionRow()
     .addComponents(
-        new MessageButton()
-            .setCustomId('close')
-            //.setLabel('Ending')
-            .setEmoji('🔚')
-            .setStyle('DANGER'),
         new MessageButton()
             .setCustomId('back')
             //.setLabel('Beginning')
-            .setEmoji('755733114042449950')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('space')
-            .setLabel('       ')
-            //.setEmoji('⏹️')
+            .setEmoji('887811358509379594')
             .setStyle('PRIMARY'),
         new MessageButton()
             .setCustomId('next')
             //.setLabel('Ending')
-            .setEmoji('755733114537508894')
+            .setEmoji('887811358438064158')
             .setStyle('PRIMARY'),
         new MessageButton()
             .setCustomId('download')
             //.setLabel('Ending')
-            .setEmoji('📁')
+            .setEmoji('887979579619295284')
             .setStyle('SUCCESS'),
 
     );
 
-const row = new MessageActionRow()
+/*const row = new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setCustomId('-10')
@@ -409,7 +402,7 @@ const row = new MessageActionRow()
 
     );
 
-/*const row1 = new MessageActionRow()
+const row1 = new MessageActionRow()
     .addComponents(
         new MessageSelectMenu()
             .setCustomId('select')
@@ -471,37 +464,18 @@ function buttonHandler(interaction, userID, logMessage) {
         else if (i.customId === 'next') {
             index++;
         }
-
-        else if (i.customId === '-10') {
-            index -= 10;
-        }
-        else if (i.customId === '-5') {
-            index -= 5;
-        }
-        else if (i.customId === '0') {
-            index = 0;
-        }
-        else if (i.customId === '+5') {
-            index += 5;
-        }
-        else if (i.customId === '+10') {
-            index += 10;
-        }
-        else if (i.customId === 'close') {
-            collector.stop("Ended");
-        }
         else {
             await i.update({});
             return;
         }
-        while (index < 0) {
+        if (index < 0) {
             index += maxIndex + 1;
         }
-        while (index > maxIndex) {
+        if (index > maxIndex) {
             index -= maxIndex + 1;
         }
-        if (!downloaded && i.customId !== 'close') {
-            await i.update({ embeds: [interaction.client.blueEmbed(logMessage[index][0], logMessage[index][1])], components: [row, row1] });
+        if (!downloaded) {
+            await i.update({ embeds: [interaction.client.blueEmbed(logMessage[index][0], logMessage[index][1])]});
         }
     });
 
