@@ -348,7 +348,7 @@ const row4 = new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setCustomId("discard")
-            .setEmoji("🔚")
+            .setEmoji("887979580013563914")
             .setStyle("DANGER"),
         new MessageButton()
             .setCustomId("20")
@@ -364,7 +364,7 @@ const row4 = new MessageActionRow()
             .setStyle("PRIMARY"),
         new MessageButton()
             .setCustomId("save")
-            .setEmoji("💾")
+            .setEmoji("888579708114059334")
             .setStyle("SUCCESS"),
     );
 
