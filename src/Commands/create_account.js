@@ -11,24 +11,33 @@ module.exports = {
     async execute(interaction) {
         try {
 
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            if (typeof user === 'undefined') {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
-                return;
-            }
             var userInfo = await interaction.client.getUserAccount(interaction.user.id);
+            let tutorialCounter = 0;
             if (typeof userInfo === 'undefined') {
-                interaction.reply({ embeds: [interaction.client.yellowEmbed("Which firm would you like to create an account on?")], ephemeral: true, components: [firm] });
+                interaction.reply({ embeds: [interaction.client.yellowEmbed("Which firm would you like to create an account on?")], components: [firm] });
+            }
+            else if (userInfo.tutorial_counter >= 10) {
+                interaction.reply("You already posses an account");
+                return
             }
             else
-                interaction.reply("You already posses an account");
+                tutorialCounter = userInfo.tutorial_counter;
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
             collector.on('collect', async i => {
-                await i.update({ embeds: [interaction.client.greenEmbed(`You have selected ${i.component.customId}`)], components: [] });
-                collector.stop("Selected Firm");
+                if (tutorialCounter === 0) {
+                    tutorialCounter++;                    
+                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm) VALUES (?, ?)`, [interaction.user.id, i.component.customId]);
+                    await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id) VALUES (?)`, [interaction.user.id]);
+                    await i.update({ embeds: [interaction.client.greenEmbed(`**You have selected ${i.component.customId}.**\n*You were rewarded with 1000 (x1) laser ammunition and 10000 crediits.*`,"TUTORIAL phase 1")], components: [] });
+                }
+
+                //collector.stop("Selected Firm");
             });
 
             collector.on('end', collected => {

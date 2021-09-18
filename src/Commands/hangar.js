@@ -112,7 +112,7 @@ module.exports = {
                     }
                     totalDamage = Math.floor(totalDamage)
                     await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [totalDamage, interaction.user.id]);
-                    await interaction.client.databaseEditData(`UPDATE users SET user_damage = ? WHERE user_id = ?`, [totalDamage, interaction.user.id]);
+                    await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlenght, interaction.user.id]);
                     //Send data to database
                 }
                 else if (interaction.options.getSubcommand() === 'shield') {

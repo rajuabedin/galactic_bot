@@ -77,7 +77,7 @@ module.exports = {
                     else if (i.customId === "disable") {
                         [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
                         await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
-                        ammoValue = -2;
+                        ammoValue = -3;
                     }
                     else if (i.customId === "empty") {
                         [hp, sh, setting_row] = await buttonHandler();
