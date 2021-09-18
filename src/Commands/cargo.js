@@ -26,7 +26,7 @@ module.exports = {
                 var items = [];
                 var embed;
                 var count = 0;
-                var itemsPerPage = 2;
+                var itemsPerPage = 3;
                 var currentData = "";
 
                 if (searchItem === null) {
