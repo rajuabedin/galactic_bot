@@ -4,11 +4,11 @@ const errorLog = require('../Utility/logger').logger;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('inventory')
-        .setDescription('To check your inventory!')
+        .setName('cargo')
+        .setDescription('To check what you have in your cargo!')
         .addStringOption(option =>
             option.setName('search')
-                .setDescription('Enter the item you want to search')
+                .setDescription('Enter the mineral you want to search')
                 .setRequired(false)),
 
     async execute(interaction) {
@@ -18,13 +18,9 @@ module.exports = {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
             }
 
-            var user_lasers = await interaction.client.databaseSelcetData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);
-            var user_shields = await interaction.client.databaseSelcetData("SELECT user_shields.shield_model as item_name, user_shields.level, user_shields.equipped, shields_info.sell_price, shields_info.description from user_shields INNER JOIN shields_info on user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? ORDER BY user_shields.shield_model", [interaction.user.id]);
-            var user_engines = await interaction.client.databaseSelcetData("SELECT user_engines.engine_model as item_name, user_engines.level, user_engines.equipped, engines_info.sell_price, engines_info.description from user_engines INNER JOIN engines_info on user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? ORDER BY user_engines.engine_model", [interaction.user.id]);
-
-            var user_inventory = user_lasers.concat(user_shields).concat(user_engines);
+            var user_inventory = await interaction.client.databaseSelcetData("SELECT user_inventory.user_id, user_inventory.item_id, user_inventory.quantity,items_info.item_name, items_info.description, items_info.sell_price FROM user_inventory INNER join items_info on user_inventory.item_id = items_info.item_id WHERE user_inventory.user_id = ? ORDER by items_info.item_id ASC", [interaction.user.id]);
             if (user_inventory === undefined || user_inventory.length == 0) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed("Your Inventory is empty!")] });
+                return await interaction.reply({ embeds: [interaction.client.redEmbed("Your cargo is empty!")] });
             } else {
                 var searchItem = interaction.options.getString('search')
                 var items = [];
@@ -36,9 +32,8 @@ module.exports = {
                 if (searchItem === null) {
                     await user_inventory.forEach((item, index) => {
                         count++;
-                        currentData += "`LVL " + item.level + "` " + `**${item.item_name} [<:coin2:784486506051010561> ${item.sell_price}]** ${(item.equipped == '1') ? '<a:equipped:888574837746987098>' : ''}\n${item.description}\n`;
+                        currentData += "`ID " + item.item_id + "` " + `**${item.item_name}  [<:coin2:784486506051010561> ${item.sell_price}]**\n${item.description} - **${item.quantity}**\n`;
                         if (count === itemsPerPage) {
-
                             items.push(currentData);
                             count = 0;
                             currentData = "";
@@ -48,7 +43,7 @@ module.exports = {
                     await user_inventory.forEach((item, index) => {
                         if (item.item_name.toLowerCase().includes(searchItem.toLowerCase()) || item.description.toLowerCase().includes(searchItem.toLowerCase())) {
                             count++;
-                            currentData += "`LVL " + item.level + "` " + `**${item.item_name} [<:coin2:784486506051010561> ${item.sell_price}]** ${(item.equipped == '1') ? '<a:equipped:888574837746987098>' : ''}\n${item.description}\n`;
+                            currentData += "`ID " + item.item_id + "` " + `**${item.item_name}  [<:coin2:784486506051010561> ${item.sell_price}]**\n${item.description} - **${item.quantity}**\n`;
                             if (count === itemsPerPage) {
                                 items.push(currentData);
                                 count = 0;
@@ -64,10 +59,11 @@ module.exports = {
 
                 var maxPages = items.length;
 
+
                 if (items == "") {
                     embed = interaction.client.redEmbed("Item not found!");
                 } else {
-                    embed = interaction.client.bluePagesEmbed(items[0], "INVENTORY", interaction.user, `Page 1 of ${maxPages}`);
+                    embed = interaction.client.bluePagesEmbed(items[0], "CARGO", interaction.user, `Page 1 of ${maxPages}`);
                 }
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
@@ -127,7 +123,7 @@ function buttonHandler(interaction, inventoryData) {
         if (index > maxIndex) {
             index -= maxIndex + 1;
         }
-        await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], "INVENTORY", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
+        await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], "CARGO", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
         embed = interaction.client;
     });
 
