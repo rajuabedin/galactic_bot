@@ -15,10 +15,19 @@ module.exports = {
         if (typeof user === 'undefined') {
             await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
             return;
-        }  
+        }
 
-        let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [user.map_id]);
-        if (typeof aliens[0] === 'undefined'){
+        let mapId = 1;
+        if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) <= 0 && user.next_map_id !== 1){
+            mapId = user.next_map_id;
+            await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
+        }
+        else
+            mapId = user.map_id;
+
+
+        let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
+        if (typeof aliens[0] === 'undefined') {
             await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial**", "ERROR, unknown map!")] });
             return;
         }
@@ -29,12 +38,13 @@ module.exports = {
             return;
         }
 
+
         let expRequirement = await interaction.client.databaseSelcetData("SELECT * FROM level WHERE level = ?", [user.level]);
         expRequirement = expRequirement[0].exp_to_lvl_up;
         await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
         let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
         let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
-        let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);        
+        let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
         //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
         //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
         //[a] -3 <= DISABLED, -2 <= NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
