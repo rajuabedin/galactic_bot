@@ -21,7 +21,7 @@ module.exports = {
                 .setDescription('Edit engines on ship')),
 
     async execute(interaction) {
-        //try {
+        try {
         let user = await interaction.client.getUserAccount(interaction.user.id);
         if (typeof user === 'undefined') {
             await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
@@ -145,7 +145,7 @@ module.exports = {
                 discardedMessage = false;
                 collector.stop("Discarded");
             }
-            else if (i.component.label === "          " || i.component.label === "            ") {
+            else if (!i.component.label.trim()) {
                 await i.update({});
             }
             else if (i.component.style === "PRIMARY") {
@@ -179,7 +179,7 @@ module.exports = {
                 interaction.editReply({ components: [] })
             //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
         });
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
@@ -188,7 +188,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
     }
 }
 
