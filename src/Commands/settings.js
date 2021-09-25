@@ -1,0 +1,58 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const errorLog = require('../Utility/logger').logger;
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('settings')
+        .setDescription('Bot settings for the server!')
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('channel')
+                .setDescription('Edit channels access')
+                .addStringOption(option =>
+                    option
+                        .setName('option')
+                        .setDescription('Select an option [ lock - unlock - add - remove ]')
+                        .setRequired(true)
+                        .addChoice('lock', 'lock')
+                        .addChoice('unlock', 'unlock')
+                        .addChoice('add', 'add')
+                        .addChoice('remove', 'remove'))
+                .addChannelOption(option =>
+                    option
+                        .setName('channel')
+                        .setDescription('Select the channel')
+                        .setRequired(true))),
+
+    async execute(interaction) {
+        try {
+            const maxChannels = 10
+            // check if its a channel
+            if (!interaction.options.getChannel('channel').type || interaction.options.getChannel('channel').type != 'GUILD_TEXT') return await interaction.reply({ embeds: [interaction.client.redEmbed("Please specify a channel.", "Error!!")] });
+            // check if its a valid option
+            if (!(['lock', 'unlock', 'add', 'remove'].includes(interaction.options.getString('option').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct option.", "Error!!")] });
+            if (interaction.options.getString('option').toLowerCase() === "add") {
+                var serverSettings = await interaction.client.databaseSelcetData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+                var allowedList = JSON.parse(serverSettings[0].allowed_channels);
+                if (allowedList.length === maxChannels) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Max capacity reached! You can only add ${maxChannels} channels`)] })
+
+                allowedList.append(interaction.options.getChannel('channel').id);
+                await interaction.client.databaseEditData(`update server_settings SET allowed_channels = JSON_SET(${JSON.stringify(allowedList)}) where server_id = ${interaction.guildId}`);
+            }
+            await interaction.reply(interaction.options.getChannel('channel').name);
+
+            // Update user_daily_log
+            // set  log=JSON_ARRAY_APPEND(log, '$', '{"host": "b"}')
+            // where user_id='123234'
+        }
+        catch (error) {
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            }
+
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
+        }
+    }
+}

@@ -28,21 +28,23 @@ module.exports = {
 
             collector.on('collect', async i => {
                 if (tutorialCounter === 0) {
-                    tutorialCounter++;                    
+                    tutorialCounter++;
                     await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm) VALUES (?, ?)`, [interaction.user.id, i.component.customId]);
                     await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id) VALUES (?)`, [interaction.user.id]);
-                    await i.update({ embeds: [interaction.client.greenEmbed(`**You have selected ${i.component.customId}.**\n*You were rewarded with 1000 (x1) laser ammunition and 10000 crediits.*`,"TUTORIAL phase 1")], components: [] });
+                    await i.update({ embeds: [interaction.client.greenEmbed(`**You have selected ${i.component.customId}.**\n*You were rewarded with 1000 (x1) laser ammunition and 10000 crediits.*`, "TUTORIAL phase 1")], components: [] });
                 }
 
                 //collector.stop("Selected Firm");
             });
 
             collector.on('end', collected => {
-                interaction.editReply({});
-                //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
+                if (interaction.replied) {
+                    interaction.editReply({});
+                    //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
+                }
             });
         }
         catch (error) {
