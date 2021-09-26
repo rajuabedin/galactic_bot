@@ -17,7 +17,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
 
         command.execute(interaction);
     } catch (error) {
-        await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+        if (interaction.replied) {
+            await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+        } else {
+            await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+        }
         errorLog.error(error.message, { 'command_name': interaction.commandName });
     }
 });
