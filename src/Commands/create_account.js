@@ -8,10 +8,9 @@ module.exports = {
         .setName('create_account')
         .setDescription('Create account to play!'),
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
 
-            var userInfo = await interaction.client.getUserAccount(interaction.user.id);
             let tutorialCounter = 0;
             if (typeof userInfo === 'undefined') {
                 interaction.reply({ embeds: [interaction.client.yellowEmbed("Which firm would you like to create an account on?")], components: [firm] });

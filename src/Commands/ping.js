@@ -7,7 +7,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Ping command!'),
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
             const exampleEmbed = new Discord.MessageEmbed({
                 title: `${interaction.client.getWordLanguage("eng", "ping")}: `,

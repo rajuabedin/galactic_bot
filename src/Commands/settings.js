@@ -29,10 +29,15 @@ module.exports = {
                 .setDescription('Get all server settings')),
 
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
             const maxChannels = 10;
             if (interaction.options.getSubcommand() === 'info') {
+                var data = await interaction.client.databaseSelcetData(`SELECT * FROM user_daily_log WHERE user_id = '${interaction.user.id}' AND DATE(log_date) = CURDATE()`)
+                if (Object.entries(data).length === 0) {
+                    await interaction.client.databaseEditData(`insert into user_daily_log (user_id,log) VALUES (${interaction.user.id},'[]')`);
+                }
+                console.log(data)
                 await interaction.reply(`Coming soon`)
 
             } else if (interaction.options.getSubcommand() === 'channel') {
@@ -98,6 +103,8 @@ module.exports = {
             // Update user_daily_log
             // set  log=JSON_ARRAY_APPEND(log, '$', '{"host": "b"}')
             // where user_id='123234'
+
+            // SELECT * FROM user_daily_log WHERE user_id = '123234' AND DATE(log_date) = CURDATE()
         }
         catch (error) {
             if (interaction.replied) {

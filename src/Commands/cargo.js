@@ -11,12 +11,9 @@ module.exports = {
                 .setDescription('Enter the mineral you want to search')
                 .setRequired(false)),
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            if (typeof user === 'undefined') {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
-            }
+            
 
             var user_inventory = await interaction.client.databaseSelcetData("SELECT user_inventory.user_id, user_inventory.item_id, user_inventory.quantity,items_info.item_name, items_info.description, items_info.sell_price FROM user_inventory INNER join items_info on user_inventory.item_id = items_info.item_id WHERE user_inventory.user_id = ? ORDER by items_info.item_id ASC", [interaction.user.id]);
             if (user_inventory === undefined || user_inventory.length == 0) {

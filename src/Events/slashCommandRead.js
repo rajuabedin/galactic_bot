@@ -15,7 +15,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
 
         const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
 
-        command.execute(interaction);
+        let userInfo = await interaction.client.getUserAccount(interaction.user.id);
+        if (typeof userInfo === 'undefined') {
+            return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
+        }
+        command.execute(interaction, userInfo);
     } catch (error) {
         if (interaction.replied) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });

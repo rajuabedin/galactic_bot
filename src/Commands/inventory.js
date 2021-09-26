@@ -11,13 +11,9 @@ module.exports = {
                 .setDescription('Enter the item you want to search')
                 .setRequired(false)),
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            if (typeof user === 'undefined') {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
-            }
-
+            let user = userInfo;
             var user_lasers = await interaction.client.databaseSelcetData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);
             var user_shields = await interaction.client.databaseSelcetData("SELECT user_shields.shield_model as item_name, user_shields.level, user_shields.equipped, shields_info.sell_price, shields_info.description from user_shields INNER JOIN shields_info on user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? ORDER BY user_shields.shield_model", [interaction.user.id]);
             var user_engines = await interaction.client.databaseSelcetData("SELECT user_engines.engine_model as item_name, user_engines.level, user_engines.equipped, engines_info.sell_price, engines_info.description from user_engines INNER JOIN engines_info on user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? ORDER BY user_engines.engine_model", [interaction.user.id]);

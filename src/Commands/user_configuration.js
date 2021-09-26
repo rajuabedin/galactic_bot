@@ -8,16 +8,10 @@ module.exports = {
         .setName('hunt_configuration')
         .setDescription('Configure laser, missiles and hellstorm in hunt!'),
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
             let discarded = false;
-
-
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            if (typeof user === 'undefined') {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
-                return;
-            }
+            let user = userInfo;
             let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
             let [hp, sh, setting_row] = await buttonHandler();
             let message = "\n\n*Select __untill__ when to use selected ammo\nDisable: won't use selected ammo\nEmpty: will use the selected ammo till enemy dies*";

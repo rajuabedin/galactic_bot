@@ -6,14 +6,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('map')
         .setDescription('choose the map to warp to'),
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
-            let user = await interaction.client.getUserAccount(interaction.user.id);
-            let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
-            if (typeof user === 'undefined') {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
-                return;
-            }
+            let user = userInfo;
 
             let mapId = 1;
             if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && user.next_map_id !== 1) {
