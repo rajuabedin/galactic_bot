@@ -22,7 +22,6 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            let user = userInfo;
             let maxEquipableItem = 0;
             let itemsToEquip = [];
             let itemsEquipped = [];

@@ -10,15 +10,14 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            let user = userInfo;
-
+            let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let mapId = 1;
-            if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && user.next_map_id !== 1) {
-                mapId = user.next_map_id;
+            if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                mapId = userInfo.next_map_id;
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
             }
             else
-                mapId = user.map_id;
+                mapId = userInfo.map_id;
 
             let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
             if (typeof aliens[0] === 'undefined') {
@@ -33,7 +32,7 @@ module.exports = {
             }
 
 
-            let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [user.level]);
+            let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
             expRequirement = expRequirement[0].exp_to_lvl_up;
             await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
@@ -47,10 +46,10 @@ module.exports = {
             let userHellstormConfig = [[huntConfiguration[0].h1, 10000, 0, ammunition[0].h1_magazine, "h1"], [huntConfiguration[0].h2, 20000, 0, ammunition[0].h2_magazine, "h2"], [huntConfiguration[0].hS1, 0, 12500, ammunition[0].hS1_magazine, "hS1"], [huntConfiguration[0].hS2, 0, 25000, ammunition[0].hS2_magazine, "hS2"]];
 
             // Damage, HP, Max Shield,  Shield, Speed, Penetration, Shield absorb rate, laser quantity   
-            let userHp = Math.trunc(user.user_hp + user.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
-            if (userHp > user.max_hp)
-                userHp = user.max_hp;
-            let userStats = [user.user_damage, userHp, user.max_shield, user.user_shield, user.user_speed, user.user_penetration / 100, user.absorption_rate / 100, user.laser_quantity];
+            let userHp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+            if (userHp > userInfo.max_hp)
+                userHp = userInfo.max_hp;
+            let userStats = [userInfo.user_damage, userHp, userInfo.max_shield, userInfo.user_shield, userInfo.user_speed, userInfo.user_penetration / 100, userInfo.absorption_rate / 100, userInfo.laser_quantity];
 
 
             let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
@@ -346,8 +345,8 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
             }
-            if ((user.exp + exp_reward) >= expRequirement) {
-                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ? WHERE user_id = ?", [user.exp + exp_reward - expRequirement, credit, units, honor, userStats[1], interaction.user.id]);
+            if ((userInfo.exp + exp_reward) >= expRequirement) {
+                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ? WHERE user_id = ?", [userInfo.exp + exp_reward - expRequirement, credit, units, honor, userStats[1], interaction.user.id]);
                 logMessage[turnCounter][0] += "\n**YOU LEVELLED UP**";
             }
             else

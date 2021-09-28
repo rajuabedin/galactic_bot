@@ -14,8 +14,9 @@ module.exports = {
                 description: `${interaction.client.ws.ping} ms`,
                 type: 'rich',
                 hexColor: '0xe1143d',
-            });
+            });       
             await interaction.reply({ embeds: [exampleEmbed] });
+
         } catch (error) {
             await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
             errorLog.error(error.message, { 'command_name': interaction.commandName });
