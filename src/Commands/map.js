@@ -8,15 +8,26 @@ module.exports = {
         .setDescription('choose the map to warp to'),
     async execute(interaction, userInfo) {
         try {
-            let user = userInfo;
-
+            /*
+            let date = new Date();
+            console.log(date);
+            date.setMinutes(date.getMinutes() + 60);
+            console.log(date.toJSON()); 
+            */
+            let timeToReachMapMinutes = 4000 / (userInfo.user_speed * userInfo.user_speed);
+            let timeToReachMapSeconds = Math.floor((timeToReachMapMinutes % 1.0) * 60);
+            timeToReachMapMinutes = Math.floor(timeToReachMapMinutes);
+            let dateToReachMap = new Date();
+            dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes);
+            dateToReachMap.setSeconds(dateToReachMap.getSeconds() + timeToReachMapSeconds);
+            let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let mapId = 1;
-            if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && user.next_map_id !== 1) {
-                mapId = user.next_map_id;
+            if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                mapId = userInfo.next_map_id;
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
             }
             else
-                mapId = user.map_id;
+                mapId = userInfo.map_id;
 
             if (mapId === 1) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
@@ -38,8 +49,8 @@ module.exports = {
                     i.update({ embeds: [interaction.client.redEmbed("Command cancelled",)], components: [] });
                 else {
                     await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId, interaction.user.id]);
-                    await interaction.client.databaseEditData("UPDATE user_cd SET 	moving_to_map = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-                    i.update({ embeds: [interaction.client.greenEmbed(`Moving toward the portal of map ${i.values[0]}`,)], components: [] });
+                    await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap.toJSON(), interaction.user.id]);
+                    i.update({ embeds: [interaction.client.greenEmbed(`**${timeToReachMapMinutes}m and ${timeToReachMapSeconds}s** to warp to map ${i.values[0]}`,)], components: [] });
                 }
                 collector.stop("Selected");
             });
