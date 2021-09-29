@@ -1,5 +1,6 @@
 const Event = require('../Structures/Event.js');
 const Commands = require('../Structures/Command.js');
+const errorLog = require('../Utility/logger').logger;
 
 module.exports = new Event("interactionCreate", async (client, interaction) => {
     try {

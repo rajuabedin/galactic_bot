@@ -18,7 +18,7 @@ module.exports = {
                 .setColor('0x009dff')
                 .setImage(user.avatarURL())
                 .setAuthor(`${user.username} PFP`, interaction.client.user.avatarURL())
-                .setDescription(`PFP [LINK](${user.avatarURL()})`)
+                .setDescription(`Download [LINK](${user.avatarURL()})`)
             await interaction.reply({ embeds: [pfpEmbed] });
         }
         catch (error) {

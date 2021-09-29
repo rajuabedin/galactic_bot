@@ -1,5 +1,8 @@
 const { ShardingManager } = require('discord.js');
 require('dotenv').config()
+
+
+
 const shard = new ShardingManager('./bot.js', {
     token: process.env.TOKEN,
     respawn: true,
@@ -29,6 +32,38 @@ app.get('/commands', async (req, res) => {
     if (signature !== API_SECRET) {
         return res.sendStatus(401);
     }
+
+    const reqs = await shard.fetchClientValues('commands');
+
+    res.type('application/json').status(200).send(JSON.stringify({ "commands": reqs }));
+});
+
+app.post('/reload', async (req, res) => {
+    const signature = req.headers['x-api-key'];
+
+    if (signature !== API_SECRET) {
+        return res.sendStatus(401);
+    }
+
+
+
+
+    await shard.broadcastEval(c => {
+        const Discord = require('discord.js');
+        const fs = require("fs");
+        const newCommands = new Discord.Collection();
+        // LOAD COMMANDS
+        fs.readdirSync(`${process.cwd()}/Commands`).filter(file => file.endsWith(".js")).forEach(file => {
+            /**
+             *@type {Command}
+             */
+
+            Object.keys(require.cache).forEach(function (key) { delete require.cache[key] })
+            const command = require(`${process.cwd()}/Commands/${file}`);
+            newCommands.set(command.data.name, command)
+        });
+        c.commands = newCommands;
+    })
 
     const reqs = await shard.fetchClientValues('commands');
 
