@@ -48,9 +48,9 @@ module.exports = {
         }
         catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });

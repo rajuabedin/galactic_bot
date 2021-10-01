@@ -61,7 +61,11 @@ module.exports = {
             });
 
         } catch (error) {
-            await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            }
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     }

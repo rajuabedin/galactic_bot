@@ -13,7 +13,7 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            
+
 
             var user_inventory = await interaction.client.databaseSelcetData("SELECT user_inventory.user_id, user_inventory.item_id, user_inventory.quantity,items_info.item_name, items_info.description, items_info.sell_price FROM user_inventory INNER join items_info on user_inventory.item_id = items_info.item_id WHERE user_inventory.user_id = ? ORDER by items_info.item_id ASC", [interaction.user.id]);
             if (user_inventory === undefined || user_inventory.length == 0) {
@@ -73,9 +73,9 @@ module.exports = {
             }
         } catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             }
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
