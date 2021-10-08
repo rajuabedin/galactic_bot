@@ -10,6 +10,8 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
+            let damageDealt = 0;
+            let damageReceived = 0;
             let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let mapId = 1;
             if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
@@ -20,17 +22,20 @@ module.exports = {
                 mapId = userInfo.map_id;
 
             let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
+
             if (typeof aliens[0] === 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**", "ERROR, unknown map!")] });
                 return;
             }
 
-            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+            /*let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
                 return;
-            }
+            }*/
 
+            let shipEmiji = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+            shipEmiji = shipEmiji[0].emoji_id;
 
             let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
             expRequirement = expRequirement[0].exp_to_lvl_up;
@@ -55,12 +60,17 @@ module.exports = {
             let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
             await interaction.client.wait(1000);
-            let alienList = [enemyStats.slice()];
+            let alienList = [enemyStats];
             //let message = "**Engaging Combat with XY**";
+            let messageDamage = "";
             let message = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
             message += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
-            let messageDamage = "";
-            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ${enemyStats[6]}**`)] });
+
+            let emojiMessage = `\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
+            emojiMessage += `\n**Alien Info**:\n**[${enemyStats[12]}]** <a:hp:896118360125870170>: **${enemyStats[1]}**\t<a:sd:896118359966511104>: **${enemyStats[2]}**`;
+            await interaction.editReply({ embeds: [interaction.client.blueEmbed(emojiMessage, `**Engaging Combat with ${enemyStats[6]}**`)] });
+            await interaction.client.wait(1000);
+
             let logMessage = [[message, `**Engaging Combat with ${enemyStats[6]}**`]];
             let messageAmmo = "";
             userLaserConfig.push([-2, 0, 0, 1000000, "No AMMO"]);
@@ -248,8 +258,10 @@ module.exports = {
                         messageDamage += `\n[Hellstorm Damage (${hellstorm[4]}): ${hellstormHpDamage}/0]`;
                     }
                 }
+
                 let alien_shield_damage = Math.trunc((userStats[6] - alienStats[4]) * totalAliensDamage * accuracyAlien);
                 let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);
+                damageReceived += Math.trunc(totalAliensDamage * accuracyAlien);
                 if (userStats[3] <= alien_shield_damage) {
                     alien_hp_damage += alien_shield_damage - userStats[3];
                     alien_shield_damage = userStats[3];
@@ -327,9 +339,31 @@ module.exports = {
                     await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")] });
                     logMessage[turnCounter][0] += `\n\`\`\`json\n\"${newAlien[6]} joined the fight !!!\"\n\`\`\``;
                     await interaction.client.wait(1000);
-                    let message_update = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
-                    message_update += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
-                    await interaction.editReply({ embeds: [interaction.client.blueEmbed(message_update, "**Engaging Combat with XY**")] });
+                    if (turnCounter % 6 != 0 && alienList.length > 0) {
+                        emojiMessage = `*Turn* ***${turnCounter}***\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
+                        emojiMessage += "\n**Alien Info**:\n";
+                        for (index in alienList) {
+                            emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
+                        }
+                        emojiMessage += `**Total received damage: __${damageReceived}__**`;
+                        damageReceived = 0;
+                        await interaction.editReply({ embeds: [interaction.client.blueEmbed(emojiMessage, `**In Combat with ${enemyStats[6]}**`)] });
+                        await interaction.client.wait(1000);
+                    }
+                    //let message_update = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
+                    //message_update += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
+                    //await interaction.editReply({ embeds: [interaction.client.blueEmbed(message_update, "**Engaging Combat with XY**")] });
+                }
+                if (turnCounter % 6 == 0 && alienList.length > 0) {
+                    emojiMessage = `*Turn* ***${turnCounter}***\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
+                    emojiMessage += "\n**Alien Info**:\n";
+                    for (index in alienList) {
+                        emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
+                    }
+                    emojiMessage += `**Total received damage: __${damageReceived}__**`;
+                    damageReceived = 0;
+                    await interaction.editReply({ embeds: [interaction.client.blueEmbed(emojiMessage, `**In Combat with ${enemyStats[6]}**`)] });
+                    await interaction.client.wait(1000);
                 }
             }
             //await wait(1000);
@@ -525,5 +559,5 @@ async function getAlien(aliens) {
     }
     indexList = indexList.sort(() => Math.random() - 0.5)
     index = indexList[Math.floor(Math.random() * (100))];
-    return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, aliens[index].resources];
+    return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, aliens[index].resources, aliens[index].emoji_id];
 }

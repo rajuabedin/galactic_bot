@@ -179,7 +179,7 @@ module.exports = {
                     //await i.update({ embeds: [interaction.client.redEmbed(message, "**ERROR! Max capacity reached!**")], components: [row, row1, row2, row3, row4] });
                     await i.update({ content: "**ERROR! Max capacity reached!**", components: [] });
                     await interaction.client.wait(1000);
-                    await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                    await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                 }
             });
 
@@ -213,16 +213,16 @@ async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, uneq
         return b[0] - a[0];
     });
 
-    let laser_items = itemsEquipped.concat(itemsToEquip);  
-    
-    let equippedItemsLength = itemsEquipped.length - 1;    
+    let laser_items = itemsEquipped.concat(itemsToEquip);
+
+    let equippedItemsLength = itemsEquipped.length - 1;
 
     let array_length = laser_items.length;
     if (array_length < 20) {
         laser_items.length = 20;
         laser_items.fill([0, "           ", "           "], array_length);
         //console.log(laser_items);
-    }    
+    }
 
     let row = new MessageActionRow()
         .addComponents(
