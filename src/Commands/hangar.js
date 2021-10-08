@@ -2,6 +2,8 @@ const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
 
+let itemRank = ["E-", "E ", "E+", "D-", "D ", "D+", "C-", "C ", "C+", "B-", "B ", "B+", "A-", "A ", "A+", "S-", "S "];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('hanger')
@@ -26,6 +28,7 @@ module.exports = {
             let maxEquipableItem = 0;
             let itemsToEquip = [];
             let itemsEquipped = [];
+            let unequipableItems = [];
 
             if (interaction.options.getSubcommand() === 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
@@ -33,16 +36,10 @@ module.exports = {
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
 
                 for (item in rawEquippedLaser) {
-                    if (rawEquippedLaser[item].level < 10)
-                        itemsEquipped.push([rawEquippedLaser[item].damage_value * (1 + rawEquippedLaser[item].per_increase_by_level / 1000 * rawEquippedLaser[item].level), rawEquippedLaser[item].laser_model + `_0${rawEquippedLaser[item].level}`, rawEquippedLaser[item].laser_id, rawEquippedLaser[item].emoji_id]);
-                    else
-                        itemsEquipped.push([rawEquippedLaser[item].damage_value * (1 + rawEquippedLaser[item].per_increase_by_level / 1000 * rawEquippedLaser[item].level), rawEquippedLaser[item].laser_model + `_${rawEquippedLaser[item].level}`, rawEquippedLaser[item].laser_id, rawEquippedLaser[item].emoji_id]);
+                    itemsEquipped.push([rawEquippedLaser[item].damage_value * (1 + rawEquippedLaser[item].per_increase_by_level / 1000 * rawEquippedLaser[item].level), rawEquippedLaser[item].laser_model + `${itemRank[rawEquippedLaser[item].level]}`, rawEquippedLaser[item].laser_id, rawEquippedLaser[item].emoji_id]);
                 }
                 for (item in rawUnequippedLaser) {
-                    if (rawUnequippedLaser[item].level < 10)
-                        itemsToEquip.push([rawUnequippedLaser[item].damage_value * (1 + rawUnequippedLaser[item].per_increase_by_level / 1000 * rawUnequippedLaser[item].level), rawUnequippedLaser[item].laser_model + `_0${rawUnequippedLaser[item].level}`, rawUnequippedLaser[item].laser_id, rawUnequippedLaser[item].emoji_id]);
-                    else
-                        itemsToEquip.push([rawUnequippedLaser[item].damage_value * (1 + rawUnequippedLaser[item].per_increase_by_level / 1000 * rawUnequippedLaser[item].level), rawUnequippedLaser[item].laser_model + `_${rawUnequippedLaser[item].level}`, rawUnequippedLaser[item].laser_id, rawUnequippedLaser[item].emoji_id]);
+                    itemsToEquip.push([rawUnequippedLaser[item].damage_value * (1 + rawUnequippedLaser[item].per_increase_by_level / 1000 * rawUnequippedLaser[item].level), rawUnequippedLaser[item].laser_model + `${itemRank[rawUnequippedLaser[item].level]}`, rawUnequippedLaser[item].laser_id, rawUnequippedLaser[item].emoji_id]);
                 }
                 displayEquippedItemlenght = itemsEquipped.length;
                 maxEquipableItem = maxEquipableItem[0].laser_quantity;
@@ -50,27 +47,35 @@ module.exports = {
             else if (interaction.options.getSubcommand() === 'shield') {
                 let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
+                let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
 
+                for (item in rawEquippedEngine) {
+                    unequipableItems.push([0, 1, 2, rawEquippedEngine[item].emoji_id]);
+                }
                 for (item in rawEquippedShield) {
-                    itemsEquipped.push([rawEquippedShield[item].shield_value * (1 + rawEquippedShield[item].per_increase_by_level / 1000 * rawEquippedShield[item].level), rawEquippedShield[item].shield_model + `_${rawEquippedShield[item].level}`, rawEquippedShield[item].shield_id, rawEquippedShield[item].emoji_id, rawEquippedShield[item].absorption_rate]);
+                    itemsEquipped.push([rawEquippedShield[item].shield_value * (1 + rawEquippedShield[item].per_increase_by_level / 1000 * rawEquippedShield[item].level), rawEquippedShield[item].shield_model + `${itemRank[rawEquippedShield[item].level]}`, rawEquippedShield[item].shield_id, rawEquippedShield[item].emoji_id, rawEquippedShield[item].absorption_rate]);
                 }
                 for (item in rawUnequippedShield) {
-                    itemsToEquip.push([rawUnequippedShield[item].shield_value * (1 + rawUnequippedShield[item].per_increase_by_level / 1000 * rawUnequippedShield[item].level), rawUnequippedShield[item].shield_model + `_${rawUnequippedShield[item].level}`, rawUnequippedShield[item].shield_id, rawUnequippedShield[item].emoji_id, rawUnequippedShield[item].absorption_rate]);
+                    itemsToEquip.push([rawUnequippedShield[item].shield_value * (1 + rawUnequippedShield[item].per_increase_by_level / 1000 * rawUnequippedShield[item].level), rawUnequippedShield[item].shield_model + `${itemRank[rawUnequippedShield[item].level]}`, rawUnequippedShield[item].shield_id, rawUnequippedShield[item].emoji_id, rawUnequippedShield[item].absorption_rate]);
                 }
                 displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
                 maxEquipableItem = maxEquipableItem[0].extra_quantity;
             }
             else {
-                let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
-                let rawUnequippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 0", [interaction.user.id]);
+                let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
+                let rawUnequippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 0", [interaction.user.id]);
+                let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.ship_base_speed, ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
 
+                for (item in rawEquippedShield) {
+                    unequipableItems.push([0, 1, 2, rawEquippedShield[item].emoji_id]);
+                }
                 for (item in rawEquippedEngine) {
-                    itemsEquipped.push([rawEquippedEngine[item].speed_value, rawEquippedEngine[item].engine_model, rawEquippedEngine[item].engine_id, rawEquippedEngine[item].emoji_id]);
+                    itemsEquipped.push([rawEquippedEngine[item].speed_value, rawEquippedEngine[item].engine_model, rawEquippedEngine[item].engine_id + "  ", rawEquippedEngine[item].emoji_id]);
                 }
                 for (item in rawUnequippedEngine) {
-                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, rawUnequippedEngine[item].engine_model, rawUnequippedEngine[item].engine_id, rawUnequippedEngine[item].emoji_id]);
+                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, rawUnequippedEngine[item].engine_model, rawUnequippedEngine[item].engine_id + "  ", rawUnequippedEngine[item].emoji_id]);
                 }
                 displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
                 baseSpeed = maxEquipableItem[0].ship_base_speed;
@@ -82,9 +87,9 @@ module.exports = {
 
             let [row, row1, row2, row3, message] = [0, 0, 0, 0, 0];
             if (displayEquippedItemlenght === maxEquipableItem)
-                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, "DANGER");
+                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
             else
-                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped)
+                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
 
             //let equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items:**`;
             //let storedMessage = `**Data returned to:**\nEquipped ${displayEquippedItemlenght}/${maxEquipableItem} items:\n ${message}`;
@@ -142,7 +147,7 @@ module.exports = {
                     collector.stop("Saved");
                 }
                 else if (i.component.customId === "discard") {
-                    await i.update({ embeds: [interaction.client.redEmbed(storedMessage, "DISCARDED")], components: [] });
+                    await i.update({ content: "**DISCARDED**", components: [] });
                     discardedMessage = false;
                     collector.stop("Discarded");
                 }
@@ -154,9 +159,9 @@ module.exports = {
                     displayEquippedItemlenght++;
                     itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
                     if (displayEquippedItemlenght === maxEquipableItem)
-                        [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, "DANGER");
+                        [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
                     else
-                        [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped);
+                        [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
                     //equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items**\n`;
                     //await i.update({ embeds: [interaction.client.greenEmbed(message, equippedItemMessage)], components: [row, row1, row2, row3, row4] });
                     await i.update({ content: message, components: [row, row1, row2, row3, row4] });
@@ -165,7 +170,7 @@ module.exports = {
                     equippedItemLength--;
                     displayEquippedItemlenght--;
                     itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
-                    [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped);
+                    [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
                     //equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items**\n`;
                     //await i.update({ embeds: [interaction.client.blueEmbed(message, equippedItemMessage)], components: [row, row1, row2, row3, row4] });
                     await i.update({ content: message, components: [row, row1, row2, row3, row4] });
@@ -199,7 +204,7 @@ module.exports = {
 }
 
 
-async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, buttonStyile = "PRIMARY") {
+async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, buttonStyile = "PRIMARY") {
 
     itemsToEquip = itemsToEquip.sort(function (a, b) {
         return b[0] - a[0];
@@ -208,16 +213,16 @@ async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, butt
         return b[0] - a[0];
     });
 
-    let laser_items = itemsEquipped.concat(itemsToEquip);
+    let laser_items = itemsEquipped.concat(itemsToEquip);  
+    
+    let equippedItemsLength = itemsEquipped.length - 1;    
 
     let array_length = laser_items.length;
     if (array_length < 20) {
         laser_items.length = 20;
         laser_items.fill([0, "           ", "           "], array_length);
         //console.log(laser_items);
-    }
-
-    let equippedItemsLength = itemsEquipped.length - 1;
+    }    
 
     let row = new MessageActionRow()
         .addComponents(
@@ -344,11 +349,15 @@ async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, butt
         }
     }
 
+    itemsEquipped = unequipableItems.concat(itemsEquipped);
+
+    equippedItemsLength = itemsEquipped.length - 1;
+
     let message = "";
     for (item = 0; item < 18; item++) {
         if (item <= equippedItemsLength)
             message += `${itemsEquipped[item][3]}`;
-        else if (item <= maxEquipableItem)
+        else if (item < maxEquipableItem)
             message += `<:Slot:895013272082853951>`;
         else
             message += `<:No_Slot:895013272208670790>`;
