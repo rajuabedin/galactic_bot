@@ -46,24 +46,24 @@ module.exports = {
                 var lockedList = JSON.parse(serverSettings[0].locked_channels);
 
                 // check if its a channel
-                if (!interaction.options.getChannel('channel').type || interaction.options.getChannel('channel').type != 'GUILD_TEXT') return await interaction.reply({ embeds: [interaction.client.redEmbed("Please specify a channel.", "Error!!")] });
+                if (!interaction.options.getChannel('channel').type || interaction.options.getChannel('channel').type != 'GUILD_TEXT') return await interaction.reply({ embeds: [interaction.client.redEmbed("Please specify a channel.", "Error!!")], ephemeral: true });
                 // check if its a valid option
-                if (!(['lock', 'unlock', 'add', 'remove'].includes(interaction.options.getString('option').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct option.", "Error!!")] });
+                if (!(['lock', 'unlock', 'add', 'remove'].includes(interaction.options.getString('option').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct option.", "Error!!")], ephemeral: true });
                 if (interaction.options.getString('option').toLowerCase() === "add") {
                     // check if max capacity is reached
-                    if (allowedList.length === maxChannels) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Max capacity reached! You can only add ${maxChannels} channels.`)] })
+                    if (allowedList.length === maxChannels) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Max capacity reached! You can only add ${maxChannels} channels.`)], ephemeral: true })
                     // check if is already present
-                    if (allowedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is already present on the allowed list.`)] })
+                    if (allowedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is already present on the allowed list.`)], ephemeral: true })
 
                     allowedList.push(interaction.options.getChannel('channel').id);
                     await interaction.client.databaseEditData(`update server_settings SET allowed_channels = '${JSON.stringify(allowedList)}', last_edit_date = CURRENT_TIMESTAMP, edited_by = ${interaction.user.id} where server_id = '${interaction.guildId}'`);
-                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} added to the allowed list.`)] })
+                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} added to the allowed list.`)], ephemeral: true })
 
                 } else if (interaction.options.getString('option').toLowerCase() === "remove") {
                     // check if list empty
-                    if (allowedList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error! Allowed list is empty.`)] })
+                    if (allowedList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error! Allowed list is empty.`)], ephemeral: true })
                     // check if not present
-                    if (!allowedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is not present on the allowed list!`)] })
+                    if (!allowedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is not present on the allowed list!`)], ephemeral: true })
 
                     const index = allowedList.indexOf(interaction.options.getChannel('channel').id);
                     if (index > -1) {
@@ -71,30 +71,30 @@ module.exports = {
                     }
 
                     await interaction.client.databaseEditData(`update server_settings SET allowed_channels = '${JSON.stringify(allowedList)}', last_edit_date = CURRENT_TIMESTAMP, edited_by = ${interaction.user.id} where server_id = '${interaction.guildId}'`);
-                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} removed from the allowed list!`)] })
+                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} removed from the allowed list!`)], ephemeral: true })
 
                 } else if (interaction.options.getString('option').toLowerCase() === "lock") {
                     // check if max capacity is reached
-                    if (lockedList.length === maxChannels) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Max capacity reached! You can only add ${maxChannels} channels.`)] })
+                    if (lockedList.length === maxChannels) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Max capacity reached! You can only add ${maxChannels} channels.`)], ephemeral: true })
                     // check if is already present
-                    if (lockedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is already present on the locked list.`)] })
+                    if (lockedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is already present on the locked list.`)], ephemeral: true })
 
                     lockedList.push(interaction.options.getChannel('channel').id);
                     await interaction.client.databaseEditData(`update server_settings SET locked_channels = '${JSON.stringify(lockedList)}', last_edit_date = CURRENT_TIMESTAMP, edited_by = ${interaction.user.id} where server_id = '${interaction.guildId}'`);
-                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} added to the locked list.`)] })
+                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} added to the locked list.`)], ephemeral: true })
 
                 } else if (interaction.options.getString('option').toLowerCase() === "unlock") {
                     // check if max capacity is reached
-                    if (lockedList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error! Locked list is empty.`)] })
+                    if (lockedList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error! Locked list is empty.`)], ephemeral: true })
                     // check if is already present
-                    if (!lockedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is not present on the locked list!`)] })
+                    if (!lockedList.includes(interaction.options.getChannel('channel').id)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Error!! This channel is not present on the locked list!`)], ephemeral: true })
 
                     const index = lockedList.indexOf(interaction.options.getChannel('channel').id);
                     if (index > -1) {
                         lockedList.splice(index, 1);
                     }
                     await interaction.client.databaseEditData(`update server_settings SET locked_channels = '${JSON.stringify(lockedList)}', last_edit_date = CURRENT_TIMESTAMP, edited_by = ${interaction.user.id} where server_id = '${interaction.guildId}'`);
-                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} removed from the locked list.`)] })
+                    return await interaction.reply({ embeds: [interaction.client.greenEmbed(`Successfull!! ${interaction.options.getChannel('channel')} removed from the locked list.`)], ephemeral: true })
 
                 }
 
