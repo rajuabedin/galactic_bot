@@ -15,13 +15,16 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         if (Object.entries(allowedList).length !== 0 && !allowedList.includes(interaction.channelId)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
 
         let userInfo = await interaction.client.getUserAccount(interaction.user.id);
-        if (typeof userInfo === 'undefined' && interaction.commandName != "create_account") {
-            return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")] });
+        if (typeof userInfo === 'undefined') {
+            return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, create an account", "ERROR, USER NOT FOUND!")], ephemeral: true });
         }
 
         const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
 
         command.execute(interaction, userInfo);
+
+        const serverRankLoger = await interaction.client.databaseSelcetData("SELECT * FROM server_rank WHERE user_id = ?", interaction.user.id);
+        console.log(serverRankLoger)
     } catch (error) {
         if (interaction.replied) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
