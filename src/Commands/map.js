@@ -14,6 +14,10 @@ module.exports = {
             date.setMinutes(date.getMinutes() + 60);
             console.log(date.toJSON()); 
             */
+            if (userInfo.tutorial_counter < 2){
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             let timeToReachMapMinutes = 4000 / (userInfo.user_speed * userInfo.user_speed);
             let timeToReachMapSeconds = Math.floor((timeToReachMapMinutes % 1.0) * 60);
             timeToReachMapMinutes = Math.floor(timeToReachMapMinutes);
@@ -28,11 +32,6 @@ module.exports = {
             }
             else
                 mapId = userInfo.map_id;
-
-            if (mapId === 1) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
-                return;
-            }
 
             let map = await interaction.client.databaseSelcetData("SELECT linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
             let row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);

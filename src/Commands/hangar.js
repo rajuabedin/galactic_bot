@@ -8,29 +8,31 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('hanger')
         .setDescription('Edit ship equipment')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('laser')
-                .setDescription('Edit lasers on ship'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('shield')
-                .setDescription('Edit shields on ship'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('engine')
-                .setDescription('Edit engines on ship')),
+        .addStringOption(option =>
+            option
+                .setName('option')
+                .setDescription('Select from [ laser - shield - engine ]')
+                .setRequired(true)
+                .addChoice('laser', 'laser')
+                .addChoice('shield', 'shield')
+                .addChoice('engine', 'engine')
+        ),
 
     async execute(interaction, userInfo) {
         try {
+            if (userInfo.tutorial_counter < 3) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             let baseSpeed = 0;
             let displayEquippedItemlenght = 0;
             let maxEquipableItem = 0;
             let itemsToEquip = [];
             let itemsEquipped = [];
             let unequipableItems = [];
+            let selectedOption = interaction.options.getString('option').toLowerCase();
 
-            if (interaction.options.getSubcommand() === 'laser') {
+            if (selectedOption === 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
@@ -44,7 +46,7 @@ module.exports = {
                 displayEquippedItemlenght = itemsEquipped.length;
                 maxEquipableItem = maxEquipableItem[0].laser_quantity;
             }
-            else if (interaction.options.getSubcommand() === 'shield') {
+            else if (selectedOption === 'shield') {
                 let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
                 let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
@@ -109,7 +111,7 @@ module.exports = {
                     //await i.update({ embeds: [interaction.client.greenEmbed(`${equippedItemMessage}\n${message}`, "SAVED")], components: [] });
                     await i.update({ content: message, components: [] });
                     discardedMessage = false;
-                    if (interaction.options.getSubcommand() === 'laser') {
+                    if (selectedOption === 'laser') {
                         let totalDamage = 0;
                         await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                         for (laser in itemsEquipped) {
@@ -121,7 +123,7 @@ module.exports = {
                         await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlenght, interaction.user.id]);
                         //Send data to database
                     }
-                    else if (interaction.options.getSubcommand() === 'shield') {
+                    else if (selectedOption === 'shield') {
                         let totalShield = 0;
                         let absortionRate = 0;
                         await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);

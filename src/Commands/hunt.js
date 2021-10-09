@@ -9,7 +9,11 @@ module.exports = {
         .setDescription('Hunt Allien!'),
 
     async execute(interaction, userInfo) {
-        try {
+        //try {
+            if (userInfo.tutorial_counter < 4){
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             let damageDealt = 0;
             let damageReceived = 0;
             let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
@@ -24,7 +28,7 @@ module.exports = {
             let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
 
             if (typeof aliens[0] === 'undefined') {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**", "ERROR, unknown map!")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR, unknown map!")] });
                 return;
             }
 
@@ -87,12 +91,12 @@ module.exports = {
             userHellstormConfig = userHellstormConfig.sort(function (a, b) {
                 return a[0] - b[0];
             });
-            let hellstorm_counter = userHellstormConfig.length - 1;
+            let hellstormCounter = userHellstormConfig.length - 1;
 
             let missileLaunchAfterTurns = 3;
             let laser = userLaserConfig[laserCounter];
             let missile = userMissileConfig[missileCounter];
-            let hellstorm = userHellstormConfig[hellstorm_counter];
+            let hellstorm = userHellstormConfig[hellstormCounter];
             let turnCounter = 0;
 
             let canUseHellstorm = true;
@@ -143,16 +147,20 @@ module.exports = {
                 let threshold = 100 / alienMaxHp * alienStats[1] + 100 / alienMaxShield * alienStats[2];
 
                 while (!hasLaserAmmo || threshold <= laser[0]) {
-                    if (!hasLaserAmmo)
+                    if (!hasLaserAmmo) {
                         messageAmmo += `\n- Laser (${laser[4]}) out of AMMO`;
+                        userLaserConfig.splice(laserCounter, 1);
+                    }
                     laserCounter -= 1;
                     laser = userLaserConfig[laserCounter];
                     hasLaserAmmo = laser[3] / userStats[7] >= 1;
                 }
 
                 while (!hasMissileAmmo || threshold <= missile[0]) {
-                    if (!hasMissileAmmo)
+                    if (!hasMissileAmmo) {
                         messageAmmo += `\n- Missile (${missile[3]}) out of AMMO`;
+                        userMissileConfig.splice(missileCounter, 1);
+                    }
                     missileCounter -= 1;
                     missile = userMissileConfig[missileCounter];
                     hasMissileAmmo = missile[2] >= 1;
@@ -160,10 +168,12 @@ module.exports = {
 
                 if (canUseHellstorm)
                     while (!hasHellstormAmmo || threshold <= hellstorm[0]) {
-                        if (!hasHellstormAmmo)
+                        if (!hasHellstormAmmo) {
                             messageAmmo += `\n- Hellstorm (${hellstorm[4]}) out of AMMO`;
-                        hellstorm_counter -= 1;
-                        hellstorm = userHellstormConfig[hellstorm_counter];
+                            userHellstormConfig.splice(hellstormCounter, 1);
+                        }
+                        hellstormCounter -= 1;
+                        hellstorm = userHellstormConfig[hellstormCounter];
                         hasHellstormAmmo = hellstorm[3] / 5 >= 1;
                     }
 
@@ -259,9 +269,11 @@ module.exports = {
                     }
                 }
 
-                let alien_shield_damage = Math.trunc((userStats[6] - alienStats[4]) * totalAliensDamage * accuracyAlien);
-                let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);
+                damageDealt += laserShieldDamage + laserHpDamage + missileShieldDamage + missileHpDamage + hellstormHpDamage + hellstormShieldDamage;
                 damageReceived += Math.trunc(totalAliensDamage * accuracyAlien);
+
+                let alien_shield_damage = Math.trunc((userStats[6] - alienStats[4]) * totalAliensDamage * accuracyAlien);
+                let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);                
                 if (userStats[3] <= alien_shield_damage) {
                     alien_hp_damage += alien_shield_damage - userStats[3];
                     alien_shield_damage = userStats[3];
@@ -290,10 +302,10 @@ module.exports = {
 
                         laserCounter = userLaserConfig.length - 1;
                         missileCounter = userMissileConfig.length - 1;
-                        hellstorm_counter = userHellstormConfig.length - 1;
+                        hellstormCounter = userHellstormConfig.length - 1;
                         laser = userLaserConfig[laserCounter];
                         missile = userMissileConfig[missileCounter];
-                        hellstorm = userHellstormConfig[hellstorm_counter];
+                        hellstorm = userHellstormConfig[hellstormCounter];
 
                         if (alienMaxHp + alienMaxShield < 12000 || alienMaxHp / userStats[0] <= 7) {
                             canUseHellstorm = false;
@@ -341,6 +353,7 @@ module.exports = {
                     await interaction.client.wait(1000);
                     if (turnCounter % 6 != 0 && alienList.length > 0) {
                         emojiMessage = `*Turn* ***${turnCounter}***\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
+                        emojiMessage += `**Total dealt damage: __${damageDealt}__**\n`;
                         emojiMessage += "\n**Alien Info**:\n";
                         for (index in alienList) {
                             emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
@@ -356,6 +369,7 @@ module.exports = {
                 }
                 if (turnCounter % 6 == 0 && alienList.length > 0) {
                     emojiMessage = `*Turn* ***${turnCounter}***\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
+                    emojiMessage += `**Total dealt damage: __${damageDealt}__**\n`;
                     emojiMessage += "\n**Alien Info**:\n";
                     for (index in alienList) {
                         emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
@@ -369,7 +383,7 @@ module.exports = {
             //await wait(1000);
             let message_user_info = `**Battle ended after ${turnCounter} turns**\n`;
             message_user_info += `**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
-            await interaction.client.wait(1000 + 5 * turnCounter);
+            //await interaction.client.wait(1000 + 5 * turnCounter);
             let messageReward = "\`\`\`yaml\n" + `EXP      :  ${exp_reward}\nCredits  :  ${credit}\nUnits    :  ${units}\nHonor    :  ${honor}` + " \`\`\`";
             if (userStats[1] > 0) {
                 await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!")], components: [row] });
@@ -389,7 +403,7 @@ module.exports = {
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
             buttonHandler(interaction, interaction.user.id, logMessage);
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -398,7 +412,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
 
     }
 }
