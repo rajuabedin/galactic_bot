@@ -117,6 +117,16 @@ class Client extends Discord.Client {
         return textToEmbed
     }
 
+    bluePagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x009dff')
+            .setAuthor(tittle, user.avatarURL())
+            .setDescription(text)
+            .setThumbnail(imageUrl)
+            .setFooter(footer)
+        return textToEmbed
+    }
+
     blueEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0x009dff')
