@@ -1,0 +1,78 @@
+Collection(1) [Map
+] {
+    '896873972761780254' => ButtonInteraction {
+      type: 'MESSAGE_COMPONENT',
+      id: '896873972761780254',
+      applicationId: '881243621293170738',
+      channelId: '883828056664461343',
+      guildId: '883828008316723231',
+      user: User {
+        id: '400614330921648132',
+        bot: false,
+        system: false,
+        flags: [UserFlags
+            ],
+        username: 'THunderGod',
+        discriminator: '2384',
+        avatar: '70fff59f1325d42e6b06c83e23f84ce3'
+        },
+      member: GuildMember {
+        guild: [Guild
+            ],
+        joinedTimestamp: 1630791861942,
+        premiumSinceTimestamp: null,
+        deleted: false,
+        nickname: null,
+        pending: false,
+        _roles: [Array
+            ],
+        user: [User
+            ]
+        },
+      version: 1,
+      message: Message {
+        channelId: '883828056664461343',
+        guildId: '883828008316723231',
+        deleted: false,
+        id: '896873963450409071',
+        type: 'APPLICATION_COMMAND',
+        system: false,
+        content: '',
+        author: [ClientUser
+            ],
+        pinned: false,
+        tts: false,
+        nonce: null,
+        embeds: [Array
+            ],
+        components: [Array
+            ],
+        attachments: Collection(0) [Map
+            ] {},
+        stickers: Collection(0) [Map
+            ] {},
+        createdTimestamp: 1633901815999,
+        editedTimestamp: null,
+        reactions: [ReactionManager
+            ],
+        mentions: [MessageMentions
+            ],
+        webhookId: '881243621293170738',
+        groupActivityApplication: null,
+        applicationId: '881243621293170738',
+        activity: null,
+        flags: [MessageFlags
+            ],
+        reference: null,
+        interaction: [Object
+            ]
+        },
+      customId: 'buy',
+      componentType: 'BUTTON',
+      deferred: false,
+      ephemeral: false,
+      replied: true,
+      webhook: InteractionWebhook { id: '881243621293170738'
+        }
+    }
+}

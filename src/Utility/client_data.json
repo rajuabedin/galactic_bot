@@ -1,0 +1,478 @@
+<ref *1> Client {
+    _events: [Object: null prototype
+    ] {
+      shardDisconnect: [Function (anonymous)
+        ],
+      ready: [
+            [Function (anonymous)
+            ],
+            [Function: bound
+            ] AsyncFunction
+        ],
+      disconnect: [Function (anonymous)
+        ],
+      reconnecting: [Function (anonymous)
+        ],
+      guildCreate: [Function: bound
+        ] AsyncFunction,
+      guildDelete: [
+            [Function: bound
+            ] AsyncFunction,
+            [Function: bound _handleGuildDeletion
+            ]
+        ],
+      messageCreate: [Function: bound
+        ],
+      error: [
+            [Function: bound
+            ] AsyncFunction,
+            [Function: bound
+            ] AsyncFunction,
+            [Function: bound
+            ] AsyncFunction
+        ],
+      interactionCreate: [
+            [Function: bound
+            ] AsyncFunction,
+            [Function: bound handleCollect
+            ] AsyncFunction
+        ],
+      channelDelete: [Function: bound _handleChannelDeletion
+        ]
+    },
+    _eventsCount: 10,
+    _maxListeners: 11,
+    options: {
+      _tokenType: 'Bot',
+      intents: 513,
+      shardCount: 1,
+      makeCache: [Function (anonymous)
+        ],
+      messageCacheLifetime: 0,
+      messageSweepInterval: 0,
+      invalidRequestWarningInterval: 0,
+      partials: [],
+      restWsBridgeTimeout: 5000,
+      restRequestTimeout: 15000,
+      restGlobalRateLimit: 0,
+      retryLimit: 1,
+      restTimeOffset: 500,
+      restSweepInterval: 60,
+      failIfNotExists: true,
+      userAgentSuffix: [],
+      presence: { status: 'online', user: [Object
+            ]
+        },
+      ws: {
+        large_threshold: 50,
+        compress: false,
+        properties: [Object
+            ],
+        version: 9,
+        presence: [Object
+            ]
+        },
+      http: {
+        version: 9,
+        api: 'https: //discord.com/api',
+        cdn: 'https: //cdn.discordapp.com',
+        invite: 'https: //discord.gg',
+        template: 'https: //discord.new'
+        },
+      shards: [
+            0
+        ]
+    },
+    rest: RESTManager {
+      client: [Circular *1
+        ],
+      handlers: Collection(2) [Map
+        ] {
+        '/gateway/bot' => [RequestHandler
+            ],
+        '/interactions/:id/aW50ZXJhY3Rpb246ODk2ODc5NzM1MzE2MDM3NjQyOkhWVFVMa2ltN0R1Q1VpcmxCVXl2Y2lQejg5Q1BNUUowVUd6eEFCbXlwdVA1UDNncjUwVTk5RE9vY0F4SUlSSE80RXJ4VWZRVHlaQjR1VkpiMGRSMzRzZkZsa1dpMmpLSzlPT1JhYk5vV0xJbkNOTm52cWdLMDZaaFFTZWY5VnJx/callback' => [RequestHandler
+            ]
+        },
+      tokenPrefix: 'Bot',
+      versioned: true,
+      globalLimit: Infinity,
+      globalRemaining: Infinity,
+      globalReset: 1633903193795,
+      globalDelay: null,
+      sweepInterval: Timeout {
+        _idleTimeout: 60000,
+        _idlePrev: [Timeout
+            ],
+        _idleNext: [TimersList
+            ],
+        _idleStart: 548,
+        _onTimeout: [Function (anonymous)
+            ],
+        _timerArgs: undefined,
+        _repeat: 60000,
+        _destroyed: false,
+            [Symbol(refed)
+            ]: false,
+            [Symbol(kHasPrimitive)
+            ]: false,
+            [Symbol(asyncId)
+            ]: 3,
+            [Symbol(triggerId)
+            ]: 1
+        }
+    },
+    _cleanups: Set(17) {
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ],
+        [Function: bound
+        ]
+    },
+    _finalizers: FinalizationRegistry {},
+    ws: WebSocketManager {
+      _events: [Object: null prototype
+        ] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      gateway: 'wss: //gateway.discord.gg/',
+      totalShards: 1,
+      shards: Collection(1) [Map
+        ] {
+            0 => [WebSocketShard
+            ]
+        },
+      status: 0,
+      destroyed: false,
+      reconnecting: false,
+        [Symbol(kCapture)
+        ]: false
+    },
+    actions: ActionsManager {
+      client: [Circular *1
+        ],
+      ChannelCreate: ChannelCreateAction { client: [Circular *1
+            ]
+        },
+      ChannelDelete: ChannelDeleteAction { client: [Circular *1
+            ], deleted: Map(0) {}
+        },
+      ChannelUpdate: ChannelUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildBanAdd: GuildBanAdd { client: [Circular *1
+            ]
+        },
+      GuildBanRemove: GuildBanRemove { client: [Circular *1
+            ]
+        },
+      GuildChannelsPositionUpdate: GuildChannelsPositionUpdate { client: [Circular *1
+            ]
+        },
+      GuildDelete: GuildDeleteAction { client: [Circular *1
+            ], deleted: Map(0) {}
+        },
+      GuildEmojiCreate: GuildEmojiCreateAction { client: [Circular *1
+            ]
+        },
+      GuildEmojiDelete: GuildEmojiDeleteAction { client: [Circular *1
+            ]
+        },
+      GuildEmojisUpdate: GuildEmojisUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildEmojiUpdate: GuildEmojiUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildIntegrationsUpdate: GuildIntegrationsUpdate { client: [Circular *1
+            ]
+        },
+      GuildMemberRemove: GuildMemberRemoveAction { client: [Circular *1
+            ]
+        },
+      GuildMemberUpdate: GuildMemberUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildRoleCreate: GuildRoleCreate { client: [Circular *1
+            ]
+        },
+      GuildRoleDelete: GuildRoleDeleteAction { client: [Circular *1
+            ]
+        },
+      GuildRolesPositionUpdate: GuildRolesPositionUpdate { client: [Circular *1
+            ]
+        },
+      GuildRoleUpdate: GuildRoleUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildStickerCreate: GuildStickerCreateAction { client: [Circular *1
+            ]
+        },
+      GuildStickerDelete: GuildStickerDeleteAction { client: [Circular *1
+            ]
+        },
+      GuildStickersUpdate: GuildStickersUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildStickerUpdate: GuildStickerUpdateAction { client: [Circular *1
+            ]
+        },
+      GuildUpdate: GuildUpdateAction { client: [Circular *1
+            ]
+        },
+      InteractionCreate: InteractionCreateAction { client: [Circular *1
+            ]
+        },
+      InviteCreate: InviteCreateAction { client: [Circular *1
+            ]
+        },
+      InviteDelete: InviteDeleteAction { client: [Circular *1
+            ]
+        },
+      MessageCreate: MessageCreateAction { client: [Circular *1
+            ]
+        },
+      MessageDelete: MessageDeleteAction { client: [Circular *1
+            ]
+        },
+      MessageDeleteBulk: MessageDeleteBulkAction { client: [Circular *1
+            ]
+        },
+      MessageReactionAdd: MessageReactionAdd { client: [Circular *1
+            ]
+        },
+      MessageReactionRemove: MessageReactionRemove { client: [Circular *1
+            ]
+        },
+      MessageReactionRemoveAll: MessageReactionRemoveAll { client: [Circular *1
+            ]
+        },
+      MessageReactionRemoveEmoji: MessageReactionRemoveEmoji { client: [Circular *1
+            ]
+        },
+      MessageUpdate: MessageUpdateAction { client: [Circular *1
+            ]
+        },
+      PresenceUpdate: PresenceUpdateAction { client: [Circular *1
+            ]
+        },
+      StageInstanceCreate: StageInstanceCreateAction { client: [Circular *1
+            ]
+        },
+      StageInstanceDelete: StageInstanceDeleteAction { client: [Circular *1
+            ]
+        },
+      StageInstanceUpdate: StageInstanceUpdateAction { client: [Circular *1
+            ]
+        },
+      ThreadCreate: ThreadCreateAction { client: [Circular *1
+            ]
+        },
+      ThreadDelete: ThreadDeleteAction { client: [Circular *1
+            ]
+        },
+      ThreadListSync: ThreadListSyncAction { client: [Circular *1
+            ]
+        },
+      ThreadMembersUpdate: ThreadMembersUpdateAction { client: [Circular *1
+            ]
+        },
+      ThreadMemberUpdate: ThreadMemberUpdateAction { client: [Circular *1
+            ]
+        },
+      TypingStart: TypingStart { client: [Circular *1
+            ]
+        },
+      UserUpdate: UserUpdateAction { client: [Circular *1
+            ]
+        },
+      VoiceStateUpdate: VoiceStateUpdate { client: [Circular *1
+            ]
+        },
+      WebhooksUpdate: WebhooksUpdate { client: [Circular *1
+            ]
+        }
+    },
+    voice: ClientVoiceManager { adapters: Map(0) {}
+    },
+    shard: ShardClientUtil {
+      client: [Circular *1
+        ],
+      mode: 'process',
+      parentPort: null
+    },
+    users: UserManager {},
+    guilds: GuildManager {},
+    channels: ChannelManager {},
+    presence: ClientPresence {
+      userId: null,
+      guild: null,
+      status: 'online',
+      activities: [],
+      clientStatus: null
+    },
+    user: ClientUser {
+      id: '881243621293170738',
+      bot: true,
+      system: false,
+      flags: null,
+      username: 'GalacticBot',
+      discriminator: '1614',
+      avatar: 'b5f7b4d538d80e6e693758421fc9539b',
+      verified: true,
+      mfaEnabled: true
+    },
+    application: ClientApplication {
+      id: '881243621293170738',
+      name: null,
+      description: null,
+      icon: null,
+      flags: ApplicationFlags { bitfield: 303104
+        },
+      cover: null,
+      rpcOrigins: [],
+      botRequireCodeGrant: null,
+      botPublic: null,
+      owner: null,
+      commands: ApplicationCommandManager {
+        permissions: [ApplicationCommandPermissionsManager
+            ]
+        }
+    },
+    readyAt: 2021-10-10T21: 59: 48.633Z,
+    commands: Collection(15) [Map
+    ] {
+      'buy' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'cargo' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'tutorial' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'echo' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'hanger' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'hunt' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'inventory' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'map' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'pfp' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'ping' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'refine' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'settings' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'shop' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'test' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        },
+      'hunt_configuration' => { data: [SlashCommandBuilder
+            ], execute: [AsyncFunction: execute
+            ]
+        }
+    },
+    prefix: '+',
+    clientId: '881243621293170738',
+    guildId: '883828008316723231',
+    languages: { eng: { ping: 'Ping'
+        }, ita: { ping: 'Ping'
+        }
+    },
+    wait: [Function: setTimeout
+    ],
+    random: [Function (anonymous)
+    ],
+    developersID: [
+        145849120698007550,
+        400614330921648100
+    ],
+    pool: Pool {
+      _events: [Object: null prototype
+        ] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      config: PoolConfig {
+        acquireTimeout: 10000,
+        connectionConfig: [ConnectionConfig
+            ],
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+        },
+      _acquiringConnections: [],
+      _allConnections: [
+            [PoolConnection
+            ]
+        ],
+      _freeConnections: [
+            [PoolConnection
+            ]
+        ],
+      _connectionQueue: [],
+      _closed: false,
+        [Symbol(kCapture)
+        ]: false
+    },
+    [Symbol(kCapture)
+    ]: false
+}
