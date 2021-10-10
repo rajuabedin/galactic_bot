@@ -136,10 +136,28 @@ class Client extends Discord.Client {
         return textToEmbed
     }
 
+    blueEmbedImage(text, tittle = "", user) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x009dff')
+            .setAuthor(tittle, user.avatarURL())
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+
     greenEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0x14e188')
             .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+
+    greenEmbedImage(text, tittle = "", user) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0x14e188')
+            .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
         return textToEmbed
@@ -154,10 +172,28 @@ class Client extends Discord.Client {
         return textToEmbed
     }
 
+    redEmbedImage(text, tittle = "", user) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0xe1143d')
+            .setAuthor(tittle, user.avatarURL())
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+
     yellowEmbed(text, tittle = "") {
         const textToEmbed = new Discord.MessageEmbed()
             .setColor('0xffff00')
             .setTitle(tittle)
+            .setURL('https://obelisk.club/')
+            .setDescription(text)
+        return textToEmbed
+    }
+
+    yellowEmbedImage(text, tittle = "", user) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0xffff00')
+            .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
         return textToEmbed

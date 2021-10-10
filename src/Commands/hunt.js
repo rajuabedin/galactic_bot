@@ -35,11 +35,11 @@ module.exports = {
                 return;
             }
 
-            /*let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
                 return;
-            }*/
+            }
 
             let shipEmiji = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
             shipEmiji = shipEmiji[0].emoji_id;
@@ -421,7 +421,7 @@ module.exports = {
 
             let userResources = await interaction.client.databaseSelcetData("SELECT resources FROM users WHERE user_id = ?", [interaction.user.id]);
 
-            userResources = userResources[0].resources.split("; ").map(Number);
+            userResources = await userResources[0].resources.split("; ").map(Number);
             resources = resources.map(function (num, idx) { return num + userResources[idx]; });
             cargo = resources.reduce((a, b) => a + b);
             resources = resources.join("; ");
@@ -606,7 +606,6 @@ async function getAlien(aliens) {
     }
     indexList = indexList.sort(() => Math.random() - 0.5)
     index = indexList[Math.floor(Math.random() * (100))];
-    let resources = aliens[index].resources.split("; ");
-    resources = resources.map(Number);
+    let resources = aliens[index].resources.split("; ").map(Number)
     return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, resources, aliens[index].emoji_id];
 }
