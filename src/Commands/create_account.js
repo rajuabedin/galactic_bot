@@ -13,7 +13,7 @@ module.exports = {
             let userInfo = await interaction.client.getUserAccount(interaction.user.id);
             let tutorialCounter = 0;
             let selectedFirm = "";
-            let phaseCounter = 0;
+            let phaseCounter = 1;
             let laserEquipped = false;
             if (typeof userInfo === 'undefined') {
                 interaction.reply({ embeds: [interaction.client.yellowEmbed("Which firm would you like to create an account on?")], components: [firm] });
@@ -27,12 +27,11 @@ module.exports = {
                 selectedFirm = userInfo.firm;
                 if (tutorialCounter == 1) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
-                    phaseCounter = 1;
                 }
                 else if (tutorialCounter == 2) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
-                    phaseCounter = 2;
                 }
+                phaseCounter = 2;
             }
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
@@ -59,9 +58,9 @@ module.exports = {
                     selectedFirm = i.customId;
                 }
                 else if (tutorialCounter == 1) {
-                    phaseCounter++;
                     if (phaseCounter == 1) {
                         await i.update({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
+                        phaseCounter++;
                     }
                     if (phaseCounter == 2) {
                         tutorialCounter++;
@@ -86,7 +85,7 @@ module.exports = {
                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You were rewarded with one **L3E-** laser cannon\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                         }
-                        phaseCounter = 0;
+                        phaseCounter = 1;
                     }
                 }
                 else if (tutorialCounter == 2) {
@@ -104,8 +103,9 @@ module.exports = {
                             }
                             else if (i.customId === "Continue") {
                                 tutorialCounter++;
-                                phaseCounter = 0;
-                                await i.update({ embeds: [interaction.client.greenEmbed(`**Tutorial ended for now**`, "TUTORIAL phase 3")], components: [] });
+                                phaseCounter = 1;
+                                await i.update({ embeds: [interaction.client.greenEmbed(`You can equip other items too by using the **/hanger** command\n*You were rewarded with one **S3E-** shield module`, "TUTORIAL phase 3")], components: [tutorial] });
+                                await interaction.client.databaseEditData(`INSERT INTO user_shields (user_id, shield_model) VALUES (?, ?)`, [interaction.user.id, "S3"]);
                                 await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 1 WHERE user_id = ?`, [interaction.user.id]);
                                 await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [140, interaction.user.id]);
                                 await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ?, tutorial_counter = ? WHERE user_id = ?`, [140, 1, tutorialCounter, interaction.user.id]);
@@ -126,6 +126,15 @@ module.exports = {
                                 await i.update({ content: message, embeds: [interaction.client.blueEmbed(`\n***Green button:** equipped item\n**Blue button:** equippable item\n**Red button:** unequippable item due **max capacity***`)], components: [row] })
                             }
                         }
+                    }
+                }
+                else if (tutorialCounter == 3) {
+                    if (phaseCounter == 1) {
+                        await i.update({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 4")], components: [tutorial] });
+                        phaseCounter++;
+                    }
+                    else if (phaseCounter == 2) {
+
                     }
                 }
                 //}               
