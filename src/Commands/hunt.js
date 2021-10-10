@@ -9,11 +9,14 @@ module.exports = {
         .setDescription('Hunt Allien!'),
 
     async execute(interaction, userInfo) {
-        //try {
-            if (userInfo.tutorial_counter < 4){
+        try {
+            if (userInfo.tutorial_counter < 4) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
                 return;
             }
+            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
+            let maxCargo = userInfo.max_cargo;
+            let cargo = userInfo.cargo;
             let damageDealt = 0;
             let damageReceived = 0;
             let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
@@ -44,7 +47,7 @@ module.exports = {
             let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
             expRequirement = expRequirement[0].exp_to_lvl_up;
             await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-            let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, 0];
+            let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0]];
             let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
             let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
@@ -273,7 +276,7 @@ module.exports = {
                 damageReceived += Math.trunc(totalAliensDamage * accuracyAlien);
 
                 let alien_shield_damage = Math.trunc((userStats[6] - alienStats[4]) * totalAliensDamage * accuracyAlien);
-                let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);                
+                let alien_hp_damage = Math.trunc(totalAliensDamage * accuracyAlien - alien_shield_damage);
                 if (userStats[3] <= alien_shield_damage) {
                     alien_hp_damage += alien_shield_damage - userStats[3];
                     alien_shield_damage = userStats[3];
@@ -292,7 +295,24 @@ module.exports = {
                     units += alienStats[8];
                     exp_reward += alienStats[9];
                     honor += alienStats[10];
-                    resources += alienStats[11];
+                    let totalResources = alienStats[11].reduce((a, b) => a + b) + resources.reduce((a, b) => a + b) + cargo;
+                    if (totalResources <= maxCargo) {
+                        resources = resources.map(function (num, idx) { return num + alienStats[11][idx]; });
+                    }
+                    else {
+                        let difference = maxCargo - cargo - resources.reduce((a, b) => a + b);
+                        let index = 0;
+                        while (difference > 0) {
+                            difference -= alienStats[11][index];
+                            if (difference >= 0) {
+                                resources[index] += alienStats[11][index];
+                                index++;
+                            }
+                            else {
+                                resources[index] += difference;
+                            }
+                        }
+                    }
 
                     alienList.shift();
 
@@ -384,7 +404,12 @@ module.exports = {
             let message_user_info = `**Battle ended after ${turnCounter} turns**\n`;
             message_user_info += `**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
             //await interaction.client.wait(1000 + 5 * turnCounter);
-            let messageReward = "\`\`\`yaml\n" + `EXP      :  ${exp_reward}\nCredits  :  ${credit}\nUnits    :  ${units}\nHonor    :  ${honor}` + " \`\`\`";
+            let messageReward = "\`\`\`yaml\n" + `EXP           :  ${exp_reward}\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor}`;
+            for (item in resources) {
+                if (resources[item] > 0)
+                    messageReward += `\n${resourcesName[item]}:  ${resources[item]}`;
+            }
+            messageReward += " \`\`\`";
             if (userStats[1] > 0) {
                 await interaction.editReply({ embeds: [interaction.client.greenEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!")], components: [row] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!"]);
@@ -393,17 +418,25 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(message_user_info + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([message_user_info + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
             }
+
+            let userResources = await interaction.client.databaseSelcetData("SELECT resources FROM users WHERE user_id = ?", [interaction.user.id]);
+
+            userResources = userResources[0].resources.split("; ").map(Number);
+            resources = resources.map(function (num, idx) { return num + userResources[idx]; });
+            cargo = resources.reduce((a, b) => a + b);
+            resources = resources.join("; ");
+
             if ((userInfo.exp + exp_reward) >= expRequirement) {
-                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ? WHERE user_id = ?", [userInfo.exp + exp_reward - expRequirement, credit, units, honor, userStats[1], interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [userInfo.exp + exp_reward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
                 logMessage[turnCounter][0] += "\n**YOU LEVELLED UP**";
             }
             else
-                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
             buttonHandler(interaction, interaction.user.id, logMessage);
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -412,7 +445,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
 
     }
 }
@@ -573,5 +606,7 @@ async function getAlien(aliens) {
     }
     indexList = indexList.sort(() => Math.random() - 0.5)
     index = indexList[Math.floor(Math.random() * (100))];
-    return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, aliens[index].resources, aliens[index].emoji_id];
+    let resources = aliens[index].resources.split("; ");
+    resources = resources.map(Number);
+    return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, resources, aliens[index].emoji_id];
 }

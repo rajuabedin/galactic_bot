@@ -67,7 +67,7 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: 100 || SH: ${ammoValue - 80}**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
                         }
                     }
-                    else if (i.customId === "disable") {
+                    else if (i.customId === "disable" || index == 9) {
                         [hp, sh, setting_row] = await buttonHandler(-1, "DANGER");
                         await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
                         ammoValue = -3;
@@ -82,7 +82,7 @@ module.exports = {
                         ammoValue = (index + 1) * 20
                         await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${ammoValue} || SH: 0**`, message)], components: [hp, sh, row, setting_row] });
                     }
-                    else if (index < 10) {
+                    else if (index < 9) {
                         [hp, sh, setting_row] = await buttonHandler(index);
                         ammoValue = (index + 1) * 20
                         await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${ammoValue - 100}**`, message)], components: [hp, sh, row, setting_row] });
@@ -178,7 +178,7 @@ async function buttonHandler(selected_index = -1, button_styile = "SECONDARY") {
             new MessageButton()
                 .setCustomId("disable")
                 .setEmoji("887979580013563914")
-                .setStyle("PRIMARY"),
+                .setStyle("DANGER"),
             new MessageButton()
                 .setCustomId("21")
                 .setLabel("                      ")
