@@ -33,6 +33,7 @@ module.exports = {
 
             var quantity = interaction.options.getInteger('quantity');
 
+            if (quantity < 1) return await interaction.reply({ embeds: [interaction.client.redEmbed("Dude.... Really? You want buy negative quantity?.", "Really!!")], ephemeral: true });
 
             if (interaction.options.getString('category').toLowerCase() === "ships") {
                 shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [interaction.options.getString('item').toUpperCase()]);
