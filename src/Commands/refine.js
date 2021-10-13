@@ -8,6 +8,7 @@ module.exports = {
         .setDescription('refine cargo to their superior resources'),
 
     async execute(interaction, userInfo) {
+        try{
         let resources = userInfo.resources.split("; ").map(Number);
         let cargo = userInfo.cargo;
         let message = "**Refined materials:**" + "\`\`\`yaml\n";
@@ -22,11 +23,21 @@ module.exports = {
         cargo = resources.reduce((a, b) => a + b);
         message += `${cargo}` + " \`\`\`";
         if (refined)
-            await interaction.reply({ embeds: [interaction.client.greenEmbedImage(message, "Refinement successful", interaction.user)] });
+            await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Refinement successful")] });
         else
-            await interaction.reply({ embeds: [interaction.client.redEmbedImage("**Not enough material to refine**", "Refinement failure", interaction.user)] });
+            await interaction.reply({ embeds: [interaction.client.redEmbed("**Not enough material to refine**", "Refinement failure")] });
         resources = resources.join("; ");
         await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
+        }
+        catch (error) {
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            }
+
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
+        }
     }
 }
 

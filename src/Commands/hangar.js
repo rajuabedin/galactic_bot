@@ -74,10 +74,10 @@ module.exports = {
                     unequipableItems.push([0, 1, 2, rawEquippedShield[item].emoji_id]);
                 }
                 for (item in rawEquippedEngine) {
-                    itemsEquipped.push([rawEquippedEngine[item].speed_value, rawEquippedEngine[item].engine_model, rawEquippedEngine[item].engine_id + "  ", rawEquippedEngine[item].emoji_id]);
+                    itemsEquipped.push([rawEquippedEngine[item].speed_value, "  " + rawEquippedEngine[item].engine_model + "  ", rawEquippedEngine[item].engine_id, rawEquippedEngine[item].emoji_id]);
                 }
                 for (item in rawUnequippedEngine) {
-                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, rawUnequippedEngine[item].engine_model, rawUnequippedEngine[item].engine_id + "  ", rawUnequippedEngine[item].emoji_id]);
+                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, "  " +  rawUnequippedEngine[item].engine_model + "  ", rawUnequippedEngine[item].engine_id, rawUnequippedEngine[item].emoji_id]);
                 }
                 displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
                 baseSpeed = maxEquipableItem[0].ship_base_speed;
@@ -222,7 +222,7 @@ async function buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, uneq
     let array_length = laser_items.length;
     if (array_length < 20) {
         laser_items.length = 20;
-        laser_items.fill([0, "           ", "           "], array_length);
+        laser_items.fill([0, "          ", "          "], array_length);
         //console.log(laser_items);
     }
 
@@ -377,15 +377,15 @@ const row4 = new MessageActionRow()
             .setStyle("DANGER"),
         new MessageButton()
             .setCustomId("20")
-            .setLabel("       ")
+            .setLabel("            ")
             .setStyle("PRIMARY"),
         new MessageButton()
             .setCustomId("21")
-            .setLabel("       ")
+            .setLabel("            ")
             .setStyle("PRIMARY"),
         new MessageButton()
             .setCustomId("22")
-            .setLabel("       ")
+            .setLabel("            ")
             .setStyle("PRIMARY"),
         new MessageButton()
             .setCustomId("save")

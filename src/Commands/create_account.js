@@ -8,7 +8,7 @@ module.exports = {
         .setName('tutorial')
         .setDescription('introduces the game commands'),
 
-    async execute(interaction) {
+    async execute(interaction, userInfo) {
         try {
             let userInfo = await interaction.client.getUserAccount(interaction.user.id);
             let tutorialCounter = 0;
