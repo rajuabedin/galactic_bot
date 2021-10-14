@@ -33,12 +33,11 @@ module.exports = {
                 if (reward > 500) reward = 500;
                 await interaction.client.databaseEditData(`update users set units = units + ${reward} where user_id = '${interaction.user.id}'`)
                 await interaction.client.databaseEditData(`update user_daily set streak = streak + 1, next_date = '${today.toJSON().slice(0, 10)}' where user_id = '${interaction.user.id}'`)
-                return await interaction.reply({ embeds: [interaction.client.greenEmbed("You have successfully claimed the following reward(s):```json\nUnits: " + reward + "```Daily streak```css\n" + (dailyInfo.streak + 1) + "```", "Daily Reward")], components: [] })
+                return await interaction.reply({ embeds: [interaction.client.greenEmbed("```json\nDaily reward: " + reward + " Units\nDaily Streak: " + (dailyInfo.streak + 1) + "```", "Daily Reward")], components: [] })
             } else if (diffInDays > 2) {
                 await interaction.client.databaseEditData(`update users set units = units + ${reward} where user_id = '${interaction.user.id}'`)
                 await interaction.client.databaseEditData(`update user_daily set streak = 1, next_date = '${today.toJSON().slice(0, 10)}' where user_id = '${interaction.user.id}'`)
-                return await interaction.reply({ embeds: [interaction.client.greenEmbed("You have successfully claimed the following reward(s):```css\nUnits" + reward + "```Daily streak```css\n1```", "Daily Reward")], components: [] })
-            } else {
+                return await interaction.reply({ embeds: [interaction.client.greenEmbed("```json\nDaily reward: " + reward + " Units\nDaily Streak: " + (1) + "```", "Daily Reward")], components: [] })
                 return await interaction.reply({ embeds: [interaction.client.redEmbed("Daily already claimed. Come back tomorrow.", "Claimed!")], components: [] })
             }
 
