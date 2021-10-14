@@ -201,6 +201,16 @@ class Client extends Discord.Client {
         return textToEmbed
     }
 
+    yellowPagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
+        const textToEmbed = new Discord.MessageEmbed()
+            .setColor('0xffff00')
+            .setAuthor(tittle, user.avatarURL())
+            .setDescription(text)
+            .setThumbnail(imageUrl)
+            .setFooter(footer)
+        return textToEmbed
+    }
+
 
     /**
      * 
@@ -279,6 +289,28 @@ class Client extends Discord.Client {
         }
 
         return queryCompleted;
+    }
+
+    /**
+     * 
+     * @param {String} query 
+     * @param {Array} args 
+     * @returns 
+     */
+    async databaseEditDataReturnID(query, args) {
+        var result = await this.usePooledConnectionAsync(async connection => {
+            const rowsCount = await new Promise((resolve, reject) => {
+                connection.query(query, args, function (error, results, fields) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results.insertId);
+                    }
+                });
+            });
+            return rowsCount;
+        });
+        return result;
     }
 
     async makeid(length) {
