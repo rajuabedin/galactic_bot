@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('Hunt Allien!'),
 
     async execute(interaction, userInfo) {
-        try {
+        //try {
         if (userInfo.tutorial_counter < 4) {
             await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
             return;
@@ -35,10 +35,35 @@ module.exports = {
             return;
         }
 
-        let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+        /*let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
         if (elapsedTimeFromHunt < 60) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
             return;
+        }*/
+
+        let alienNameChecker = 0;
+        let alienNameIndex = 0;
+        let questTask = 0;
+        let questTaskLeft = 0;
+        let countQuest = false;
+        let quest = await interaction.client.databaseSelcetData("SELECT quests.quest_limit, quests.quest_reward_credit, quests.quest_reward_units, quests.quest_reward_exp, quests.quest_reward_honor, quests.quest_task, quests.map_id, user_quests.quest_task_left, user_quests.quest_started_at FROM user_quests INNER JOIN quests ON user_quests.quest_id = quests.quest_id WHERE user_quests.user_id = ? AND user_quests.quest_status = 'active'", [interaction.user.id]);
+        if (typeof quest === 'undefined') {
+            questTask = quest[0].quest_task.split(";");
+            questTaskLeft = quest[0].quest_task_left.split(";").map(Number);
+
+            if (quest[0].quest_limit > 0) {
+                let questEndTime = Date.parse(quest[0].quest_started_at) + (quest[0].quest_limit * 60 * 60 * 1000);
+                let currentTime = new Date().getTime();
+
+                let distance = questEndTime - currentTime;
+                if (distance < 0) {
+                    await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
+                    quest[0].map_id = -99;
+                }
+            }
+            if (quest[0].map_id === 1 || quest[0].map_id === userInfo.map_id) {
+                countQuest = true;
+            }
         }
 
         const filterRun = iRun => iRun.user.id === interaction.user.id && iRun.message.interaction.id === interaction.id && iRun.customId === "Run";
@@ -51,8 +76,13 @@ module.exports = {
             collectorRun.stop();
         });
 
-        let shipEmiji = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+        let shipEmiji = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id, user_ships.ship_model FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+        let shipModel = shipEmiji[0].ship_model;
         shipEmiji = shipEmiji[0].emoji_id;
+        let mapIDFrist = userInfo.map_id / 10;
+        let mapIDSecond = Math.floor((userInfo.map_id % 1.0) * 10);
+        mapIDFrist = Math.floor(mapIDFrist);
+
 
         let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
         expRequirement = expRequirement[0].exp_to_lvl_up;
@@ -73,6 +103,14 @@ module.exports = {
             userHp = userInfo.max_hp;
         let userStats = [userInfo.user_damage, userHp, userInfo.max_shield, userInfo.user_shield, userInfo.user_speed, userInfo.user_penetration / 100, userInfo.absorption_rate / 100, userInfo.laser_quantity];
 
+        if (shipModel === "S5") {
+            if (mapIDSecond < 5 && ((userInfo.firm === "Moon" && mapIDFrist == 2) || (userInfo.firm === "Earth" && mapIDFrist == 1) || (userInfo.firm === "Mars" && mapIDFrist == 3))) {
+                userStats[1] += 60000;
+                userStats[0] *= 2;
+                userStats[2] *= 2;
+                userStats[3] *= 2;
+            }
+        }
 
         let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
         await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
@@ -312,6 +350,29 @@ module.exports = {
                 userStats[3] = userMaxShield;
 
             if (alienStats[1] <= 0) {
+
+                if (countQuest) {
+                    alienNameChecker = (x) => x == alienStats[6];
+                    alienNameIndex = questTask.findIndex(alienNameChecker)
+                    if (alienNameIndex > -1 && questTaskLeft[alienNameIndex] > 0) {
+                        questTaskLeft[alienNameIndex]--;
+
+                        for (item in questTaskLeft) {
+                            if (item == 0)
+                                countQuest = false;
+                            else
+                                countQuest = true;
+                        }
+                        if (!countQuest) {
+                            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ? WHERE user_id = ?", [quest[0].quest_reward_exp, quest[0].quest_reward_credit, quest[0].quest_reward_units, quest[0].quest_reward_honor, interaction.user.id]);
+                            let messageReward = "\`\`\`yaml\n" + `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
+
+                            await interaction.followUp({ embeds: [interaction.client.yellowEmbed(messageReward, "Quest Completed!")] });
+                            await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["completed", interaction.user.id, userInfo.quests_id])
+                        }
+                    }
+                }
+
                 alienStats[1] = 0;
                 totalAliensDamage -= alienStats[0];
                 credit += alienStats[7];
@@ -505,7 +566,7 @@ module.exports = {
         await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
             [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
         buttonHandler(interaction, interaction.user.id, logMessage);
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -514,7 +575,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
 
     }
 }
