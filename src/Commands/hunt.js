@@ -31,7 +31,7 @@ module.exports = {
         let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
 
         if (typeof aliens[0] === 'undefined') {
-            await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR, unknown map!")] });
+            await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
             return;
         }
 
