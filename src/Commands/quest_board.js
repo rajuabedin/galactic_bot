@@ -4,7 +4,7 @@ const errorLog = require('../Utility/logger').logger;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('quests')
+        .setName('quests_board')
         .setDescription('Get a quest and level up faster!')
         .addStringOption(option =>
             option.setName('search')
@@ -32,6 +32,12 @@ module.exports = {
                         var task = quest.quest_task.split(";");
                         var taskQuantity = quest.quest_task_quantity.split(";");
                         var timeLeftMsg = "";
+                        var availableMap = "No Map Restriction";
+
+                        if (quest.map_id > 0) {
+                            availableMap = quest.map_id;
+                        }
+
 
                         if (quest.quest_limit > 0) {
                             timeLeftMsg = quest.quest_limit + " H";
@@ -80,7 +86,7 @@ module.exports = {
                             }
                         }
 
-                        currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
+                        currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
 
                         if (count === questsPerPage) {
                             questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);
@@ -99,6 +105,11 @@ module.exports = {
                             var task = quest.quest_task.split(";");
                             var taskQuantity = quest.quest_task_quantity.split(";");
                             var timeLeftMsg = "";
+                            var availableMap = "No Map Restriction";
+
+                            if (quest.map_id > 0) {
+                                availableMap = quest.map_id;
+                            }
 
                             if (quest.quest_limit > 0) {
                                 timeLeftMsg = quest.quest_limit + " H";
@@ -146,7 +157,7 @@ module.exports = {
                                 }
                             }
 
-                            currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
+                            currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
 
                             if (count === questsPerPage) {
                                 questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);

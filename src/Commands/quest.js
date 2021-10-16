@@ -45,6 +45,12 @@ module.exports = {
                 var task = quest.quest_task.split(";");
                 var taskQuantity = quest.quest_task_quantity.split(";");
                 var taskQuantityLeft = quest.quest_task_left.split(";");
+                var availableMap = "No Map Restriction";
+
+                if (quest.map_id > 0) {
+                    availableMap = quest.map_id;
+                }
+
                 if (quest.quest_limit > 0) {
                     var questEndTime = Date.parse(quest.quest_started_at) + (quest.quest_limit * 60 * 60 * 1000);
                     var currentTime = new Date().getTime();
@@ -63,7 +69,7 @@ module.exports = {
 
 
                 var timeLeftMsg = ""
-                if(quest.quest_limit > 0){
+                if (quest.quest_limit > 0) {
                     if (distance < 0) {
                         timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
                         questExpired = true;
@@ -87,7 +93,7 @@ module.exports = {
                 } else {
                     timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)"
                 }
-                
+
 
 
 
@@ -132,7 +138,7 @@ module.exports = {
                     }
                 }
 
-                currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Time Left:** " + timeLeftMsg + "\n**Quest Objective Status:**```" + todo + "```";
+                currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Quest Reward(s)**\n" + reward + "\n**Quest Time Left:** " + timeLeftMsg + "\n**Quest Objective Status:**```" + todo + "```";
 
                 if (count === questsPerPage) {
                     questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);
