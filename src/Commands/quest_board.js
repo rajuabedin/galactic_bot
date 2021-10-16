@@ -43,7 +43,7 @@ module.exports = {
 
                         if (quest.quest_reward_units > 0) {
                             if (reward != "") {
-                                reward += `| Units - ${quest.quest_reward_units}`;
+                                reward += ` | Units - ${quest.quest_reward_units}`;
                             } else {
                                 reward += `Units - ${quest.quest_reward_units}`;
                             }
@@ -51,7 +51,7 @@ module.exports = {
 
                         if (quest.quest_reward_exp > 0) {
                             if (reward != "") {
-                                reward += `| Exp - ${quest.quest_reward_exp}`;
+                                reward += ` | Exp - ${quest.quest_reward_exp}`;
                             } else {
                                 reward += `Exp - ${quest.quest_reward_exp}`;
                             }
@@ -59,15 +59,15 @@ module.exports = {
 
                         if (quest.quest_reward_honor > 0) {
                             if (reward != "") {
-                                reward += `| Honor - ${quest.quest_reward_honor}`;
+                                reward += ` | Honor - ${quest.quest_reward_honor}`;
                             } else {
                                 reward += `Honor - ${quest.quest_reward_honor}`;
                             }
                         }
 
-                        if (quest.quest_reward_items != null) {
+                        if (quest.quest_reward_items != null && quest.quest_reward_items !== "") {
                             if (reward != "") {
-                                reward += `| Materials: ${quest.quest_reward_items}`;
+                                reward += ` | Materials: ${quest.quest_reward_items}`;
                             } else {
                                 reward += `Materials: - ${quest.quest_reward_items}`;
                             }
@@ -103,7 +103,7 @@ module.exports = {
 
                             if (quest.quest_reward_units > 0) {
                                 if (reward != "") {
-                                    reward += `| Units - ${quest.quest_reward_units}`;
+                                    reward += ` | Units - ${quest.quest_reward_units}`;
                                 } else {
                                     reward += `Units - ${quest.quest_reward_units}`;
                                 }
@@ -111,7 +111,7 @@ module.exports = {
 
                             if (quest.quest_reward_exp > 0) {
                                 if (reward != "") {
-                                    reward += `| Exp - ${quest.quest_reward_exp}`;
+                                    reward += ` | Exp - ${quest.quest_reward_exp}`;
                                 } else {
                                     reward += `Exp - ${quest.quest_reward_exp}`;
                                 }
@@ -119,15 +119,15 @@ module.exports = {
 
                             if (quest.quest_reward_honor > 0) {
                                 if (reward != "") {
-                                    reward += `| Honor - ${quest.quest_reward_honor}`;
+                                    reward += ` | Honor - ${quest.quest_reward_honor}`;
                                 } else {
                                     reward += `Honor - ${quest.quest_reward_honor}`;
                                 }
                             }
 
-                            if (quest.quest_reward_items != null) {
+                            if (quest.quest_reward_items != null && quest.quest_reward_items !== "") {
                                 if (reward != "") {
-                                    reward += `| Materials: ${quest.quest_reward_items}`;
+                                    reward += ` | Materials: ${quest.quest_reward_items}`;
                                 } else {
                                     reward += `Materials: - ${quest.quest_reward_items}`;
                                 }
@@ -248,14 +248,14 @@ function buttonHandler(interaction, questsData, userInfo) {
 
             } else {
                 if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to start this quest?", "Start Quest")], components: [rowYesNo] });
+                    await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this quest?", "Start Quest")], components: [rowYesNo] });
                 } else {
-                    await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to start this quest?", "Start Quest")], components: [rowYesNo] });
+                    await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this quest?", "Start Quest")], components: [rowYesNo] });
                 }
 
             }
         } else if (i.customId === "yes") {
-            var query = `insert into user_quests (quest_id, quest_task, user_id) values (?,?,?)`;
+            var query = `insert into user_quests (quest_id, quest_task_left, user_id) values (?,?,?)`;
             var questId = await interaction.client.databaseEditDataReturnID(query, [selectedQuestID, questsData[index][2], interaction.user.id])
             await interaction.client.databaseEditData(`update users set quests_id = ? where user_id = ?`, [questId, interaction.user.id])
             if (i.replied) {
