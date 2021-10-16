@@ -72,15 +72,15 @@ module.exports = {
                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                         }
                         else if (selectedFirm === "Moon") {
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 1-2**`, "TUTORIAL phase 2")], components: [] });
-                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [12, tutorialCounter, interaction.user.id]);
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 2-1**`, "TUTORIAL phase 2")], components: [] });
+                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [21, tutorialCounter, interaction.user.id]);
                             await interaction.client.wait(1000);
                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You were rewarded with one **L3E-** laser cannon\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                         }
                         else {
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 1-3**`, "TUTORIAL phase 2")], components: [] });
-                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [13, tutorialCounter, interaction.user.id]);
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 3-1**`, "TUTORIAL phase 2")], components: [] });
+                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [31, tutorialCounter, interaction.user.id]);
                             await interaction.client.wait(1000);
                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You were rewarded with one **L3E-** laser cannon\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
