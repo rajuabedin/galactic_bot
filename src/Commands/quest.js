@@ -45,41 +45,49 @@ module.exports = {
                 var task = quest.quest_task.split(";");
                 var taskQuantity = quest.quest_task_quantity.split(";");
                 var taskQuantityLeft = quest.quest_task_left.split(";");
-                var questEndTime = Date.parse(quest.quest_started_at) + (quest.quest_limit * 60 * 60 * 1000);
+                if (quest.quest_limit > 0) {
+                    var questEndTime = Date.parse(quest.quest_started_at) + (quest.quest_limit * 60 * 60 * 1000);
+                    var currentTime = new Date().getTime();
+
+                    var distance = questEndTime - currentTime;
+
+                    // Time calculations for days, hours, minutes and seconds
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                }
 
 
-                var currentTime = new Date().getTime();
 
-                var distance = questEndTime - currentTime;
-
-                // Time calculations for days, hours, minutes and seconds
-                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
                 var timeLeftMsg = ""
-
-                if (distance < 0) {
-                    timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
-                    questExpired = true;
-                    await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
+                if(quest.quest_limit > 0){
+                    if (distance < 0) {
+                        timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
+                        questExpired = true;
+                        await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
+                    } else {
+                        timeLeftMsg = "__"
+                        if (days > 0) {
+                            timeLeftMsg += `${days} **D** `
+                        }
+                        if (hours > 0) {
+                            timeLeftMsg += `${hours} **H** `
+                        }
+                        if (minutes > 0) {
+                            timeLeftMsg += `${minutes} **M** `
+                        }
+                        if (seconds > 0) {
+                            timeLeftMsg += `${seconds} **S** `
+                        }
+                        timeLeftMsg += "__"
+                    }
                 } else {
-                    timeLeftMsg = "__"
-                    if (days > 0) {
-                        timeLeftMsg += `${days} **D** `
-                    }
-                    if (hours > 0) {
-                        timeLeftMsg += `${hours} **H** `
-                    }
-                    if (minutes > 0) {
-                        timeLeftMsg += `${minutes} **M** `
-                    }
-                    if (seconds > 0) {
-                        timeLeftMsg += `${seconds} **S** `
-                    }
-                    timeLeftMsg += "__"
+                    timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)"
                 }
+                
 
 
 

@@ -31,6 +31,13 @@ module.exports = {
                         var todo = "";
                         var task = quest.quest_task.split(";");
                         var taskQuantity = quest.quest_task_quantity.split(";");
+                        var timeLeftMsg = "";
+
+                        if (quest.quest_limit > 0) {
+                            timeLeftMsg = quest.quest_limit + " H";
+                        } else {
+                            timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                        }
 
                         for (index = 0; index < task.length; index++) {
                             todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
@@ -73,7 +80,7 @@ module.exports = {
                             }
                         }
 
-                        currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + quest.quest_limit + "H\n**Quest Objective:**```" + todo + "```";
+                        currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
 
                         if (count === questsPerPage) {
                             questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);
@@ -91,7 +98,13 @@ module.exports = {
                             var todo = "";
                             var task = quest.quest_task.split(";");
                             var taskQuantity = quest.quest_task_quantity.split(";");
+                            var timeLeftMsg = "";
 
+                            if (quest.quest_limit > 0) {
+                                timeLeftMsg = quest.quest_limit + " H";
+                            } else {
+                                timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                            }
 
                             for (index = 0; index < task.length; index++) {
                                 todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
@@ -133,7 +146,7 @@ module.exports = {
                                 }
                             }
 
-                            currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + quest.quest_limit + "H\n**Quest Objective:**```" + todo + "```";
+                            currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Quest Reward(s)**\n" + reward + "\n**Quest Duration:** " + timeLeftMsg + "\n**Quest Objective:**```" + todo + "```";
 
                             if (count === questsPerPage) {
                                 questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);
