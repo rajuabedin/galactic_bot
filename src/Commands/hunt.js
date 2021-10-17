@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('Hunt Allien!'),
 
     async execute(interaction, userInfo) {
-        //try {
+        try {
         if (userInfo.tutorial_counter < 4) {
             await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
             return;
@@ -35,19 +35,19 @@ module.exports = {
             return;
         }
 
-        /*let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+        let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
         if (elapsedTimeFromHunt < 60) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
             return;
-        }*/
+        }
 
         let alienNameChecker = 0;
         let alienNameIndex = 0;
         let questTask = 0;
         let questTaskLeft = 0;
         let countQuest = false;
-        let quest = await interaction.client.databaseSelcetData("SELECT quests.quest_limit, quests.quest_reward_credit, quests.quest_reward_units, quests.quest_reward_exp, quests.quest_reward_honor, quests.quest_task, quests.map_id, user_quests.quest_task_left, user_quests.quest_started_at FROM user_quests INNER JOIN quests ON user_quests.quest_id = quests.quest_id WHERE user_quests.user_id = ? AND user_quests.quest_status = 'active'", [interaction.user.id]);
-        if (typeof quest === 'undefined') {
+        let quest = await interaction.client.databaseSelcetData("SELECT * FROM user_quests INNER JOIN quests ON user_quests.quest_id = quests.quest_id WHERE user_quests.user_id = ? AND user_quests.quest_status = 'active'", [interaction.user.id]);
+        if (typeof quest !== 'undefined') {
             questTask = quest[0].quest_task.split(";");
             questTaskLeft = quest[0].quest_task_left.split(";").map(Number);
 
@@ -59,6 +59,7 @@ module.exports = {
                 if (distance < 0) {
                     await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
                     quest[0].map_id = -99;
+                    questTaskLeft = 0;
                 }
             }
             if (quest[0].map_id === 1 || quest[0].map_id === userInfo.map_id) {
@@ -87,7 +88,7 @@ module.exports = {
         let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
         expRequirement = expRequirement[0].exp_to_lvl_up;
         await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-        let [credit, units, exp_reward, honor, resources] = [0, 0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0]];
+        let [credit, units, expReward, honor, resources] = [0, 0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0]];
         let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
         let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
         //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
@@ -103,6 +104,23 @@ module.exports = {
             userHp = userInfo.max_hp;
         let userStats = [userInfo.user_damage, userHp, userInfo.max_shield, userInfo.user_shield, userInfo.user_speed, userInfo.user_penetration / 100, userInfo.absorption_rate / 100, userInfo.laser_quantity];
 
+        let boost = await interaction.client.databaseSelcetData("SELECT * FROM boost WHERE user_id = ?", [interaction.user.id]);
+
+        if (Math.floor((Date.now() - Date.parse(boost[0].hp_boost)) / 1000) < 0)
+            userStats[1] = Math.floor(userStats[1] * 1.1);
+        if (Math.floor((Date.now() - Date.parse(boost[0].damage_boost)) / 1000) < 0)
+            userStats[0] = Math.floor(userStats[0] * 1.1);
+        if (Math.floor((Date.now() - Date.parse(boost[0].shield_boost)) / 1000) < 0) {
+            userStats[2] = Math.floor(userStats[2] * 1.2);
+            userStats[3] = Math.floor(userStats[3] * 1.2);
+        }
+        let expBoost = false;
+        let honorBoost = false;
+        if (Math.floor((Date.now() - Date.parse(boost[0].exp_boost)) / 1000) < 0)
+            expBoost = true;
+        if (Math.floor((Date.now() - Date.parse(boost[0].honor_boost)) / 1000) < 0)
+            honorBoost = true;
+
         if (shipModel === "S5") {
             if (mapIDSecond < 5 && ((userInfo.firm === "Moon" && mapIDFrist == 2) || (userInfo.firm === "Earth" && mapIDFrist == 1) || (userInfo.firm === "Mars" && mapIDFrist == 3))) {
                 userStats[1] += 60000;
@@ -117,6 +135,7 @@ module.exports = {
         await interaction.client.wait(1000);
         let alienList = [enemyStats];
         //let message = "**Engaging Combat with XY**";
+        let messageReward = "\`\`\`yaml\n";
         let messageDamage = "";
         let message = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
         message += `\n**Alien Info**:\nHP: **${enemyStats[1]}**\tShield: **${enemyStats[2]}**`;
@@ -358,17 +377,30 @@ module.exports = {
                         questTaskLeft[alienNameIndex]--;
 
                         for (item in questTaskLeft) {
-                            if (item == 0)
+                            if (questTaskLeft[item] == 0)
                                 countQuest = false;
                             else
                                 countQuest = true;
                         }
                         if (!countQuest) {
-                            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ? WHERE user_id = ?", [quest[0].quest_reward_exp, quest[0].quest_reward_credit, quest[0].quest_reward_units, quest[0].quest_reward_honor, interaction.user.id]);
-                            let messageReward = "\`\`\`yaml\n" + `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
+                            //await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ? WHERE user_id = ?", [quest[0].quest_reward_exp, quest[0].quest_reward_credit, quest[0].quest_reward_units, quest[0].quest_reward_honor, interaction.user.id]);
+                            expReward += quest[0].quest_reward_exp;
+                            credit += quest[0].quest_reward_credit;
+                            units += quest[0].quest_reward_units;
+                            honor += quest[0].quest_reward_honor;
+                            questTaskLeft = -5;
+
+                            if (honorBoost && expBoost)
+                                messageReward += `EXP           :  ${quest[0].quest_reward_exp} + [${Math.floor(quest[0].quest_reward_exp * 0.1)}]\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor} + [${Math.floor(quest[0].quest_reward_honor * 0.1)}]` + " \`\`\`";
+                            else if (honorBoost)
+                                messageReward += `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor} + [${Math.floor(quest[0].quest_reward_honor * 0.1)}]` + " \`\`\`";
+                            else if (expBoost)
+                                messageReward += `EXP           :  ${quest[0].quest_reward_exp} + [${Math.floor(quest[0].quest_reward_exp * 0.1)}]\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
+                            else
+                                messageReward += `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
 
                             await interaction.followUp({ embeds: [interaction.client.yellowEmbed(messageReward, "Quest Completed!")] });
-                            await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["completed", interaction.user.id, userInfo.quests_id])
+                            await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["completed", interaction.user.id, quest[0].id])
                         }
                     }
                 }
@@ -377,7 +409,7 @@ module.exports = {
                 totalAliensDamage -= alienStats[0];
                 credit += alienStats[7];
                 units += alienStats[8];
-                exp_reward += alienStats[9];
+                expReward += alienStats[9];
                 honor += alienStats[10];
                 let totalResources = alienStats[11].reduce((a, b) => a + b) + resources.reduce((a, b) => a + b) + cargo;
                 if (totalResources <= maxCargo) {
@@ -437,6 +469,7 @@ module.exports = {
 
             if (chance_to_encounter_new_alien < 10 && turnCounter <= 11)
                 chance_to_encounter_new_alien = 10;
+            chance_to_encounter_new_alien = 0;
 
             //message = `\n__Turn ${turn_counter}__`;
             message = `\n**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
@@ -492,7 +525,42 @@ module.exports = {
         let messageUserInfo = `**Battle ended after ${turnCounter} turns**\n`;
         messageUserInfo += `**Your Info**:\nHP: **${userStats[1]}**\tShield: **${userStats[3]}**`;
         //await interaction.client.wait(1000 + 5 * turnCounter);
-        let messageReward = "\`\`\`yaml\n" + `EXP           :  ${exp_reward}\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor}`;
+
+        messageReward = "\`\`\`yaml\n";
+        if (questTaskLeft == -5) {
+            if (honorBoost && expBoost) {
+                messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp} + [${Math.floor((expReward - quest[0].quest_reward_exp) * 0.1)}]\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor} + [${Math.floor((honor - quest[0].quest_reward_honor) * 0.1)}]` + " \`\`\`";
+                expReward = Math.floor(expReward * 1.1);
+                honor = Math.floor(honor * 1.1);
+            }
+            else if (honorBoost) {
+                messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp}\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor} + [${Math.floor((honor - quest[0].quest_reward_honor) * 0.1)}]` + " \`\`\`";
+                honor = Math.floor(honor * 1.1);
+            }
+            else if (expBoost) {
+                messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp} + [${Math.floor((expReward - quest[0].quest_reward_exp) * 0.1)}]\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor}` + " \`\`\`";
+                expReward = Math.floor(expReward * 1.1);
+            }
+            else
+                messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp}\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor}`;
+        }
+        else {
+            if (honorBoost && expBoost) {
+                messageReward += `EXP           :  ${expReward} + [${Math.floor(expReward * 0.1)}]\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor} + [${Math.floor(honor * 0.1)}]`;
+                expReward = Math.floor(expReward * 1.1);
+                honor = Math.floor(honor * 1.1);
+            }
+            else if (honorBoost) {
+                messageReward += `EXP           :  ${expReward}\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor} + [${Math.floor(honor * 0.1)}]`;
+                honor = Math.floor(honor * 1.1);
+            }
+            else if (expBoost) {
+                messageReward += `EXP           :  ${expReward} + [${Math.floor(expReward * 0.1)}]\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor}`;
+                expReward = Math.floor(expReward * 1.1);
+            }
+            else
+                messageReward += `EXP           :  ${expReward}\nCredits       :  ${credit}\nUnits         :  ${units}\nHonor         :  ${honor}`;
+        }
         for (item in resources) {
             if (resources[item] > 0)
                 messageReward += `\n${resourcesName[item]}:  ${resources[item]}`;
@@ -556,26 +624,33 @@ module.exports = {
         cargo = resources.reduce((a, b) => a + b);
         resources = resources.join("; ");
 
-        if ((userInfo.exp + exp_reward) >= expRequirement) {
-            await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [userInfo.exp + exp_reward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+        if ((userInfo.exp + expReward) >= expRequirement) {
+            await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [userInfo.exp + expReward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
             logMessage[turnCounter][0] += "\n**YOU LEVELLED UP**";
         }
         else
-            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [exp_reward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+            await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [expReward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
         await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
         await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
             [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
+        if (questTaskLeft != -5 && questTaskLeft != 0) {
+            if (questTaskLeft.length > 1)
+                questTaskLeft = questTaskLeft.join(';');
+            else
+                questTaskLeft = questTaskLeft[0];
+            await interaction.client.databaseEditData("UPDATE user_quests SET quest_task_left = ? WHERE user_id = ? AND id = ?", [questTaskLeft, interaction.user.id, quest[0].id]);
+        }
         buttonHandler(interaction, interaction.user.id, logMessage);
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             } else {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
             }
-
+ 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
 
     }
 }
@@ -627,9 +702,9 @@ const row = new MessageActionRow()
             //.setLabel('Ending')
             .setEmoji('⏩')
             .setStyle('PRIMARY'),
-
+ 
     );
-
+ 
 const row1 = new MessageActionRow()
     .addComponents(
         new MessageSelectMenu()

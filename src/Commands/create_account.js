@@ -10,29 +10,36 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            let userInfo = await interaction.client.getUserAccount(interaction.user.id);
             let tutorialCounter = 0;
             let selectedFirm = "";
             let phaseCounter = 1;
             let laserEquipped = false;
+            let boostedFirm = "Earth";
+            let firmCheck = await interaction.client.databaseSelcetData("SELECT * FROM firms_list", []);
+            if (firmCheck[2].users < firmCheck[1].users || firmCheck[2].users < firmCheck[0].users)
+                boostedFirm = firmCheck[2].firm;
+            else if (firmCheck[1].users <= firmCheck[2].users || firmCheck[1].users < firmCheck[0].users)
+                boostedFirm = firmCheck[1].firm;
+            else
+                boostedFirm = firmCheck[0].firm;
             if (typeof userInfo === 'undefined') {
-                interaction.reply({ embeds: [interaction.client.yellowEmbed("Which firm would you like to create an account on?")], components: [firm] });
+                interaction.reply({ embeds: [interaction.client.yellowEmbed(`Which firm would you like to create an account on?\n***${boostedFirm}*** *has* ***10% EXP*** *and* ***Damage*** *boost for a* ***week***`, "Create Account")], components: [firm] });
             }
             else if (userInfo.tutorial_counter >= 3) {
                 interaction.reply({ embeds: [interaction.client.redEmbed("You already finished the tutorial")] });
                 return
             }
             else {
-                tutorialCounter = userInfo.tutorial_counter;
-                selectedFirm = userInfo.firm;
-                if (tutorialCounter == 1) {
+                if (userInfo.tutorial_counter == 1) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
                 }
-                else if (tutorialCounter == 2) {
+                else if (userInfo.tutorial_counter == 2) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
                 }
                 phaseCounter = 2;
             }
+
+            let ended = false;
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
@@ -43,7 +50,9 @@ module.exports = {
                     //tutorialCounter--;
                     await i.update({ embeds: [interaction.client.redEmbed(`Tutorial ended by user`, "TUTORIAL ENDED")], components: [] });
                     //await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
+                    ended = true;
                     collector.stop("Ended by user");
+                    return;
                 }
                 //if (i.customId === "Continue" || tutorialCounter === 0) {
                 if (tutorialCounter == 0) {
@@ -53,8 +62,16 @@ module.exports = {
                     await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO boost (user_id) VALUES (?)`, [interaction.user.id]);
                     await i.update({ embeds: [interaction.client.greenEmbed(`You have selected **${i.customId}.**\n*You were rewarded with 1000 (x1) laser ammunition and 10000 crediits.*`, "TUTORIAL phase 1")], components: [tutorial] });
                     await interaction.client.databaseEditData(`UPDATE firms_list SET users = users + 1 where firm = ?`, [i.customId]);
+                    if (i.customId === boostedFirm) {
+                        let dateToBoostTill = new Date();
+                        dateToBoostTill.setDate(dateToBoostTill.getDate() + 7);
+                        dateToBoostTill = dateToBoostTill.toJSON().split(".");
+                        dateToBoostTill = dateToBoostTill[0];
+                        await interaction.client.databaseEditData(`UPDATE boost SET exp_boost = ?, damage_boost = ? WHERE user_id = ?`, [dateToBoostTill, dateToBoostTill, interaction.user.id]);
+                    }
                     selectedFirm = i.customId;
                 }
                 else if (tutorialCounter == 1) {
@@ -143,7 +160,8 @@ module.exports = {
             });
 
             collector.on('end', collected => {
-                interaction.editReply({ content: " \n", embeds: [interaction.client.redEmbed("**Interaction time-out**")], components: [] });
+                if (!ended)
+                    interaction.editReply({ content: " \n", embeds: [interaction.client.redEmbed("**Interaction time-out**")], components: [] });
             });
         }
         catch (error) {
