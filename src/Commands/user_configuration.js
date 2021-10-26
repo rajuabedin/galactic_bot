@@ -17,7 +17,7 @@ module.exports = {
         let storedMessage = "";
         let selectedAmmo = "";
         let ammoValue = 0;
-        await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, "**Select which ammunition you want to configure**")], ephemeral: true, components: [row, setting_row] });
+        await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, "**Select which ammunition you want to configure**")], ephemeral: true, components: [row, settingRow] });
         message = null;
         let activateDeactivate = await buttonHandlerOnOff(0);
         let missileHellstorm = 0;
@@ -63,25 +63,25 @@ module.exports = {
                 else if (index < 0) {
                     missileHellstorm = 0;
                     [hp, sh] = await buttonHandler(-1, "DANGER");
-                    await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, settingRow] });
                     storedMessage = `**(${i.values[0]})**` + "\t**DISABLED**";
                 }
                 else if (index === 0) {
                     missileHellstorm = 0;
                     [hp, sh] = await buttonHandler();
-                    await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, settingRow] });
                     storedMessage = `**(${i.values[0]})**` + "\t**HP: 0 || SH: 0**";
                 }
                 else if (index < 5) {
                     missileHellstorm = 0;
                     [hp, sh] = await buttonHandler(index - 1);
-                    await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${index * 20} || SH: 0**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${index * 20} || SH: 0**`, message)], components: [hp, sh, row, settingRow] });
                     storedMessage = `**(${i.values[0]})**` + `\t**HP: ${index * 20} || SH: 0**`;
                 }
                 else {
                     missileHellstorm = 0;
                     [hp, sh] = await buttonHandler(index - 1);
-                    await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${(index - 5) * 20}**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${(index - 5) * 20}**`, message)], components: [hp, sh, row, settingRow] });
                     storedMessage = `**(${i.values[0]})**` + `\t**HP: 100 || SH: ${(index - 5) * 20}**`;
                 }
             }
@@ -123,37 +123,37 @@ module.exports = {
                     await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
                     huntConfiguration[0][selectedAmmo] = ammoValue;
                     if (ammoValue < 0) {
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tDISABLED**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tDISABLED**`, "**SAVED**")], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${selectedAmmo})**` + `\t**DISABLED**`;
                     }
                     else if (ammoValue < 101) {
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: ${ammoValue} || SH: 0**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: ${ammoValue} || SH: 0**`, "**SAVED**")], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${selectedAmmo})**` + `\tHP: ${ammoValue} || SH: 0**`;
                     }
                     else {
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: 100 || SH: ${ammoValue - 100}**`, "**SAVED**")], components: [hp, sh, row, setting_row] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tHP: 100 || SH: ${ammoValue - 100}**`, "**SAVED**")], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${selectedAmmo})**` + `\tHP: 100 || SH: ${ammoValue - 100}**`;
                     }
                 }
                 else if (i.customId === "disable" || index == 9) {
                     [hp, sh] = await buttonHandler(-1, "DANGER");
-                    await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, settingRow] });
                     ammoValue = -3;
                 }
                 else if (i.customId === "empty") {
                     [hp, sh] = await buttonHandler();
-                    await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, settingRow] });
                     ammoValue = 0;
                 }
                 else if (index < 5) {
                     [hp, sh] = await buttonHandler(index);
                     ammoValue = (index + 1) * 20;
-                    await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${ammoValue} || SH: 0**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${ammoValue} || SH: 0**`, message)], components: [hp, sh, row, settingRow] });
                 }
                 else if (index < 9) {
                     [hp, sh] = await buttonHandler(index);
                     ammoValue = (index + 1) * 20;
-                    await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${ammoValue - 100}**`, message)], components: [hp, sh, row, setting_row] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${ammoValue - 100}**`, message)], components: [hp, sh, row, settingRow] });
                 }
                 else if (i.customId === "discard") {
                     discarded = true;
@@ -195,46 +195,46 @@ async function buttonHandler(selected_index = -1, button_styile = "SECONDARY") {
         .addComponents(
             new MessageButton()
                 .setCustomId("0")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("1")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("2")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("3")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("4")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
         );
     let sh = new MessageActionRow()
         .addComponents(
             new MessageButton()
                 .setCustomId("5")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("6")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("7")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("8")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
             new MessageButton()
                 .setCustomId("9")
-                .setLabel("          ")
+                .setEmoji("902212836770598922")
                 .setStyle(button_styile),
         );
 
@@ -286,7 +286,7 @@ async function buttonHandlerOnOff(value) {
     return activateDeactivate;
 }
 
-const setting_row = new MessageActionRow()
+const settingRow = new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setCustomId("discard")
@@ -298,7 +298,7 @@ const setting_row = new MessageActionRow()
             .setStyle("DANGER"),
         new MessageButton()
             .setCustomId("21")
-            .setLabel("                      ")
+            .setEmoji("902212836770598922")
             .setStyle("SECONDARY"),
         new MessageButton()
             .setCustomId("empty")

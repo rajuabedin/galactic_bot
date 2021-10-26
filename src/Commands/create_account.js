@@ -46,7 +46,7 @@ module.exports = {
 
             collector.on('collect', async i => {
                 collector.resetTimer({ time: 25000 });
-                if (i.customId === "End") {
+                if (i.customId === "End" || i.customId === "discard" || i.customId === "discard2") {
                     //tutorialCounter--;
                     await i.update({ embeds: [interaction.client.redEmbed(`Tutorial ended by user`, "TUTORIAL ENDED")], components: [] });
                     //await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
@@ -54,7 +54,7 @@ module.exports = {
                     collector.stop("Ended by user");
                     return;
                 }
-                let [message, row] = [0, 0];
+                let [message, row, hp, sh] = [0, 0, 0, 0];
                 //if (i.customId === "Continue" || tutorialCounter === 0) {
                 if (tutorialCounter == 0) {
                     tutorialCounter++;
@@ -111,7 +111,7 @@ module.exports = {
                         await i.update({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon, do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
                         phaseCounter++;
                     }
-                    else if (phaseCounter == 2) {                        
+                    else if (phaseCounter == 2) {
                         if (laserEquipped) {
                             if (i.customId === "0") {
                                 laserEquipped = !laserEquipped;
@@ -152,8 +152,54 @@ module.exports = {
                         row = buttonHandlerOnOff(0);
                     }
                     else if (phaseCounter == 2) {
-                        await i.update({ embeds: [interaction.client.blueEmbed(``, "TUTORIAL phase 4")], components: [row] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n*You can activate/deactivate missiles and hellstorm from **option 1 and 2**\n**ENABLE missiles to continue***`, "TUTORIAL phase 4")], components: [row] });
                         phaseCounter++;
+                    }
+                    else if (phaseCounter == 3) {
+                        if (i.customId === "activateButton") {
+                            row = buttonHandlerOnOff(1);
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue***`, "TUTORIAL phase 4")], components: [row] });
+                            phaseCounter++;
+                        }
+                        else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n**__ENABLE__ missiles to continue**`, "TUTORIAL phase 4")], components: [row] });
+                        }
+                    }
+                    else if (phaseCounter == 4) {
+                        if (i.customId === "save2") {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n*You need to press 💾 to save your configuration or it will get lost*`, "TUTORIAL phase 4")], components: [tutorial] });
+                            phaseCounter++;
+                        }
+                        else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n**__Save__ configuration by pressing 💾 to continue**`, "TUTORIAL phase 4")], components: [row] });
+                        }
+                    }
+                    else if (phaseCounter == 5) {
+                        [hp, sh] = await configurationHandler(-1, "DANGER");
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n*You can set **till** when to use the selected ammo by pressing the first 2 row of buttons\nFirst row represent **hp** and it will become green when pressed\nSecond row represent **shield** and it will become blue when pressed\nPress <:close:887979580013563914> to **DISABLE** selected ammo\nPress <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                        phaseCounter++;
+                    }
+                    else if (phaseCounter == 6) {
+                        if (i.customId === "empty") {
+                            [hp, sh] = await configurationHandler();
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 0 || SH: 0**\n*M1 missilie will be launched **till** enemy **hp** reach **zero**\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue****`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                            phaseCounter++;
+                        }
+                        else {
+                            let index = parseInt(i.customId);
+                            if (i.customId === "disable" || index == 9) {
+                                [hp, sh] = await configurationHandler(-1, "DANGER");
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                            }
+                            else if (index < 5) {
+                                [hp, sh] = await configurationHandler(index);
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: ${(index + 1) * 20} || SH: 0**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                            }
+                            else if (index < 9) {
+                                [hp, sh] = await configurationHandler(index);
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 100 || SH: ${(index + 1) * 20 - 100}**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                            }
+                        }
                     }
                 }
                 //}               
@@ -222,6 +268,76 @@ async function hangerHandler(laserEquipped) {
     return [message, row];
 }
 
+async function configurationHandler(selected_index = -1, button_styile = "SECONDARY") {
+
+    let hp = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId("0")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("1")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("2")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("3")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("4")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+        );
+    let sh = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId("5")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("6")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("7")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("8")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+            new MessageButton()
+                .setCustomId("9")
+                .setEmoji("902212836770598922")
+                .setStyle(button_styile),
+        );
+
+
+    let index = 0;
+
+    if (selected_index < 5 && selected_index !== -1) {
+        for (index; index <= selected_index; index++) {
+            hp.components[index].setStyle('SUCCESS');
+        }
+    }
+    else if (selected_index >= 5) {
+        hp.components[0].setStyle('SUCCESS');
+        hp.components[1].setStyle('SUCCESS');
+        hp.components[2].setStyle('SUCCESS');
+        hp.components[3].setStyle('SUCCESS');
+        hp.components[4].setStyle('SUCCESS');
+        for (index; index <= selected_index - 5; index++) {
+            sh.components[index].setStyle('PRIMARY');
+        }
+    }
+    return [hp, sh];
+}
+
 async function buttonHandlerOnOff(value) {
     let activateDeactivate = new MessageActionRow()
         .addComponents(
@@ -248,6 +364,30 @@ async function buttonHandlerOnOff(value) {
     }
     return activateDeactivate;
 }
+
+const settingRow = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId("discard")
+            .setEmoji("🔚")
+            .setStyle("DANGER"),
+        new MessageButton()
+            .setCustomId("disable")
+            .setEmoji("887979580013563914")
+            .setStyle("DANGER"),
+        new MessageButton()
+            .setCustomId("21")
+            .setEmoji("902212836770598922")
+            .setStyle("SECONDARY"),
+        new MessageButton()
+            .setCustomId("empty")
+            .setEmoji("887979579854168075")
+            .setStyle("PRIMARY"),
+        new MessageButton()
+            .setCustomId("save")
+            .setEmoji("💾")
+            .setStyle("SUCCESS"),
+    );
 
 const firm = new MessageActionRow()
     .addComponents(
