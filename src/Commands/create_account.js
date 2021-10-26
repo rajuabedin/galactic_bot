@@ -54,6 +54,7 @@ module.exports = {
                     collector.stop("Ended by user");
                     return;
                 }
+                let [message, row] = [0, 0];
                 //if (i.customId === "Continue" || tutorialCounter === 0) {
                 if (tutorialCounter == 0) {
                     tutorialCounter++;
@@ -76,7 +77,7 @@ module.exports = {
                 }
                 else if (tutorialCounter == 1) {
                     if (phaseCounter == 1) {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(`To move in the company base, do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
                         phaseCounter++;
                     }
                     if (phaseCounter == 2) {
@@ -107,11 +108,10 @@ module.exports = {
                 }
                 else if (tutorialCounter == 2) {
                     if (phaseCounter == 1) {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon, do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
                         phaseCounter++;
                     }
-                    else if (phaseCounter == 2) {
-                        let [message, row] = [0, 0];
+                    else if (phaseCounter == 2) {                        
                         if (laserEquipped) {
                             if (i.customId === "0") {
                                 laserEquipped = !laserEquipped;
@@ -147,11 +147,13 @@ module.exports = {
                 }
                 else if (tutorialCounter == 3) {
                     if (phaseCounter == 1) {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 4")], components: [tutorial] });
+                        await i.update({ content: "", embeds: [interaction.client.greenEmbed(`To edit the hunt configuration, do **/hunt_configuration** and select the **ammo to configure**`, "TUTORIAL phase 4")], components: [tutorial] });
                         phaseCounter++;
+                        row = buttonHandlerOnOff(0);
                     }
                     else if (phaseCounter == 2) {
-
+                        await i.update({ embeds: [interaction.client.blueEmbed(``, "TUTORIAL phase 4")], components: [row] });
+                        phaseCounter++;
                     }
                 }
                 //}               
@@ -220,6 +222,33 @@ async function hangerHandler(laserEquipped) {
     return [message, row];
 }
 
+async function buttonHandlerOnOff(value) {
+    let activateDeactivate = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId("discard2")
+                .setEmoji("🔚")
+                .setStyle("DANGER"),
+            new MessageButton()
+                .setCustomId("deactivateButton")
+                .setLabel("DISABLE")
+                .setStyle("SECONDARY"),
+            new MessageButton()
+                .setCustomId("activateButton")
+                .setLabel("ENABLE")
+                .setStyle("SUCCESS"),
+            new MessageButton()
+                .setCustomId("save2")
+                .setEmoji("💾")
+                .setStyle("SUCCESS"),
+        );
+    if (value == 0) {
+        activateDeactivate.components[2].setStyle("SECONDARY");
+        activateDeactivate.components[1].setStyle("DANGER");
+    }
+    return activateDeactivate;
+}
+
 const firm = new MessageActionRow()
     .addComponents(
         new MessageButton()
@@ -251,4 +280,5 @@ const tutorial = new MessageActionRow()
             .setLabel('CONTINUE')
             .setStyle('SUCCESS'),
     );
+
 

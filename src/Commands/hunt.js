@@ -35,11 +35,17 @@ module.exports = {
                 return;
             }
 
-            /*let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+            if (userInfo.in_hunt === 1) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(`You are already in a battle`, "Battle in progress...")] });
+                return;
+            }
+
+            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
                 return;
-            }*/
+            }
+            await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
 
             let alienNameChecker = 0;
             let alienNameIndex = 0;
@@ -220,9 +226,9 @@ module.exports = {
                     alienList.shift();
                     alienList.push(storedAlien);
                     //console.log(alienList);
-                    emojiMessage += "<a:target_emoji:901883861280112670>";
+                    emojiMessage += "<:aim:902625135050235994>";
                     for (index in alienList) {
-                        emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
+                        emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n<:Transparent:902212836770598922>`;
                     }
                     emojiMessage += `**Total received damage: __${damageReceived}__**`;
                     damageReceived = 0;
@@ -555,9 +561,9 @@ module.exports = {
                         emojiMessage += `**Total dealt damage: __${damageDealt}__**\n`;
                         damageDealt = 0;
                         emojiMessage += "\n**Alien Info**:\n";
-                        emojiMessage += "<a:target_emoji:901883861280112670>";
+                        emojiMessage += "<:aim:902625135050235994>";
                         for (index in alienList) {
-                            emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
+                            emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n<:Transparent:902212836770598922>`;
                         }
                         emojiMessage += `**Total received damage: __${damageReceived}__**`;
                         damageReceived = 0;
@@ -573,9 +579,9 @@ module.exports = {
                     emojiMessage += `**Total dealt damage: __${damageDealt}__**\n`;
                     damageDealt = 0;
                     emojiMessage += "\n**Alien Info**:\n";
-                    emojiMessage += "<a:target_emoji:901883861280112670>";
+                    emojiMessage += "<:aim:902625135050235994>";
                     for (index in alienList) {
-                        emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n`;
+                        emojiMessage += `**[${alienList[index][12]}]** <a:hp:896118360125870170>: **${alienList[index][1]}**\t<a:sd:896118359966511104>: **${alienList[index][2]}**\n<:Transparent:902212836770598922>`;
                     }
                     emojiMessage += `**Total received damage: __${damageReceived}__**`;
                     damageReceived = 0;
@@ -686,11 +692,11 @@ module.exports = {
             resources = resources.join("; ");
 
             if ((userInfo.exp + expReward) >= expRequirement) {
-                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [userInfo.exp + expReward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0 WHERE user_id = ?", [userInfo.exp + expReward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
                 logMessage[turnCounter][0] += "\n**YOU LEVELLED UP**";
             }
             else
-                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ? WHERE user_id = ?", [expReward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0 WHERE user_id = ?", [expReward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
