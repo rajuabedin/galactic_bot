@@ -8,26 +8,30 @@ module.exports = {
         .setDescription('refine cargo to their superior resources'),
 
     async execute(interaction, userInfo) {
-        try{
-        let resources = userInfo.resources.split("; ").map(Number);
-        let cargo = userInfo.cargo;
-        let message = "**Refined materials:**" + "\`\`\`yaml\n";
-        let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
-        let refined = false;
-        [resources, message, refined] = await materialToRefine(resources, 0, 1, 3, message, refined, resourcesName);
-        [resources, message, refined] = await materialToRefine(resources, 1, 2, 4, message, refined, resourcesName);
-        [resources, message, refined] = await materialToRefine(resources, 3, 4, 5, message, refined, resourcesName);
-        [resources, message, refined] = await materialToRefine(resources, 5, 6, 7, message, refined, resourcesName);
+        try {
+            if (userInfo.tutorial_counter < 7) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
+            let resources = userInfo.resources.split("; ").map(Number);
+            let cargo = userInfo.cargo;
+            let message = "**Refined materials:**" + "\`\`\`yaml\n";
+            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
+            let refined = false;
+            [resources, message, refined] = await materialToRefine(resources, 0, 1, 3, message, refined, resourcesName);
+            [resources, message, refined] = await materialToRefine(resources, 1, 2, 4, message, refined, resourcesName);
+            [resources, message, refined] = await materialToRefine(resources, 3, 4, 5, message, refined, resourcesName);
+            [resources, message, refined] = await materialToRefine(resources, 5, 6, 7, message, refined, resourcesName);
 
-        message += " \`\`\`" + "\`\`\`yaml\n" + `Cargo ${cargo} => `;
-        cargo = resources.reduce((a, b) => a + b);
-        message += `${cargo}` + " \`\`\`";
-        if (refined)
-            await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Refinement successful")] });
-        else
-            await interaction.reply({ embeds: [interaction.client.redEmbed("**Not enough material to refine**", "Refinement failure")] });
-        resources = resources.join("; ");
-        await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
+            message += " \`\`\`" + "\`\`\`yaml\n" + `Cargo ${cargo} => `;
+            cargo = resources.reduce((a, b) => a + b);
+            message += `${cargo}` + " \`\`\`";
+            if (refined)
+                await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Refinement successful")] });
+            else
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Not enough material to refine**", "Refinement failure")] });
+            resources = resources.join("; ");
+            await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
         }
         catch (error) {
             if (interaction.replied) {

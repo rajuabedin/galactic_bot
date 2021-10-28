@@ -16,6 +16,7 @@ module.exports = {
             let laserEquipped = false;
             let boostedFirm = "Earth";
             let firmCheck = await interaction.client.databaseSelcetData("SELECT * FROM firms_list", []);
+            let [message, row, hp, sh] = [0, 0, 0, 0];
             if (firmCheck[2].users < firmCheck[1].users || firmCheck[2].users < firmCheck[0].users)
                 boostedFirm = firmCheck[2].firm;
             else if (firmCheck[1].users <= firmCheck[2].users || firmCheck[1].users < firmCheck[0].users)
@@ -25,16 +26,21 @@ module.exports = {
             if (typeof userInfo === 'undefined') {
                 interaction.reply({ embeds: [interaction.client.yellowEmbed(`Which firm would you like to create an account on?\n***${boostedFirm}*** *has* ***10% EXP*** *and* ***Damage*** *boost for a* ***week***`, "Create Account")], components: [firm] });
             }
-            else if (userInfo.tutorial_counter >= 3) {
+            else if (userInfo.tutorial_counter >= 4) {
                 interaction.reply({ embeds: [interaction.client.redEmbed("You already finished the tutorial")] });
                 return
             }
             else {
-                if (userInfo.tutorial_counter == 1) {
+                tutorialCounter = userInfo.tutorial_counter;
+                if (tutorialCounter == 1) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
                 }
-                else if (userInfo.tutorial_counter == 2) {
+                else if (tutorialCounter == 2) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To equip the laser cannon do **/hanger** and select the **option: laser**`, "TUTORIAL phase 3")], components: [tutorial] });
+                }
+                else if (tutorialCounter == 3) {
+                    await interaction.reply({ embeds: [interaction.client.greenEmbed(`To edit the hunt configuration, do **/hunt_configuration** and select the **ammo to configure**`, "TUTORIAL phase 4")], components: [tutorial] });
+                    row = await buttonHandlerOnOff(0);
                 }
                 phaseCounter = 2;
             }
@@ -54,7 +60,6 @@ module.exports = {
                     collector.stop("Ended by user");
                     return;
                 }
-                let [message, row, hp, sh] = [0, 0, 0, 0];
                 //if (i.customId === "Continue" || tutorialCounter === 0) {
                 if (tutorialCounter == 0) {
                     tutorialCounter++;
@@ -147,61 +152,74 @@ module.exports = {
                 }
                 else if (tutorialCounter == 3) {
                     if (phaseCounter == 1) {
-                        await i.update({ content: "", embeds: [interaction.client.greenEmbed(`To edit the hunt configuration, do **/hunt_configuration** and select the **ammo to configure**`, "TUTORIAL phase 4")], components: [tutorial] });
+                        await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`To edit the hunt configuration, do **/hunt_configuration** and select the **ammo to configure**`, "TUTORIAL phase 4")], components: [tutorial] });
                         phaseCounter++;
-                        row = buttonHandlerOnOff(0);
+                        row = await buttonHandlerOnOff(0);
                     }
                     else if (phaseCounter == 2) {
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n*You can activate/deactivate missiles and hellstorm from **option 1 and 2**\n**ENABLE missiles to continue***`, "TUTORIAL phase 4")], components: [row] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n\n*You can activate/deactivate missiles and hellstorm from **option 1 and 2**\n**ENABLE missiles to continue***`, "TUTORIAL phase 4")], components: [row] });
                         phaseCounter++;
                     }
                     else if (phaseCounter == 3) {
                         if (i.customId === "activateButton") {
-                            row = buttonHandlerOnOff(1);
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue***`, "TUTORIAL phase 4")], components: [row] });
+                            row = await buttonHandlerOnOff(1);
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue***`, "TUTORIAL phase 4")], components: [row] });
                             phaseCounter++;
                         }
                         else {
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n**__ENABLE__ missiles to continue**`, "TUTORIAL phase 4")], components: [row] });
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n\n**__ENABLE__ missiles to continue**`, "TUTORIAL phase 4")], components: [row] });
                         }
                     }
                     else if (phaseCounter == 4) {
                         if (i.customId === "save2") {
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n*You need to press 💾 to save your configuration or it will get lost*`, "TUTORIAL phase 4")], components: [tutorial] });
+                            await i.update({ embeds: [interaction.client.blueEmbed(`Always remember to save your configuration\n*By selecting **option 3 and following**, you can set when to use the selected ammo*`, "TUTORIAL phase 4")], components: [tutorial] });
                             phaseCounter++;
                         }
                         else {
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n**__Save__ configuration by pressing 💾 to continue**`, "TUTORIAL phase 4")], components: [row] });
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nENABLED**\n\n**__Save__ configuration by pressing 💾 to continue**`, "TUTORIAL phase 4")], components: [row] });
                         }
                     }
                     else if (phaseCounter == 5) {
                         [hp, sh] = await configurationHandler(-1, "DANGER");
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n*You can set **till** when to use the selected ammo by pressing the first 2 row of buttons\nFirst row represent **hp** and it will become green when pressed\nSecond row represent **shield** and it will become blue when pressed\nPress <:close:887979580013563914> to **DISABLE** selected ammo\nPress <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n\n*You can set **till** when to use the selected ammo by pressing the first 2 row of buttons\nFirst row represent **hp** and it will become green when pressed\nSecond row represent **shield** and it will become blue when pressed\nPress <:close:887979580013563914> to **DISABLE** selected ammo\nPress <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make (m1) missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
                         phaseCounter++;
                     }
                     else if (phaseCounter == 6) {
                         if (i.customId === "empty") {
                             [hp, sh] = await configurationHandler();
-                            await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 0 || SH: 0**\n*M1 missilie will be launched **till** enemy **hp** reach **zero**\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue****`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 0 || SH: 0**\n\n*M1 missilie will be launched **till** enemy **hp** reach **zero**\n*You need to press 💾 to save your configuration or it will get lost\n**Press 💾 to continue****`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
                             phaseCounter++;
                         }
                         else {
                             let index = parseInt(i.customId);
                             if (i.customId === "disable" || index == 9) {
                                 [hp, sh] = await configurationHandler(-1, "DANGER");
-                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nDISABLED**\n\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make (m1) missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
                             }
                             else if (index < 5) {
                                 [hp, sh] = await configurationHandler(index);
-                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: ${(index + 1) * 20} || SH: 0**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: ${(index + 1) * 20} || SH: 0**\n\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make (m1) missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
                             }
                             else if (index < 9) {
                                 [hp, sh] = await configurationHandler(index);
-                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 100 || SH: ${(index + 1) * 20 - 100}**\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make m1 missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 100 || SH: ${(index + 1) * 20 - 100}**\n\n*Press <:clear:887979579854168075> to clear out the first two rows and **always use** selected ammo\n**To continue, make (m1) missile always active***`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
                             }
                         }
                     }
+                    else if (phaseCounter == 7) {
+                        if (i.customId === "save") {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`Always remember to save your configuration\n*You were awarded with 1000 (m1) missile ammunition*`, "TUTORIAL phase 4")], components: [tutorial] });
+                            phaseCounter = 1;
+                            tutorialCounter++;
+                            await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
+                            await interaction.client.databaseEditData(`UPDATE ammunition SET m1_magazine = m1_magazine + ? WHERE user_id = ?`, [1000, interaction.user.id]);
+                        }
+                        else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(`**m1:\nHP: 0 || SH: 0**\n\n**__Save__ configuration by pressing 💾 to continue**`, "TUTORIAL phase 4")], components: [hp, sh, settingRow] });
+                        }
+                    }
                 }
+
                 //}               
 
                 //collector.stop("Selected Firm");
@@ -420,5 +438,4 @@ const tutorial = new MessageActionRow()
             .setLabel('CONTINUE')
             .setStyle('SUCCESS'),
     );
-
 
