@@ -23,13 +23,18 @@ module.exports = {
 
 
     async execute(interaction, userInfo) {
-        try {
+        //try {
             var searchItem = interaction.options.getString('search')
             var items = [];
             var embed;
             var count = 0;
             var itemsPerPage = 1;
             var currentData = "";
+            let priceCredit = [];
+            let priceUnits = [];
+            let itemName = [];
+            let itemTable = 0;
+            let itemColumn = 0;
 
             // check if its a valid category
             if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
@@ -43,8 +48,13 @@ module.exports = {
 
                 if (shipsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
 
+                itemTable = "user_ships";
+                itemColumn = "ship_model";
                 await shipsList.forEach((ship, index) => {
                     count++;
+                    priceCredit.push(ship.credit);
+                    priceUnits.push(ship.units);
+                    itemName.push(ship.ship_model);
 
                     currentData = `**${ship.emoji_id} SHIP MODEL:** **[${ship.ship_model}](https://obelisk.club/)**\n**PRICE: **`
 
@@ -77,7 +87,7 @@ module.exports = {
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, items, "SHIPS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS");
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -91,8 +101,13 @@ module.exports = {
 
                 if (lasersList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
 
+                itemTable = "user_lasers";
+                itemColumn = "laser_model";
                 await lasersList.forEach((laser, index) => {
                     count++;
+                    priceCredit.push(laser.credit);
+                    priceUnits.push(laser.units);
+                    itemName.push(laser.laser_model);
 
                     currentData = `**${laser.emoji_id} LASER MODEL:** **[${laser.laser_model}](https://obelisk.club/)**\n**PRICE: **`
 
@@ -121,7 +136,7 @@ module.exports = {
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, items, "LASERS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS");
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -135,8 +150,14 @@ module.exports = {
 
                 if (shieldsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
 
+
+                itemTable = "user_shields";
+                itemColumn = "shield_model"
                 await shieldsList.forEach((shield, index) => {
                     count++;
+                    priceCredit.push(shield.credit);
+                    priceUnits.push(shield.units);
+                    itemName.push(shield.shield_model);
 
                     currentData = `**${shield.emoji_id} SHIELD MODEL:** **[${shield.shield_model}](https://obelisk.club/)**\n**PRICE: **`
 
@@ -166,7 +187,7 @@ module.exports = {
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, items, "SHIELDS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS");
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -182,8 +203,14 @@ module.exports = {
 
                 if (enginesList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
 
+                itemTable = "user_engines";
+                itemColumn = "engine_model"
                 await enginesList.forEach((engine, index) => {
                     count++;
+                    priceCredit.push(engine.credit);
+                    priceUnits.push(engine.units);
+                    itemName.push(engine.engine_model);
+
 
                     currentData += `**${engine.emoji_id} ENGINE MODEL:** **[${engine.engine_model}](https://obelisk.club/)**\n**PRICE: **`
 
@@ -211,7 +238,7 @@ module.exports = {
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, items, "ENGINE");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE");
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -226,8 +253,13 @@ module.exports = {
                 itemsPerPage = 4;
                 if (ammunitionList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
 
+
+                itemTable = "ammunition";
                 await ammunitionList.forEach((ammunition, index) => {
                     count++;
+                    priceCredit.push(ammunition.credit);
+                    priceUnits.push(ammunition.units);
+                    itemName.push(ammunition.ammo_id);
 
                     currentData += `**⦿ Ammunition ID:** **[${ammunition.ammo_id}](https://obelisk.club/)**\n**PRICE: **`
 
@@ -257,13 +289,13 @@ module.exports = {
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, items, "AMMUNITION");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, priceCredit, priceUnits, interaction, items, "AMMUNITION");
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
 
             }
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -272,7 +304,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
     }
 
 }
@@ -289,11 +321,17 @@ const row = new MessageActionRow()
             //.setLabel('Right')
             .setEmoji('887811358438064158')
             .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('buy')
+            .setLabel('BUY')
+            .setStyle('SUCCESS'),
     );
 
-function buttonHandler(interaction, inventoryData, category) {
+function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, inventoryData, category) {
     let maxIndex = inventoryData.length - 1;
     let index = 0;
+    let buyBool = false;
+    let quantity = 1;
 
     const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
@@ -301,24 +339,148 @@ function buttonHandler(interaction, inventoryData, category) {
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
-        if (i.customId === 'left') {
-            index--;
-        }
-        else if (i.customId === 'right') {
-            index++;
-        }
+        if (!buyBool) {
+            if (i.customId === 'left')
+                index--;
+            else if (i.customId === 'right')
+                index++;
+            if (index < 0)
+                index += maxIndex + 1;
+            if (index > maxIndex)
+                index -= maxIndex + 1;
+            if (i.customId === "buy") {
+                if (itemTable === "ammunition")
+                    itemColumn = `${itemName[index]}_magazine`;
+                if (priceCredit[index] > 0)
+                    if (priceCredit[index] > userInfo.credit)
+                        await i.update({ embeds: [interaction.client.redEmbed(`Not enough Credit`, "ERROR!")], components: [row] });
+                    else {
+                        if (itemTable === "user_ships") {
+                            await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                            collector.stop("Bought");
+                            return;
+                        }
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**Item:** ${itemName[index]} || **Quantity:** ${quantity}\n**Total Credit:** ${quantity * priceCredit[index]}\n**Owned Credit**: ${userInfo.credit}`, "Buying")], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                        buyBool = true;
 
-        if (index < 0) {
-            index += maxIndex + 1;
+                    }
+                else
+                    if (priceUnits[index] > userInfo.units)
+                        await i.update({ embeds: [interaction.client.redEmbed(`Not enough Units`, "ERROR!")], components: [row] });
+                    else {
+                        if (itemTable === "user_ships") {
+                            await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                            collector.stop("Bought");
+                            //DATABASE INFO
+                            return;
+                        }
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**Item:** ${itemName[index]} || **Quantity:** ${quantity}\n**Total Units:** ${quantity * priceUnits[index]}\n**Owned Units**: ${userInfo.units}`, "Buying")], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                        buyBool = true;
+                    }
+            }
+            else
+                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
         }
-        if (index > maxIndex) {
-            index -= maxIndex + 1;
+        else {
+            if (i.customId === "cancelItem") {
+                buyBool = false;
+                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)], components: [row] });
+            }
+            else if (i.customId === "buyItem") {
+                if (priceCredit[index] > 0)
+                    if (priceCredit[index] > userInfo.credit)
+                        await i.update({ embeds: [interaction.client.redEmbed(`Not enough Credit`, "ERROR!")], components: [row] });
+                    else {
+                        await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                        collector.stop("Bought");
+                        //DATABASE INFO
+                        return;
+                    }
+                else
+                    if (priceUnits[index] > userInfo.units)
+                        await i.update({ embeds: [interaction.client.redEmbed(`Not enough Units`, "ERROR!")], components: [row] });
+                    else {
+                        await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                        collector.stop("Bought");
+                        //DATABASE INFO
+                        return;
+                    }
+            }
+            else {
+                let add = parseInt(i.customId);
+                if (Number.isInteger(add))
+                    quantity += add
+                if (quantity < 1) {
+                    quantity -= add;
+                    await i.update({ embeds: [interaction.client.redEmbed(`**Quantity can not be less than 1!**\n**Item**: testing || **Quantity**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
+                }
+                else if (priceCredit[index] > 0)
+                    await i.update({ embeds: [interaction.client.blueEmbed(`**Item:** ${itemName[index]} || **Quantity:** ${quantity}\n**Total Credit:** ${quantity * priceCredit[index]}\n**Owned Credit**: ${userInfo.credit}`, "Buying")], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                else
+                    await i.update({ embeds: [interaction.client.blueEmbed(`**Item:** ${itemName[index]} || **Quantity:** ${quantity}\n**Total Units:** ${quantity * priceUnits[index]}\n**Owned Units**: ${userInfo.units}`, "Buying")], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+            }
         }
-        await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
-        embed = interaction.client;
     });
 
     collector.on('end', collected => {
         interaction.editReply({ components: [] })
     });
 }
+
+const quantityButtonUp = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('1')
+            .setLabel('+1     ')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('10')
+            .setLabel('+10  ')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('100')
+            .setLabel('+100')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('1000')
+            .setLabel('+1K   ')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('10000')
+            .setLabel('+10K')
+            .setStyle('PRIMARY'),
+    );
+const quantityButtonDown = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('-1')
+            .setLabel('-1      ')
+            .setStyle('DANGER'),
+        new MessageButton()
+            .setCustomId('-10')
+            .setLabel('-10   ')
+            .setStyle('DANGER'),
+        new MessageButton()
+            .setCustomId('-100')
+            .setLabel('-100 ')
+            .setStyle('DANGER'),
+        new MessageButton()
+            .setCustomId('-1000')
+            .setLabel('-1K    ')
+            .setStyle('DANGER'),
+        new MessageButton()
+            .setCustomId('-10000')
+            .setLabel('-10K ')
+            .setStyle('DANGER'),
+    );
+const buySetting = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('cancelItem')
+            .setLabel('CANCELL')
+            .setStyle('DANGER'),
+        new MessageButton()
+            .setCustomId('buyItem')
+            .setLabel('CONFIRM')
+            .setStyle('SUCCESS'),
+    );
