@@ -33,6 +33,8 @@ class Client extends Discord.Client {
             database: process.env.DB_DATABASE
         });
 
+        this.defaultEmojis = { "credit": "<:coin2:784486506051010561>", "units": "<:Obelisk:784486454398943232>" }
+
 
     }
 
