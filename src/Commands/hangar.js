@@ -33,6 +33,8 @@ module.exports = {
             let unequipableItems = [];
             let selectedOption = interaction.options.getString('option').toLowerCase();
             let shipList = [];
+            let shipIndex = 0;
+            let shipLenght = 0;
 
             if (selectedOption === 'ship') {
                 let currentData = "";
@@ -60,7 +62,7 @@ module.exports = {
                     })
                 }
                 shiplenght = await interaction.client.databaseSelcetData("SELECT ships_info.*, user_ships.ship_current_hp FROM ships_info WHERE ?", [query]);*/
-                let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
+                let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_id, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
                 shipList = [""];
                 //console.log(shipArray);
                 shipArray.forEach(ship => {
@@ -72,10 +74,11 @@ module.exports = {
                     currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
                     currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
                     if (ship.equipped != 1)
-                        shipList.push(currentData);
+                        shipList.push([currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo]);
                     else
-                        shipList[0] = currentData;
+                        shipList[0] = [currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo];
                 })
+                shipLenght = shipList.length - 1;
             }
             else if (selectedOption === 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
@@ -144,7 +147,7 @@ module.exports = {
             //await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, equippedItemMessage)], ephemeral: true, components: [row, row1, row2, row3, row4] });
 
             if (selectedOption === 'ship')
-                await interaction.reply({ embeds: [interaction.client.greenEmbed(`${shipList[0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
+                await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
             else
                 await interaction.reply({ content: message, ephemeral: true, components: [row, row1, row2, row3, row4] });
 
@@ -197,6 +200,39 @@ module.exports = {
                         await interaction.client.databaseEditData(`UPDATE users SET user_speed = ? WHERE user_id = ?`, [baseSpeed, interaction.user.id]);
                     }
                     collector.stop("Saved");
+                }
+                else if (selectedOption === 'ship') {
+                    if (i.component.customId === "left") {
+                        shipIndex--;
+                        if (shipIndex < 0)
+                            shipIndex = shipLenght;
+                    }
+                    else if (i.component.customId === "right") {
+                        shipIndex++;
+                        if (shipIndex > shipLenght)
+                            shipIndex = 0;
+                    }
+                    else if (i.component.customId === "discard2") {
+                        await i.update({ content: "**DISCARDED**", components: [] });
+                        discardedMessage = false;
+                        collector.stop("Discarded");
+                    }
+                    else if (i.component.customId === "equip" && shipIndex > 0) {
+                        await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
+                        await interaction.client.databaseEditData(`UPDATE users SET user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, resources = '0; 0; 0; 0; 0; 0; 0; 0; 0', cargo = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
+                        await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                        await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                        await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                        discardedMessage = false;
+                        collector.stop("Saved");
+                        return
+                    }
+                    if (shipIndex == 0)
+                        shipRow = await shipButton("SECONDARY");
+                    else
+                        shipRow = await shipButton();
+                    await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
                 }
                 else if (i.component.customId === "discard") {
                     await i.update({ content: "**DISCARDED**", components: [] });
@@ -457,8 +493,12 @@ async function shipButton(buttonStyile = "SUCCESS") {
                 .setEmoji('887811358438064158')
                 .setStyle('PRIMARY'),
             new MessageButton()
+                .setCustomId("discard2")
+                .setEmoji("887979580013563914")
+                .setStyle("DANGER"),
+            new MessageButton()
                 .setCustomId('equip')
-                .setLabel('EQUIP')
+                .setEmoji("888579708114059334")
                 .setStyle(buttonStyile),
         );
     return shipRow;
