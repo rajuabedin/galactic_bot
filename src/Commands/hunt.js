@@ -14,12 +14,27 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
                 return;
             }
+            if (userInfo.user_hp === 0) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(`Please **repair** ship before hunting`, "Ship destroyed!")] });
+                return;
+            }
+            if (userInfo.in_hunt === 1) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(`You are already in a battle`, "Battle in progress...")] });
+                return;
+            }
+            let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
+            if (elapsedTimeFromHunt < 60) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
+                return;
+            }
+
             let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
             let maxCargo = userInfo.max_cargo;
             let cargo = userInfo.cargo;
             let damageDealt = 0;
             let damageReceived = 0;
-            let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+
             let mapId = 1;
             if (Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
                 mapId = userInfo.next_map_id;
@@ -27,25 +42,21 @@ module.exports = {
             }
             else
                 mapId = userInfo.map_id;
-
-            let aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
+            let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+            let aliens = 0;
+            if (huntConfiguration[0].mothership === 1)
+                aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
+            else
+                aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
 
             if (typeof aliens[0] === 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
                 return;
             }
 
-            if (userInfo.in_hunt === 1) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(`You are already in a battle`, "Battle in progress...")] });
-                return;
-            }
-
-            let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
-            if (elapsedTimeFromHunt < 60) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
-                return;
-            }
             await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
+            let [credit, units, expReward, honor, resources] = [0, 0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0]];
+            let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
 
             let alienNameChecker = 0;
             let alienNameIndex = 0;
@@ -87,9 +98,6 @@ module.exports = {
             let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
             expRequirement = expRequirement[0].exp_to_lvl_up;
             await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-            let [credit, units, expReward, honor, resources] = [0, 0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0]];
-            let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
-            let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
             //let user_ammo = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 25, 15, 5];
             //[a, b, c, d] = [threshold, damage, "shield damage", user_ammo]
             //[a] -3 <= DISABLED, -2 <= NO AMMO, -1 <= ONLY FOR X1, 0 <= USE THAT AMMUNITION TILL ALIEN DIES
@@ -129,7 +137,7 @@ module.exports = {
                 }
             }
 
-            let enemyStats = await getAlien(aliens);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
+            let enemyStats = await getAlien(aliens, huntConfiguration[0].mothership);//[1500, 10000, 1500, 310, 0, 0.8, "Test"];
             aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ? AND mothership = 0", [mapId]);
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
             await interaction.client.wait(1000);
@@ -870,15 +878,15 @@ function buttonHandler(interaction, userID, logMessage) {
     });
 }
 
-async function getAlien(aliens) {
+async function getAlien(aliens, addition = 0) {
     let indexList = [];
     let index = 0;
     for (index; index < aliens.length; index++) {
         indexList = indexList.concat(Array(aliens[index].encounter_chance).fill(index));
     }
-    indexList = indexList.sort(() => Math.random() - 0.5)
-    index = indexList[Math.floor(Math.random() * (100))];
-    let resources = aliens[index].resources.split("; ").map(Number)
+    indexList = indexList.sort(() => Math.random() - 0.5);
+    index = indexList[Math.floor(Math.random() * (100 + addition * 20))];
+    let resources = aliens[index].resources.split("; ").map(Number);
     return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, resources, aliens[index].emoji_id, aliens[index].alien_hp, aliens[index].alien_shield];
 }
 

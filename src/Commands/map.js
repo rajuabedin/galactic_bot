@@ -86,7 +86,7 @@ module.exports = {
                         let timeToReachMapSeconds = Math.floor((timeToReachMapMinutes % 1.0) * 60);
                         timeToReachMapMinutes = Math.floor(timeToReachMapMinutes);
                         let dateToReachMap = new Date();
-                        dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes + 60);
+                        dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes);
                         dateToReachMap.setSeconds(dateToReachMap.getSeconds() + timeToReachMapSeconds);
                         dateToReachMap = dateToReachMap.toJSON().split(".");
                         dateToReachMap = dateToReachMap[0];
