@@ -13,6 +13,7 @@ module.exports = {
                 .setName('option')
                 .setDescription('Select from [ laser - shield - engine ]')
                 .setRequired(true)
+                .addChoice('ship', 'ship')
                 .addChoice('laser', 'laser')
                 .addChoice('shield', 'shield')
                 .addChoice('engine', 'engine')
@@ -31,8 +32,52 @@ module.exports = {
             let itemsEquipped = [];
             let unequipableItems = [];
             let selectedOption = interaction.options.getString('option').toLowerCase();
+            let shipList = [];
 
-            if (selectedOption === 'laser') {
+            if (selectedOption === 'ship') {
+                let currentData = "";
+                /*shipList = await interaction.client.databaseSelcetData("SELECT ship_id, equipped FROM user_ships WHERE user_id = ?", [interaction.user.id]);
+                let query = "";                
+                let shiplenght = shipList.length - 1;
+                if (shiplenght == 0)
+                    query = `ship_id = ${shipList[0].ship_id}`;
+                else if (shiplenght == 1)
+                    if (shipList[0].equipped == 1)
+                        query = `ship_id = ${shipList[0].ship_id} OR ship_id = ${shipList[1].ship_id}`;
+                    else
+                        query = `ship_id = ${shipList[1].ship_id} OR ship_id = ${shipList[0].ship_id}`;
+                else {
+                    let querry2 = ""
+                    shipList.forEach((ship, index) => {
+                        if (ship.equipped != 1)
+                            if (index < shiplenght)
+                                query += `ship_id = ${ship.ship_id} OR `;
+                            else
+                                query += `ship_id = ${ship.ship_id}`;
+                        else
+                            querry2 = `ship_id = ${ship.ship_id} OR `;
+                        query = querry2 + query;
+                    })
+                }
+                shiplenght = await interaction.client.databaseSelcetData("SELECT ships_info.*, user_ships.ship_current_hp FROM ships_info WHERE ?", [query]);*/
+                let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
+                shipList = [""];
+                //console.log(shipArray);
+                shipArray.forEach(ship => {
+                    currentData = `**[${ship.emoji_id}]** \n`;
+                    currentData += `<a:hp:896118360125870170> **Current HP **[${ship.ship_current_hp}](https://obelisk.club/) \n`
+                    currentData += `<a:sp:896440044456378398> **Speed **[${ship.ship_base_speed}](https://obelisk.club/) \n`
+                    currentData += `<a:LS:896440044464767036> **Lasers **[${ship.laser_quantity}](https://obelisk.club/) \n`
+                    currentData += `<a:ex:896440044515106846> **Exstras **[${ship.extra_quantity}](https://obelisk.club/) \n`
+                    currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
+                    currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
+                    if (ship.equipped != 1)
+                        shipList.push(currentData);
+                    else
+                        shipList[0] = currentData;
+                })
+            }
+            else if (selectedOption === 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
@@ -77,7 +122,7 @@ module.exports = {
                     itemsEquipped.push([rawEquippedEngine[item].speed_value, "  " + rawEquippedEngine[item].engine_model + "  ", rawEquippedEngine[item].engine_id, rawEquippedEngine[item].emoji_id]);
                 }
                 for (item in rawUnequippedEngine) {
-                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, "  " +  rawUnequippedEngine[item].engine_model + "  ", rawUnequippedEngine[item].engine_id, rawUnequippedEngine[item].emoji_id]);
+                    itemsToEquip.push([rawUnequippedEngine[item].speed_value, "  " + rawUnequippedEngine[item].engine_model + "  ", rawUnequippedEngine[item].engine_id, rawUnequippedEngine[item].emoji_id]);
                 }
                 displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
                 baseSpeed = maxEquipableItem[0].ship_base_speed;
@@ -88,6 +133,7 @@ module.exports = {
 
 
             let [row, row1, row2, row3, message] = [0, 0, 0, 0, 0];
+            let shipRow = await shipButton("SECONDARY");
             if (displayEquippedItemlenght === maxEquipableItem)
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
             else
@@ -96,7 +142,11 @@ module.exports = {
             //let equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items:**`;
             //let storedMessage = `**Data returned to:**\nEquipped ${displayEquippedItemlenght}/${maxEquipableItem} items:\n ${message}`;
             //await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, equippedItemMessage)], ephemeral: true, components: [row, row1, row2, row3, row4] });
-            await interaction.reply({ content: message, ephemeral: true, components: [row, row1, row2, row3, row4] });
+
+            if (selectedOption === 'ship')
+                await interaction.reply({ embeds: [interaction.client.greenEmbed(`${shipList[0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
+            else
+                await interaction.reply({ content: message, ephemeral: true, components: [row, row1, row2, row3, row4] });
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
@@ -392,4 +442,25 @@ const row4 = new MessageActionRow()
             .setEmoji("888579708114059334")
             .setStyle("SUCCESS"),
     );
+
+async function shipButton(buttonStyile = "SUCCESS") {
+    let shipRow = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('left')
+                //.setLabel('Left')
+                .setEmoji('887811358509379594')
+                .setStyle('PRIMARY'),
+            new MessageButton()
+                .setCustomId('right')
+                //.setLabel('Right')
+                .setEmoji('887811358438064158')
+                .setStyle('PRIMARY'),
+            new MessageButton()
+                .setCustomId('equip')
+                .setLabel('EQUIP')
+                .setStyle(buttonStyile),
+        );
+    return shipRow;
+}
 

@@ -67,7 +67,7 @@ module.exports = {
                     await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
-                    await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id, equipped) VALUES (?, 1)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO boost (user_id) VALUES (?)`, [interaction.user.id]);
                     await i.update({ embeds: [interaction.client.greenEmbed(`You have selected **${i.customId}.**\n*You were rewarded with 1000 (x1) laser ammunition and 10000 crediits.*`, "TUTORIAL phase 1")], components: [tutorial] });
                     await interaction.client.databaseEditData(`UPDATE firms_list SET users = users + 1 where firm = ?`, [i.customId]);
