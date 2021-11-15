@@ -25,6 +25,10 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
                 return;
             }
+            if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("There is no hanger in this map\nPlease go to a base map and try again", "ERROR!")] });
+                return;
+            }
             let baseSpeed = 0;
             let displayEquippedItemlenght = 0;
             let maxEquipableItem = 0;
@@ -74,9 +78,9 @@ module.exports = {
                     currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
                     currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
                     if (ship.equipped != 1)
-                        shipList.push([currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo]);
+                        shipList.push([currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo, ship.ship_hp]);
                     else
-                        shipList[0] = [currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo];
+                        shipList[0] = [currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo, ship.ship_hp];
                 })
                 shipLenght = shipList.length - 1;
             }
@@ -220,7 +224,7 @@ module.exports = {
                     else if (i.component.customId === "equip" && shipIndex > 0) {
                         await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                         await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
-                        await interaction.client.databaseEditData(`UPDATE users SET user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, resources = '0; 0; 0; 0; 0; 0; 0; 0; 0', cargo = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
+                        await interaction.client.databaseEditData(`UPDATE users SET user_damage = 0, max_hp = ?, user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][5], shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
                         await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                         await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                         await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
