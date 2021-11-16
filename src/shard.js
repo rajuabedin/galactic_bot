@@ -10,12 +10,12 @@ const API_SECRET = 'secret';
 
 const shard = new ShardingManager('./bot.js', {
     token: process.env.TOKEN,
-    respawn: true,
+    respawn: true
 });
 
 
 app.use(express.json({ verify: (req, res, buffer) => { req.rawBody = buffer; } }));
-app.listen(9000, () => console.log('Node.js server started on port 9000.'));
+app.listen(9000, () => console.log('Websocket started'));
 
 shard.spawn(); // Spawns recommended shards!
 
@@ -26,6 +26,8 @@ shard.on('shardCreate', newShard => {
     })
     Object.keys(require.cache).forEach(function (key) { delete require.cache[key] })
     require('./WebHook/CommandsWebHook.js')(app, API_SECRET, shard);
+    require('./WebHook/GetBotLogs.js')(app, API_SECRET, shard);
+    console.log("%c Websocket reloaded", 'background: #222; color: #bada55')
 })
 
 shard.on('launch', shard => console.log(`[SHARD] Shard ${shard.id}/${shard.totalShards}`));

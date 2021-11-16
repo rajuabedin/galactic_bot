@@ -1,4 +1,5 @@
 module.exports = function (app, API_SECRET, shard) {
+
     app.get('/commands', async (req, res) => {
         const signature = req.headers['x-api-key'];
 
