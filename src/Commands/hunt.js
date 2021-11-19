@@ -690,6 +690,15 @@ module.exports = {
             else {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(messageUserInfo + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([messageUserInfo + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
+                if (userInfo.firm === "Earth") {
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [11, interaction.user.id]);                    
+                }
+                else if (userInfo.firm === "Moon") {
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [21, interaction.user.id]);   
+                }
+                else {
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [31, interaction.user.id]);   
+                }
             }
 
             let userResources = await interaction.client.databaseSelcetData("SELECT resources FROM users WHERE user_id = ?", [interaction.user.id]);

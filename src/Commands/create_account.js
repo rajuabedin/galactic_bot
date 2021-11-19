@@ -33,6 +33,7 @@ module.exports = {
             else {
                 tutorialCounter = userInfo.tutorial_counter;
                 if (tutorialCounter == 1) {
+                    selectedFirm = userInfo.firm;
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
                 }
                 else if (tutorialCounter == 2) {
