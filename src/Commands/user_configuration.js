@@ -94,14 +94,24 @@ module.exports = {
                     if (missileHellstorm > 0) {
                         if (i.customId === "save2") {
                             huntConfiguration[0][selectedAmmo] = missileHellstorm - 1;
-                            await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [missileHellstorm - 1, interaction.user.id]);
                             if (missileHellstorm == 1) {
                                 await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tDISABLED**`, "**SAVED**")], components: [row, activateDeactivate] });
                                 storedMessage = `**(${selectedAmmo})**` + "\t**DISABLED**";
+                                await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
                             }
                             else {
                                 await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\tENABLED**`, "**SAVED**")], components: [row, activateDeactivate] });
-                                storedMessage = `**(${selectedAmmo})**` + "\t**ENABLED**";
+                                if (isMissile) {
+                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
+                                    storedMessage = `**(${selectedAmmo})**` + "\t**ENABLED**";
+                                }
+                                else {
+                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [huntConfiguration[0].helstorm_missiles_number, interaction.user.id]);
+                                    if (huntConfiguration[0].helstorm_missiles_number === 0)
+                                        storedMessage = `**(${selectedAmmo})**` + "\t**DISABLED**\n*To enable, **buy** a hellstorm*";
+                                    else
+                                        storedMessage = `**(${selectedAmmo})**` + "\t**ENABLED**";
+                                }
                             }
                         }
                         else if (i.customId === "discard2") {
@@ -117,10 +127,24 @@ module.exports = {
                         else {
                             activateDeactivate = await buttonHandlerOnOff(1);
                             await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
-                            if (isMissile)
+                            if (isMissile) {
                                 missileHellstorm = 2;
-                            else
-                                missileHellstorm = 6;
+                                activateDeactivate = await buttonHandlerOnOff(1);
+                                await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
+                            }
+                            else {
+                                if (huntConfiguration[0].helstorm_missiles_number === 0){
+                                    activateDeactivate = await buttonHandlerOnOff(1);
+                                    await i.update({ embeds: [interaction.client.greenEmbed("**DISABLED**\n*To enable, **buy** a hellstorm*", message)], components: [row, activateDeactivate] });
+                                    missileHellstorm = 1;
+                                }
+                                else{
+                                    activateDeactivate = await buttonHandlerOnOff(0);
+                                    await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
+                                    missileHellstorm = 6;
+                                }
+                                
+                            }
                         }
                     }
                     else if (i.customId === "save") {
