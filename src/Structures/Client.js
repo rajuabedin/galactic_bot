@@ -24,6 +24,8 @@ class Client extends Discord.Client {
         this.wait = require('util').promisify(setTimeout);
         this.random = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
+        this.messagesToDM = []
+
         this.developersID = ['145849120698007553', '400614330921648132'];
 
         this.pool = mysql.createPool({
