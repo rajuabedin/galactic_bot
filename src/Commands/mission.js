@@ -4,8 +4,8 @@ const errorLog = require('../Utility/logger').logger;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('quest')
-        .setDescription('Check your quests')
+        .setName('mission')
+        .setDescription('Check your missions')
         .addStringOption(option =>
             option.setName('status')
                 .setDescription('Please status')
@@ -17,45 +17,45 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            var questListDB = []
-            var searchQuestByStatus = interaction.options.getString('status')
-            if (searchQuestByStatus !== null) {
-                questListDB = await interaction.client.databaseSelcetData("SELECT * from user_quests Inner JOIN quests on user_quests.quest_id= quests.quest_id where user_id = ? and quest_status = ?", [interaction.user.id, searchQuestByStatus.toLowerCase()]);
+            var missionListDB = []
+            var searchMissionByStatus = interaction.options.getString('status')
+            if (searchMissionByStatus !== null) {
+                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and mission_status = ?", [interaction.user.id, searchMissionByStatus.toLowerCase()]);
             } else {
-                questListDB = await interaction.client.databaseSelcetData("SELECT * from user_quests Inner JOIN quests on user_quests.quest_id= quests.quest_id where user_id = ? and id = ? and quest_status = ?", [interaction.user.id, userInfo.quests_id, "active"]);
+                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and id = ? and mission_status = ?", [interaction.user.id, userInfo.missions_id, "active"]);
             }
-            if (questListDB === undefined || questListDB.length == 0) {
-                if (searchQuestByStatus !== null) {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any quests with status [${searchQuestByStatus.toUpperCase()}](https://obelisk.club/)!`)] });
+            if (missionListDB === undefined || missionListDB.length == 0) {
+                if (searchMissionByStatus !== null) {
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any missions with status [${searchMissionByStatus.toUpperCase()}](https://obelisk.club/)!`)] });
                 } else {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any quests!`)] });
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any missions!`)] });
                 }
             }
-            var questList = [];
+            var missionList = [];
             var embed;
             var count = 0;
-            var questsPerPage = 1;
+            var missionsPerPage = 1;
             var currentData = "";
-            var questExpired = false;
+            var missionExpired = false;
 
-            await questListDB.forEach(async (quest, index) => {
+            await missionListDB.forEach(async (mission, index) => {
                 count++;
 
                 var todo = "";
-                var task = quest.quest_task.split(";");
-                var taskQuantity = quest.quest_task_quantity.split(";");
-                var taskQuantityLeft = quest.quest_task_left.split(";");
+                var task = mission.mission_task.split(";");
+                var taskQuantity = mission.mission_task_quantity.split(";");
+                var taskQuantityLeft = mission.mission_task_left.split(";");
                 var availableMap = "No Map Restriction";
 
-                if (quest.map_id > 0) {
-                    availableMap = quest.map_id;
+                if (mission.map_id > 0) {
+                    availableMap = mission.map_id;
                 }
 
-                if (quest.quest_limit > 0) {
-                    var questEndTime = Date.parse(quest.quest_started_at) + (quest.quest_limit * 60 * 60 * 1000);
+                if (mission.mission_limit > 0) {
+                    var missionEndTime = Date.parse(mission.mission_started_at) + (mission.mission_limit * 60 * 60 * 1000);
                     var currentTime = new Date().getTime();
 
-                    var distance = questEndTime - currentTime;
+                    var distance = missionEndTime - currentTime;
 
                     // Time calculations for days, hours, minutes and seconds
                     var days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -69,11 +69,11 @@ module.exports = {
 
 
                 var timeLeftMsg = ""
-                if (quest.quest_limit > 0) {
+                if (mission.mission_limit > 0) {
                     if (distance < 0) {
                         timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
-                        questExpired = true;
-                        await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
+                        missionExpired = true;
+                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
                     } else {
                         timeLeftMsg = "__"
                         if (days > 0) {
@@ -104,69 +104,69 @@ module.exports = {
 
                 var reward = "";
 
-                if (quest.quest_reward_credit > 0) reward += `Credit - ${quest.quest_reward_credit}`;
+                if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
 
-                if (quest.quest_reward_units > 0) {
+                if (mission.mission_reward_units > 0) {
                     if (reward != "") {
-                        reward += ` | Units - ${quest.quest_reward_units}`;
+                        reward += ` | Units - ${mission.mission_reward_units}`;
                     } else {
-                        reward += `Units - ${quest.quest_reward_units}`;
+                        reward += `Units - ${mission.mission_reward_units}`;
                     }
                 }
 
-                if (quest.quest_reward_exp > 0) {
+                if (mission.mission_reward_exp > 0) {
                     if (reward != "") {
-                        reward += ` | Exp - ${quest.quest_reward_exp}`;
+                        reward += ` | Exp - ${mission.mission_reward_exp}`;
                     } else {
-                        reward += `Exp - ${quest.quest_reward_exp}`;
+                        reward += `Exp - ${mission.mission_reward_exp}`;
                     }
                 }
 
-                if (quest.quest_reward_honor > 0) {
+                if (mission.mission_reward_honor > 0) {
                     if (reward != "") {
-                        reward += ` | Honor - ${quest.quest_reward_honor}`;
+                        reward += ` | Honor - ${mission.mission_reward_honor}`;
                     } else {
-                        reward += `Honor - ${quest.quest_reward_honor}`;
+                        reward += `Honor - ${mission.mission_reward_honor}`;
                     }
                 }
 
-                if (quest.quest_reward_items != null && quest.quest_reward_items !== "") {
+                if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
                     if (reward != "") {
-                        reward += ` | Materials: ${quest.quest_reward_items}`;
+                        reward += ` | Materials: ${mission.mission_reward_items}`;
                     } else {
-                        reward += `Materials: - ${quest.quest_reward_items}`;
+                        reward += `Materials: - ${mission.mission_reward_items}`;
                     }
                 }
 
-                currentData += "**Quest Info**\n**ID :** `" + quest.quest_id + "`\n**Quest Type:** [" + quest.quest_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Quest Reward(s)**\n" + reward + "\n**Quest Time Left:** " + timeLeftMsg + "\n**Quest Objective Status:**```" + todo + "```";
+                currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Time Left:** " + timeLeftMsg + "\n**Mission Objective Status:**```" + todo + "```";
 
-                if (count === questsPerPage) {
-                    questList.push([currentData, quest.quest_id, quest.quest_task_quantity]);
+                if (count === missionsPerPage) {
+                    missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
                     count = 0;
                     currentData = "";
                 }
             });
 
-            var maxPages = questList.length;
+            var maxPages = missionList.length;
 
-            if (questList == "") {
-                if (!questExpired) {
-                    embed = interaction.client.redEmbed("Quest not found!");
+            if (missionList == "") {
+                if (!missionExpired) {
+                    embed = interaction.client.redEmbed("Mission not found!");
                 } else {
-                    embed = interaction.client.redEmbed("Quest expired!");
+                    embed = interaction.client.redEmbed("Mission expired!");
                 }
 
             } else {
-                if (searchQuestByStatus === null) {
-                    embed = interaction.client.yellowPagesImageEmbed(questList[0][0], "QUESTS LIST", interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                if (searchMissionByStatus === null) {
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "QUESTS LIST", interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
                 } else {
-                    embed = interaction.client.yellowPagesImageEmbed(questList[0][0], `QUESTS LIST <${searchQuestByStatus.toUpperCase()}>`, interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], `QUESTS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
                 }
 
 
             }
-            if (searchQuestByStatus === null) {
-                if (questExpired === false && questListDB.length > 0) {
+            if (searchMissionByStatus === null) {
+                if (missionExpired === false && missionListDB.length > 0) {
                     await interaction.reply({ embeds: [embed], components: [row] });
                 } else {
                     await interaction.reply({ embeds: [embed], components: [] });
@@ -176,7 +176,7 @@ module.exports = {
                 await interaction.reply({ embeds: [embed], components: [rowLeftRight] });
             }
 
-            buttonHandler(interaction, questList, userInfo, searchQuestByStatus);
+            buttonHandler(interaction, missionList, userInfo, searchMissionByStatus);
         } catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -223,8 +223,8 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, questsData, userInfo) {
-    let maxIndex = questsData.length - 1;
+function buttonHandler(interaction, missionsData, userInfo) {
+    let maxIndex = missionsData.length - 1;
     let index = 0;
 
     const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
@@ -239,17 +239,17 @@ function buttonHandler(interaction, questsData, userInfo) {
             index++;
         } else if (i.customId === "cancel") {
             if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to stop this quest?", "Quest Cancellation")], components: [rowYesNo] });
+                await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to stop this mission?", "Mission Cancellation")], components: [rowYesNo] });
             } else {
-                await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to stop this quest?", "Quest Cancellation")], components: [rowYesNo] });
+                await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to stop this mission?", "Mission Cancellation")], components: [rowYesNo] });
             }
         } else if (i.customId === "yes") {
             if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the quest.", "Cancelled")], components: [] })
+                await i.editReply({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the mission.", "Cancelled")], components: [] })
             } else {
-                await i.update({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the quest.", "Cancelled")], components: [] })
+                await i.update({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the mission.", "Cancelled")], components: [] })
             }
-            await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, userInfo.quests_id])
+            await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, userInfo.missions_id])
             return collector.stop();
         } else {
             interaction.editReply({ embeds: [interaction.client.redEmbed("Interaction has been canceled.", "Stopped")], components: [] })
@@ -262,10 +262,10 @@ function buttonHandler(interaction, questsData, userInfo) {
             if (index > maxIndex) {
                 index -= maxIndex + 1;
             }
-            if (searchQuestByStatus === null) {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(questsData[index][0], "QUESTS LIST", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+            if (searchMissionByStatus === null) {
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "QUESTS LIST", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
             } else {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(questsData[index][0], `QUESTS LIST <${searchQuestByStatus.toUpperCase()}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `QUESTS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
             }
         }
 
