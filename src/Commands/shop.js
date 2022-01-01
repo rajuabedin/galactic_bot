@@ -24,6 +24,10 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
+            if (userInfo.tutorial_counter < 5) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             var searchItem = interaction.options.getString('search')
             var items = [];
             var embed;

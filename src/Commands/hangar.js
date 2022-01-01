@@ -26,7 +26,7 @@ module.exports = {
                 return;
             }
             if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("There is no hanger in this map\nPlease go to a base map and try again", "ERROR!")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed("There is **no hanger in this map**\nPlease go to a **base map** and try again", "ERROR!")] });
                 return;
             }
             let baseSpeed = 0;
