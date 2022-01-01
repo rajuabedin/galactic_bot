@@ -24,6 +24,10 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
+            if (userInfo.tutorial_counter < 5) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             var searchItem = interaction.options.getString('search')
             var items = [];
             var embed;
@@ -452,7 +456,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     quantity += add
                 if (quantity < 1) {
                     quantity -= add;
-                    await i.update({ embeds: [interaction.client.redEmbed(`**Quantity can not be less than 1!**\n**Item**: testing || **Quantity**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
+                    await i.update({ embeds: [interaction.client.redEmbed(`**Quantity can not be less than 1!**\n**Quantity**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
                 }
                 else if (priceCredit[index] > 0)
                     await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
