@@ -13,7 +13,7 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            var questListDB = await interaction.client.databaseSelcetData("SELECT * from quests", [interaction.user.id]);
+            var questListDB = await interaction.client.databaseSelcetData("SELECT * from quests where quest_visible = 'yes'", [interaction.user.id]);
             if (questListDB === undefined || questListDB.length == 0) {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any quests!")] });
             } else {
