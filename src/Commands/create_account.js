@@ -27,8 +27,8 @@ module.exports = {
         if (typeof userInfo === 'undefined') {
             interaction.reply({ embeds: [interaction.client.greenEmbed(`Which firm would you like to create an account on?\n***${boostedFirm}*** *has* ***10% EXP*** *and* ***Damage*** *boost for a* ***week***`, "Create Account")], components: [firm] });
         }
-        else if (userInfo.tutorial_counter >= 5) {
-            interaction.reply({ embeds: [interaction.client.redEmbed("You already finished the tutorial")] });
+        else if (userInfo.tutorial_counter >= 8) {
+            interaction.reply({ embeds: [interaction.client.redEmbed("You already finished the tutorial, please come back when new content is added")] });
             return
         }
         else {
@@ -315,6 +315,17 @@ module.exports = {
                         else
                             await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${items[index][2] * quantity}\n**To continue, set quantity to __100__**`, `TUTORIAL phase 5`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                     }
+                }
+            }
+            else if (tutorialCounter == 5) {
+                if (phaseCounter == 1) {
+                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`You can accept quests by `, "TUTORIAL phase 4")], components: [tutorial] });
+                    phaseCounter++;
+                    row = await buttonHandlerOnOff(0);
+                }
+                else if (phaseCounter == 2) {
+                    await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n\n*You can activate/deactivate missiles and hellstorm from **option 1 and 2**\n**ENABLE missiles to continue***`, "TUTORIAL phase 4")], components: [row] });
+                    phaseCounter++;
                 }
             }
             //}               

@@ -60,28 +60,28 @@ module.exports = {
 
             let alienNameChecker = 0;
             let alienNameIndex = 0;
-            let questTask = 0;
-            let questTaskLeft = 0;
-            let countQuest = false;
-            let quest = await interaction.client.databaseSelcetData("SELECT * FROM user_quests INNER JOIN quests ON user_quests.quest_id = quests.quest_id WHERE user_quests.user_id = ? AND user_quests.quest_status = 'active'", [interaction.user.id]);
+            let missionTask = 0;
+            let missionTaskLeft = 0;
+            let countMission = false;
+            let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions INNER JOIN missions ON user_missions.mission_id = missions.mission_id WHERE user_missions.user_id = ? AND user_missions.mission_status = 'active'", [interaction.user.id]);
             let runRow = battleButtonHandler();
-            if (typeof quest !== 'undefined' && quest.length > 0) {
-                questTask = quest[0].quest_task.split(";");
-                questTaskLeft = quest[0].quest_task_left.split(";").map(Number);
+            if (typeof mission !== 'undefined' && mission.length > 0) {
+                missionTask = mission[0].mission_task.split(";");
+                missionTaskLeft = mission[0].mission_task_left.split(";").map(Number);
 
-                if (quest[0].quest_limit > 0) {
-                    let questEndTime = Date.parse(quest[0].quest_started_at) + (quest[0].quest_limit * 60 * 60 * 1000);
+                if (mission[0].mission_limit > 0) {
+                    let missionEndTime = Date.parse(mission[0].mission_started_at) + (mission[0].mission_limit * 60 * 60 * 1000);
                     let currentTime = new Date().getTime();
 
-                    let distance = questEndTime - currentTime;
+                    let distance = missionEndTime - currentTime;
                     if (distance < 0) {
-                        await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.quests_id])
-                        quest[0].map_id = -99;
-                        questTaskLeft = 0;
+                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
+                        mission[0].map_id = -99;
+                        missionTaskLeft = 0;
                     }
                 }
-                if (quest[0].map_id === 1 || quest[0].map_id === userInfo.map_id) {
-                    countQuest = true;
+                if (mission[0].map_id === 1 || mission[0].map_id === userInfo.map_id) {
+                    countMission = true;
                 }
             }
 
@@ -437,37 +437,37 @@ module.exports = {
 
                 if (alienStats[1] <= 0) {
 
-                    if (countQuest) {
+                    if (countMission) {
                         alienNameChecker = (x) => x == alienStats[6];
-                        alienNameIndex = questTask.findIndex(alienNameChecker)
-                        if (alienNameIndex > -1 && questTaskLeft[alienNameIndex] > 0) {
-                            questTaskLeft[alienNameIndex]--;
+                        alienNameIndex = missionTask.findIndex(alienNameChecker)
+                        if (alienNameIndex > -1 && missionTaskLeft[alienNameIndex] > 0) {
+                            missionTaskLeft[alienNameIndex]--;
 
-                            for (item in questTaskLeft) {
-                                if (questTaskLeft[item] == 0)
-                                    countQuest = false;
+                            for (item in missionTaskLeft) {
+                                if (missionTaskLeft[item] == 0)
+                                    countMission = false;
                                 else
-                                    countQuest = true;
+                                    countMission = true;
                             }
-                            if (!countQuest) {
-                                //await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ? WHERE user_id = ?", [quest[0].quest_reward_exp, quest[0].quest_reward_credit, quest[0].quest_reward_units, quest[0].quest_reward_honor, interaction.user.id]);
-                                expReward += quest[0].quest_reward_exp;
-                                credit += quest[0].quest_reward_credit;
-                                units += quest[0].quest_reward_units;
-                                honor += quest[0].quest_reward_honor;
-                                questTaskLeft = -5;
+                            if (!countMission) {
+                                //await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ? WHERE user_id = ?", [mission[0].mission_reward_exp, mission[0].mission_reward_credit, mission[0].mission_reward_units, mission[0].mission_reward_honor, interaction.user.id]);
+                                expReward += mission[0].mission_reward_exp;
+                                credit += mission[0].mission_reward_credit;
+                                units += mission[0].mission_reward_units;
+                                honor += mission[0].mission_reward_honor;
+                                missionTaskLeft = -5;
 
                                 if (honorBoost && expBoost)
-                                    messageReward += `EXP           :  ${quest[0].quest_reward_exp} + [${Math.floor(quest[0].quest_reward_exp * 0.1)}]\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor} + [${Math.floor(quest[0].quest_reward_honor * 0.1)}]` + " \`\`\`";
+                                    messageReward += `EXP           :  ${mission[0].mission_reward_exp} + [${Math.floor(mission[0].mission_reward_exp * 0.1)}]\nCredits       :  ${mission[0].mission_reward_credit}\nUnits         :  ${mission[0].mission_reward_units}\nHonor         :  ${mission[0].mission_reward_honor} + [${Math.floor(mission[0].mission_reward_honor * 0.1)}]` + " \`\`\`";
                                 else if (honorBoost)
-                                    messageReward += `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor} + [${Math.floor(quest[0].quest_reward_honor * 0.1)}]` + " \`\`\`";
+                                    messageReward += `EXP           :  ${mission[0].mission_reward_exp}\nCredits       :  ${mission[0].mission_reward_credit}\nUnits         :  ${mission[0].mission_reward_units}\nHonor         :  ${mission[0].mission_reward_honor} + [${Math.floor(mission[0].mission_reward_honor * 0.1)}]` + " \`\`\`";
                                 else if (expBoost)
-                                    messageReward += `EXP           :  ${quest[0].quest_reward_exp} + [${Math.floor(quest[0].quest_reward_exp * 0.1)}]\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
+                                    messageReward += `EXP           :  ${mission[0].mission_reward_exp} + [${Math.floor(mission[0].mission_reward_exp * 0.1)}]\nCredits       :  ${mission[0].mission_reward_credit}\nUnits         :  ${mission[0].mission_reward_units}\nHonor         :  ${mission[0].mission_reward_honor}` + " \`\`\`";
                                 else
-                                    messageReward += `EXP           :  ${quest[0].quest_reward_exp}\nCredits       :  ${quest[0].quest_reward_credit}\nUnits         :  ${quest[0].quest_reward_units}\nHonor         :  ${quest[0].quest_reward_honor}` + " \`\`\`";
+                                    messageReward += `EXP           :  ${mission[0].mission_reward_exp}\nCredits       :  ${mission[0].mission_reward_credit}\nUnits         :  ${mission[0].mission_reward_units}\nHonor         :  ${mission[0].mission_reward_honor}` + " \`\`\`";
 
-                                await interaction.followUp({ embeds: [interaction.client.yellowEmbed(messageReward, "Quest Completed!")] });
-                                await interaction.client.databaseEditData(`update user_quests set quest_status = ? where user_id = ? and id = ?`, ["completed", interaction.user.id, quest[0].id])
+                                await interaction.followUp({ embeds: [interaction.client.yellowEmbed(messageReward, "Mission Completed!")] });
+                                await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["completed", interaction.user.id, mission[0].id])
                             }
                         }
                     }
@@ -603,22 +603,22 @@ module.exports = {
             //await interaction.client.wait(1000 + 5 * turnCounter);
 
             messageReward = "\`\`\`yaml\n";
-            if (questTaskLeft == -5) {
+            if (missionTaskLeft == -5) {
                 if (honorBoost && expBoost) {
-                    messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp} + [${Math.floor((expReward - quest[0].quest_reward_exp) * 0.1)}]\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor} + [${Math.floor((honor - quest[0].quest_reward_honor) * 0.1)}]` + " \`\`\`";
+                    messageReward += `EXP           :  ${expReward - mission[0].mission_reward_exp} + [${Math.floor((expReward - mission[0].mission_reward_exp) * 0.1)}]\nCredits       :  ${credit - mission[0].mission_reward_credit}\nUnits         :  ${units - mission[0].mission_reward_units}\nHonor         :  ${honor - mission[0].mission_reward_honor} + [${Math.floor((honor - mission[0].mission_reward_honor) * 0.1)}]` + " \`\`\`";
                     expReward = Math.floor(expReward * 1.1);
                     honor = Math.floor(honor * 1.1);
                 }
                 else if (honorBoost) {
-                    messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp}\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor} + [${Math.floor((honor - quest[0].quest_reward_honor) * 0.1)}]` + " \`\`\`";
+                    messageReward += `EXP           :  ${expReward - mission[0].mission_reward_exp}\nCredits       :  ${credit - mission[0].mission_reward_credit}\nUnits         :  ${units - mission[0].mission_reward_units}\nHonor         :  ${honor - mission[0].mission_reward_honor} + [${Math.floor((honor - mission[0].mission_reward_honor) * 0.1)}]` + " \`\`\`";
                     honor = Math.floor(honor * 1.1);
                 }
                 else if (expBoost) {
-                    messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp} + [${Math.floor((expReward - quest[0].quest_reward_exp) * 0.1)}]\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor}` + " \`\`\`";
+                    messageReward += `EXP           :  ${expReward - mission[0].mission_reward_exp} + [${Math.floor((expReward - mission[0].mission_reward_exp) * 0.1)}]\nCredits       :  ${credit - mission[0].mission_reward_credit}\nUnits         :  ${units - mission[0].mission_reward_units}\nHonor         :  ${honor - mission[0].mission_reward_honor}` + " \`\`\`";
                     expReward = Math.floor(expReward * 1.1);
                 }
                 else
-                    messageReward += `EXP           :  ${expReward - quest[0].quest_reward_exp}\nCredits       :  ${credit - quest[0].quest_reward_credit}\nUnits         :  ${units - quest[0].quest_reward_units}\nHonor         :  ${honor - quest[0].quest_reward_honor}`;
+                    messageReward += `EXP           :  ${expReward - mission[0].mission_reward_exp}\nCredits       :  ${credit - mission[0].mission_reward_credit}\nUnits         :  ${units - mission[0].mission_reward_units}\nHonor         :  ${honor - mission[0].mission_reward_honor}`;
             }
             else {
                 if (honorBoost && expBoost) {
@@ -718,12 +718,12 @@ module.exports = {
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ? WHERE user_id = ? and equipped = 1", [userStats[1], interaction.user.id]);
-            if (questTaskLeft != -5 && questTaskLeft != 0) {
-                if (questTaskLeft.length > 1)
-                    questTaskLeft = questTaskLeft.join(';');
+            if (missionTaskLeft != -5 && missionTaskLeft != 0) {
+                if (missionTaskLeft.length > 1)
+                    missionTaskLeft = missionTaskLeft.join(';');
                 else
-                    questTaskLeft = questTaskLeft[0];
-                await interaction.client.databaseEditData("UPDATE user_quests SET quest_task_left = ? WHERE user_id = ? AND id = ?", [questTaskLeft, interaction.user.id, quest[0].id]);
+                    missionTaskLeft = missionTaskLeft[0];
+                await interaction.client.databaseEditData("UPDATE user_missions SET mission_task_left = ? WHERE user_id = ? AND id = ?", [missionTaskLeft, interaction.user.id, mission[0].id]);
             }
             buttonHandler(interaction, interaction.user.id, logMessage);
         }

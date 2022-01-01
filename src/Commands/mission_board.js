@@ -1,0 +1,313 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageActionRow, MessageButton } = require('discord.js');
+const errorLog = require('../Utility/logger').logger;
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('missions_board')
+        .setDescription('Get a mission and level up faster!')
+        .addStringOption(option =>
+            option.setName('search')
+                .setDescription('Please enter mission type, id or monster name...')
+                .setRequired(false)),
+
+    async execute(interaction, userInfo) {
+        try {
+            var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
+            if (missionListDB === undefined || missionListDB.length == 0) {
+                return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any missions!")] });
+            } else {
+                var searchMission = interaction.options.getString('search')
+                var missionList = [];
+                var embed;
+                var count = 0;
+                var missionsPerPage = 1;
+                var currentData = "";
+
+                if (searchMission === null) {
+                    await missionListDB.forEach((mission, index) => {
+                        count++;
+
+                        var todo = "";
+                        var task = mission.mission_task.split(";");
+                        var taskQuantity = mission.mission_task_quantity.split(";");
+                        var timeLeftMsg = "";
+                        var availableMap = "No Map Restriction";
+
+                        if (mission.map_id > 0) {
+                            availableMap = mission.map_id;
+                        }
+
+
+                        if (mission.mission_limit > 0) {
+                            timeLeftMsg = mission.mission_limit + " H";
+                        } else {
+                            timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                        }
+
+                        for (index = 0; index < task.length; index++) {
+                            todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
+                        }
+
+
+                        var reward = "";
+
+                        if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
+
+                        if (mission.mission_reward_units > 0) {
+                            if (reward != "") {
+                                reward += ` | Units - ${mission.mission_reward_units}`;
+                            } else {
+                                reward += `Units - ${mission.mission_reward_units}`;
+                            }
+                        }
+
+                        if (mission.mission_reward_exp > 0) {
+                            if (reward != "") {
+                                reward += ` | Exp - ${mission.mission_reward_exp}`;
+                            } else {
+                                reward += `Exp - ${mission.mission_reward_exp}`;
+                            }
+                        }
+
+                        if (mission.mission_reward_honor > 0) {
+                            if (reward != "") {
+                                reward += ` | Honor - ${mission.mission_reward_honor}`;
+                            } else {
+                                reward += `Honor - ${mission.mission_reward_honor}`;
+                            }
+                        }
+
+                        if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
+                            if (reward != "") {
+                                reward += ` | Materials: ${mission.mission_reward_items}`;
+                            } else {
+                                reward += `Materials: - ${mission.mission_reward_items}`;
+                            }
+                        }
+
+                        currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Duration:** " + timeLeftMsg + "\n**Mission Objective:**```" + todo + "```";
+
+                        if (count === missionsPerPage) {
+                            missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
+                            count = 0;
+                            currentData = "";
+                        }
+                    });
+                } else {
+                    await missionListDB.forEach((mission, index) => {
+
+                        if (mission.mission_type.toLowerCase().includes(searchMission.toLowerCase()) || mission.mission_task.toLowerCase().includes(searchMission.toLowerCase())
+                            || mission.mission_reward_items.toLowerCase().includes(searchMission.toLowerCase()) || mission.mission_id === parseInt(searchMission)) {
+                            count++;
+
+                            var todo = "";
+                            var task = mission.mission_task.split(";");
+                            var taskQuantity = mission.mission_task_quantity.split(";");
+                            var timeLeftMsg = "";
+                            var availableMap = "No Map Restriction";
+
+                            if (mission.map_id > 0) {
+                                availableMap = mission.map_id;
+                            }
+
+                            if (mission.mission_limit > 0) {
+                                timeLeftMsg = mission.mission_limit + " H";
+                            } else {
+                                timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                            }
+
+                            for (index = 0; index < task.length; index++) {
+                                todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
+                            }
+
+                            var reward = "";
+
+                            if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
+
+                            if (mission.mission_reward_units > 0) {
+                                if (reward != "") {
+                                    reward += ` | Units - ${mission.mission_reward_units}`;
+                                } else {
+                                    reward += `Units - ${mission.mission_reward_units}`;
+                                }
+                            }
+
+                            if (mission.mission_reward_exp > 0) {
+                                if (reward != "") {
+                                    reward += ` | Exp - ${mission.mission_reward_exp}`;
+                                } else {
+                                    reward += `Exp - ${mission.mission_reward_exp}`;
+                                }
+                            }
+
+                            if (mission.mission_reward_honor > 0) {
+                                if (reward != "") {
+                                    reward += ` | Honor - ${mission.mission_reward_honor}`;
+                                } else {
+                                    reward += `Honor - ${mission.mission_reward_honor}`;
+                                }
+                            }
+
+                            if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
+                                if (reward != "") {
+                                    reward += ` | Materials: ${mission.mission_reward_items}`;
+                                } else {
+                                    reward += `Materials: - ${mission.mission_reward_items}`;
+                                }
+                            }
+
+                            currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Duration:** " + timeLeftMsg + "\n**Mission Objective:**```" + todo + "```";
+
+                            if (count === missionsPerPage) {
+                                missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
+                                count = 0;
+                                currentData = "";
+                            }
+                        }
+                    });
+                }
+
+
+                var maxPages = missionList.length;
+
+                if (missionList == "") {
+                    embed = interaction.client.redEmbed("Mission not found!");
+                } else {
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "QUESTS BOARD", interaction.user, `Page 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
+                }
+                if (missionList.length > 1) {
+                    await interaction.reply({ embeds: [embed], components: [row] });
+                    buttonHandler(interaction, missionList, userInfo);
+                } else {
+                    await interaction.reply({ embeds: [embed] });
+                }
+
+
+            }
+        } catch (error) {
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            }
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
+        }
+    }
+
+}
+
+const row = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('left')
+            .setEmoji('887811358509379594')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('right')
+            .setEmoji('887811358438064158')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('get')
+            .setLabel('GET')
+            .setStyle('SUCCESS'),
+    );
+
+const rowYesNo = new MessageActionRow()
+    .addComponents(
+
+        new MessageButton()
+            .setCustomId('yes')
+            .setLabel('YES')
+            .setStyle('SUCCESS'),
+        new MessageButton()
+            .setCustomId('no')
+            .setLabel('NO')
+            .setStyle('DANGER'),
+    );
+
+function buttonHandler(interaction, missionsData, userInfo) {
+    let maxIndex = missionsData.length - 1;
+    let index = 0;
+    let selectedMissionID = -1;
+    var hasActiveMission = false;
+    var activeMissionID = 0;
+
+    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+
+    collector.on('collect', async i => {
+        collector.resetTimer({ time: 15000 });
+        if (i.customId === 'left') {
+            index--;
+        } else if (i.customId === 'right') {
+            index++;
+        } else if (i.customId === "get") {
+            if (userInfo.missions_id != null) {
+                var userMission = await interaction.client.databaseSelcetData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
+                var userMission = userMission[0];
+
+                if (typeof userMission !== 'undefined') {
+                    var userMissionInfo = await interaction.client.databaseSelcetData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
+                    var userMissionInfo = userMissionInfo[0];
+                    var mySqlTimeStamp = userMission.mission_started_at;
+                    var nowTimeStamp = new Date();
+                    var resolutionTime = ((((nowTimeStamp - mySqlTimeStamp) / 1000) / 60) / 60);
+                    if (userMissionInfo.mission_limit > resolutionTime) {
+                        hasActiveMission = true;
+                        activeMissionID = userInfo.missions_id;
+                    } else {
+                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
+                    }
+                }
+            }
+            selectedMissionID = missionsData[index][1];
+            if (hasActiveMission) {
+                if (i.replied) {
+                    await i.editReply({ embeds: [interaction.client.blueEmbed("You already have active mission. Do you still want to continue?", "Active Mission Found")], components: [rowYesNo] });
+                } else {
+                    await i.update({ embeds: [interaction.client.blueEmbed("You already have active mission. Do you still want to continue?", "Active Mission Found")], components: [rowYesNo] });
+                }
+
+            } else {
+                if (i.replied) {
+                    await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this mission?", "Start Mission")], components: [rowYesNo] });
+                } else {
+                    await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this mission?", "Start Mission")], components: [rowYesNo] });
+                }
+
+            }
+        } else if (i.customId === "yes") {
+            var query = `insert into user_missions (mission_id, mission_task_left, user_id) values (?,?,?)`;
+            var missionId = await interaction.client.databaseEditDataReturnID(query, [selectedMissionID, missionsData[index][2], interaction.user.id])
+            await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id])
+            if (i.replied) {
+                await i.editReply({ embeds: [interaction.client.greenEmbed("You have successfully started the mission.", "Successfull")], components: [] })
+            } else {
+                await i.update({ embeds: [interaction.client.greenEmbed("You have successfully started the mission.", "Successfull")], components: [] })
+            }
+            if (hasActiveMission) {
+                await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, activeMissionID])
+            }
+            return collector.stop();
+        } else {
+            interaction.editReply({ embeds: [interaction.client.redEmbed("Interaction has been canceled.", "Cancelled")], components: [] })
+        }
+
+        if (["left", "right"].includes(i.customId)) {
+            if (index < 0) {
+                index += maxIndex + 1;
+            }
+            if (index > maxIndex) {
+                index -= maxIndex + 1;
+            }
+            await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "QUESTS BOARD", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
+        }
+
+    });
+
+    collector.on('end', collected => {
+        interaction.editReply({ components: [] })
+    });
+}
