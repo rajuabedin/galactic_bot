@@ -24,7 +24,7 @@ module.exports = {
             var missionListDB = []
             var searchMissionByStatus = interaction.options.getString('status')
             if (searchMissionByStatus !== null) {
-                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and mission_status = ?", [interaction.user.id, searchMissionByStatus.toLowerCase()]);
+                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_missions.user_id = ? and user_missions.mission_status = ?", [interaction.user.id, searchMissionByStatus.toLowerCase()]);
             } else {
                 missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and id = ? and mission_status = ?", [interaction.user.id, userInfo.missions_id, "active"]);
             }
@@ -42,7 +42,9 @@ module.exports = {
             var currentData = "";
             var missionExpired = false;
 
-            await missionListDB.forEach(async (mission, index) => {
+
+            for (let mission of missionListDB) {
+                missionExpired = false;
                 count++;
 
                 var todo = "";
@@ -77,7 +79,7 @@ module.exports = {
                     if (distance < 0) {
                         timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
                         missionExpired = true;
-                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
+                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, mission.id])
                     } else {
                         timeLeftMsg = "__"
                         if (days > 0) {
@@ -144,12 +146,13 @@ module.exports = {
 
                 currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Time Left:** " + timeLeftMsg + "\n**Mission Objective Status:**```" + todo + "```";
 
+
                 if (count === missionsPerPage) {
                     missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
                     count = 0;
                     currentData = "";
                 }
-            });
+            };
 
             var maxPages = missionList.length;
 
@@ -227,7 +230,7 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, missionsData, userInfo) {
+function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatus) {
     let maxIndex = missionsData.length - 1;
     let index = 0;
 
