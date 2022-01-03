@@ -66,11 +66,10 @@ module.exports = {
             }
             else if (tutorialCounter == 5) {
                 let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions WHERE user_missions.user_id = ?", [interaction.user.id]);
-                console.log(mission);
                 if (typeof mission == 'undefined' || mission.length == 0) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`You can accept mission from **/mission_board**\nTo complete this tutorial, you are required to finish the mission`, "TUTORIAL phase 6")], components: [tutorial] });
                 }
-                else if(mission.mission_status == 'active'){
+                else if (mission[0].mission_status === 'active'){
                     await interaction.reply({ embeds: [interaction.client.redEmbed("To continue, you need to complete the mission\nTo complete the mission do **/hunt**\nYou can check the status of the mission by doing **/mission**", "TUTORIAL phase 6")]})
                     return;
                 }

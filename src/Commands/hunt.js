@@ -83,7 +83,7 @@ module.exports = {
                         missionTaskLeft = 0;
                     }
                 }
-                if (mission[0].map_id === 1 || mission[0].map_id === userInfo.map_id) {
+                if (mission[0].map_id === 0 || mission[0].map_id === userInfo.map_id) {
                     countMission = true;
                 }
             }
