@@ -4,7 +4,7 @@ const errorLog = require('../Utility/logger').logger;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('missions_board')
+        .setName('mission_board')
         .setDescription('Get a mission and level up faster!')
         .addStringOption(option =>
             option.setName('search')
@@ -13,6 +13,10 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
+            if (userInfo.tutorial_counter < 6) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
             if (missionListDB === undefined || missionListDB.length == 0) {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any missions!")] });
@@ -174,7 +178,7 @@ module.exports = {
                 if (missionList == "") {
                     embed = interaction.client.redEmbed("Mission not found!");
                 } else {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "QUESTS BOARD", interaction.user, `Page 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "MISSION BOARD", interaction.user, `Page 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
                 }
                 if (missionList.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
@@ -302,7 +306,7 @@ function buttonHandler(interaction, missionsData, userInfo) {
             if (index > maxIndex) {
                 index -= maxIndex + 1;
             }
-            await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "QUESTS BOARD", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
+            await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "MISSION BOARD", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
         }
 
     });

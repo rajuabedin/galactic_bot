@@ -17,6 +17,10 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
+            if (userInfo.tutorial_counter < 5) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                return;
+            }
             var missionListDB = []
             var searchMissionByStatus = interaction.options.getString('status')
             if (searchMissionByStatus !== null) {
@@ -158,9 +162,9 @@ module.exports = {
 
             } else {
                 if (searchMissionByStatus === null) {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "QUESTS LIST", interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "MISSIONS LIST", interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
                 } else {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], `QUESTS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], `MISSIONS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
                 }
 
 
@@ -263,9 +267,9 @@ function buttonHandler(interaction, missionsData, userInfo) {
                 index -= maxIndex + 1;
             }
             if (searchMissionByStatus === null) {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "QUESTS LIST", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "MISSIONS LIST", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
             } else {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `QUESTS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `MISSIONS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
             }
         }
 

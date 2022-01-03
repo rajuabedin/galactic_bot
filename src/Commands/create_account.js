@@ -33,6 +33,7 @@ module.exports = {
         }
         else {
             tutorialCounter = userInfo.tutorial_counter;
+            phaseCounter = 2;
             if (tutorialCounter == 1) {
                 selectedFirm = userInfo.firm;
                 await interaction.reply({ embeds: [interaction.client.greenEmbed(`To move in the company base do **/map** then select the **map** that you wish to navigate to`, "TUTORIAL phase 2")], components: [tutorial] });
@@ -63,7 +64,24 @@ module.exports = {
                 });
                 await interaction.reply({ content: " ", embeds: [interaction.client.greenEmbed(`To access **shop** do **/shop** and select the desired **subcategory**\nTo complete this section of the tutorial, you are required to purchase **laser ammunition (x2) x100** under **/shop category:ammunition** `, "TUTORIAL phase 5")], components: [tutorial] });
             }
-            phaseCounter = 2;
+            else if (tutorialCounter == 5) {
+                let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions WHERE user_missions.user_id = ?", [interaction.user.id]);
+                console.log(mission);
+                if (typeof mission == 'undefined' || mission.length == 0) {
+                    await interaction.reply({ embeds: [interaction.client.greenEmbed(`You can accept mission from **/mission_board**\nTo complete this tutorial, you are required to finish the mission`, "TUTORIAL phase 6")], components: [tutorial] });
+                }
+                else if(mission.mission_status == 'active'){
+                    await interaction.reply({ embeds: [interaction.client.redEmbed("To continue, you need to complete the mission\nTo complete the mission do **/hunt**\nYou can check the status of the mission by doing **/mission**", "TUTORIAL phase 6")]})
+                    return;
+                }
+                else{
+                    tutorialCounter++;
+                    phaseCounter = 1;
+                    await interaction.reply({ embeds: [interaction.client.greenEmbed(`Congratulations on finishing your first mission!\nYou are rewarded with one **L4E- laser cannon**`, "TUTORIAL phase 6")], components: [tutorial] });
+                    await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L4"]);
+                    await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
+                }
+            }
         }
 
         let ended = false;
@@ -90,7 +108,7 @@ module.exports = {
                 await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
                 await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id, equipped) VALUES (?, 1)`, [interaction.user.id]);
                 await interaction.client.databaseEditData(`INSERT INTO boost (user_id) VALUES (?)`, [interaction.user.id]);
-                await i.update({ embeds: [interaction.client.greenEmbed(`You have selected **${i.customId}**\n*You were rewarded with **1000 (x1) laser ammunition** and **10000 crediits***`, "TUTORIAL phase 1")], components: [tutorial] });
+                await i.update({ embeds: [interaction.client.greenEmbed(`You have selected **${i.customId}**\n*You are rewarded with **1000 (x1) laser ammunition** and **10000 crediits***`, "TUTORIAL phase 1")], components: [tutorial] });
                 await interaction.client.databaseEditData(`UPDATE firms_list SET users = users + 1 where firm = ?`, [i.customId]);
                 if (i.customId === boostedFirm) {
                     let dateToBoostTill = new Date();
@@ -112,21 +130,21 @@ module.exports = {
                         await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 1-1**`, "TUTORIAL phase 2")], components: [] });
                         await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [11, tutorialCounter, interaction.user.id]);
                         await interaction.client.wait(1000);
-                        await i.update({ embeds: [interaction.client.greenEmbed(`**Welcome to Earth's base!**\n*You were rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(`**Welcome to Earth's base!**\n*You are rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                         await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                     }
                     else if (selectedFirm === "Moon") {
                         await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 2-1**`, "TUTORIAL phase 2")], components: [] });
                         await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [21, tutorialCounter, interaction.user.id]);
                         await interaction.client.wait(1000);
-                        await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You were rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
+                        await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You are rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                         await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                     }
                     else {
                         await i.update({ embeds: [interaction.client.blueEmbed(`**Warping to map 3-1**`, "TUTORIAL phase 2")], components: [] });
                         await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [31, tutorialCounter, interaction.user.id]);
                         await interaction.client.wait(1000);
-                        await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You were rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
+                        await interaction.editReply({ embeds: [interaction.client.greenEmbed(`**Welcome to Moon's base!**\n*You are rewarded with one **L3E- laser cannon**\n**L3** is the laser model and **E-** is the laser rating*`, "TUTORIAL phase 2")], components: [tutorial] });
                         await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                     }
                     phaseCounter = 1;
@@ -147,8 +165,8 @@ module.exports = {
                         else if (i.customId === "Continue") {
                             tutorialCounter++;
                             phaseCounter = 1;
-                            await i.update({ embeds: [interaction.client.greenEmbed(`You can equip other items too by using the **/hanger** command\n*You were rewarded with one **S3E- shield module**`, "TUTORIAL phase 3")], components: [tutorial] });
-                            await interaction.client.databaseEditData(`INSERT INTO user_shields (user_id, shield_model) VALUES (?, ?)`, [interaction.user.id, "S3"]);
+                            await i.update({ embeds: [interaction.client.greenEmbed(`You can equip other items too by using the **/hanger** command\n*You are rewarded with one **S4E- shield module**`, "TUTORIAL phase 3")], components: [tutorial] });
+                            await interaction.client.databaseEditData(`INSERT INTO user_shields (user_id, shield_model) VALUES (?, ?)`, [interaction.user.id, "S4"]);
                             await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 1 WHERE user_id = ?`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [140, interaction.user.id]);
                             await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ?, tutorial_counter = ? WHERE user_id = ?`, [140, 1, tutorialCounter, interaction.user.id]);
@@ -229,7 +247,7 @@ module.exports = {
                 }
                 else if (phaseCounter == 7) {
                     if (i.customId === "save") {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`Always remember to save your configuration\n*You were awarded with **1000 (m1) missile ammunition***`, "TUTORIAL phase 4")], components: [tutorial] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(`Always remember to save your configuration\n*You are rewarded with **1000 (m1) missile ammunition***`, "TUTORIAL phase 4")], components: [tutorial] });
                         phaseCounter = 1;
                         tutorialCounter++;
                         await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
@@ -294,11 +312,11 @@ module.exports = {
                 else if (phaseCounter == 4) {
                     if (i.customId === "buyItem") {
                         if (quantity == 100) {
-                            await i.update({ embeds: [interaction.client.greenEmbed(`Item bought\n*You were awarded with **repair bot (r1)** and equipped to your ship*`, "TUTORIAL phase 5")], components: [tutorial] });
+                            tutorialCounter++;
+                            await i.update({ embeds: [interaction.client.greenEmbed(`Item bought\n*You are rewarded with **repair bot (r1)** and equipped to your ship*`, "TUTORIAL phase 5")], components: [tutorial] });
                             await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ?, credit = credit - ? WHERE user_id = ?`, [tutorialCounter, items[index][2] * 100, interaction.user.id]);
                             await interaction.client.databaseEditData(`UPDATE ammunition SET x2_magazine = x2_magazine + ? WHERE user_id = ?`, [100, interaction.user.id]);
-                            phaseCounter = 1;
-                            tutorialCounter++;
+                            phaseCounter = 1;                            
                         }
                         else {
                             await i.update({ embeds: [interaction.client.redEmbed(`**To continue, you need to buy missile ammunition (x2) __x100__**\n**Quantity**: ${quantity}`, "TUTORIAL phase 5")], components: [quantityButtonUp, quantityButtonDown] });
@@ -319,13 +337,30 @@ module.exports = {
             }
             else if (tutorialCounter == 5) {
                 if (phaseCounter == 1) {
-                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`You can accept quests by `, "TUTORIAL phase 4")], components: [tutorial] });
+                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`You can accept mission from **/mission_board**\nTo complete this tutorial, you are required to finish the mission`, "TUTORIAL phase 6")], components: [tutorial] });
                     phaseCounter++;
-                    row = await buttonHandlerOnOff(0);
                 }
                 else if (phaseCounter == 2) {
-                    await i.update({ embeds: [interaction.client.blueEmbed(`**missile:\nDISABLED**\n\n*You can activate/deactivate missiles and hellstorm from **option 1 and 2**\n**ENABLE missiles to continue***`, "TUTORIAL phase 4")], components: [row] });
-                    phaseCounter++;
+                    message = "**Mission Info**\n**ID :** `0`\n**Mission Type:** [hunt](https://obelisk.club/)\n**Map Restriction:** No Map Restriction\n**Mission Reward(s)**\nCredit - 400 | Units - 100 | Exp - 400 | Honor - 10\n**Mission Duration:** [NO TIME LIMIT](https://obelisk.club/)\n**Mission Objective:**```⦿ L1 - 2```";
+                    if (i.customId === "get") {
+                        await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this mission?", "TUTORIAL phase 6")], components: [rowYesNo] });
+                        phaseCounter++;
+                    }
+                    else
+                        await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(message, "MISSION BOARD", interaction.user, `Page 1 of 1`, "https://obelisk.club/npc/missions.png")], components: [missionRow] });
+                }
+                else if (phaseCounter == 3) {
+                    if (i.customId === "yes") {
+                        await i.update({ embeds: [interaction.client.greenEmbed("You have successfully started the mission\nTo complete the mission do **/hunt**\n*You can check the status of the mission by doing **/mission***", "TUTORIAL phase 6")], components: [] })
+                        var query = `INSERT INTO user_missions (mission_id, mission_task_left, user_id) VALUES (?, ?, ?)`;
+                        var missionId = await interaction.client.databaseEditDataReturnID(query, [0, 1, interaction.user.id]);
+                        await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id]);
+                        ended = true;
+                        collector.stop("Ended by user");
+                    }
+                    else {
+                        await i.update({ embeds: [interaction.client.redEmbed("To continue, you are required to **accept** this mission\nDo you really want to accepted this mission?", "TUTORIAL phase 6")], components: [rowYesNo] });
+                    }
                 }
             }
             //}               
@@ -335,7 +370,7 @@ module.exports = {
 
         collector.on('end', collected => {
             if (!ended)
-                interaction.editReply({ content: " \n", embeds: [interaction.client.redEmbed("**Interaction time-out**")], components: [] });
+                interaction.editReply({ components: [] });
         });
     }
     /*catch (error) {
@@ -620,4 +655,32 @@ const buySetting = new MessageActionRow()
             .setCustomId('buyItem')
             .setLabel('CONFIRM')
             .setStyle('SUCCESS'),
+    );
+
+const missionRow = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId('left')
+            .setEmoji('887811358509379594')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('right')
+            .setEmoji('887811358438064158')
+            .setStyle('PRIMARY'),
+        new MessageButton()
+            .setCustomId('get')
+            .setLabel('GET')
+            .setStyle('SUCCESS'),
+    );
+const rowYesNo = new MessageActionRow()
+    .addComponents(
+
+        new MessageButton()
+            .setCustomId('yes')
+            .setLabel('YES')
+            .setStyle('SUCCESS'),
+        new MessageButton()
+            .setCustomId('no')
+            .setLabel('NO')
+            .setStyle('DANGER'),
     );

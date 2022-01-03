@@ -10,9 +10,12 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         try {
-            if (userInfo.tutorial_counter < 4) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
-                return;
+            if (userInfo.tutorial_counter < 6) {
+                let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions WHERE user_missions.user_id = ? AND user_missions.mission_status = 'active'", [interaction.user.id]);
+                if (typeof mission == 'undefined' || mission.length == 0) {
+                    await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                    return;
+                }
             }
             if (userInfo.user_hp === 0) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(`Please **repair** ship before hunting`, "Ship destroyed!")] });
@@ -691,13 +694,13 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(messageUserInfo + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([messageUserInfo + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
                 if (userInfo.firm === "Earth") {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [11, interaction.user.id]);                    
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [11, interaction.user.id]);
                 }
                 else if (userInfo.firm === "Moon") {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [21, interaction.user.id]);   
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [21, interaction.user.id]);
                 }
                 else {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [31, interaction.user.id]);   
+                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [31, interaction.user.id]);
                 }
             }
 
