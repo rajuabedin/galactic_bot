@@ -69,11 +69,11 @@ module.exports = {
                 if (typeof mission == 'undefined' || mission.length == 0) {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`You can accept mission from **/mission_board**\nTo complete this tutorial, you are required to finish the mission`, "TUTORIAL phase 6")], components: [tutorial] });
                 }
-                else if (mission[0].mission_status === 'active'){
-                    await interaction.reply({ embeds: [interaction.client.redEmbed("To continue, you need to complete the mission\nTo complete the mission do **/hunt**\nYou can check the status of the mission by doing **/mission**", "TUTORIAL phase 6")]})
+                else if (mission[0].mission_status === 'active') {
+                    await interaction.reply({ embeds: [interaction.client.redEmbed("To continue, you need to complete the mission\nTo complete the mission do **/hunt**\nYou can check the status of the mission by doing **/mission**", "TUTORIAL phase 6")] })
                     return;
                 }
-                else{
+                else {
                     tutorialCounter++;
                     phaseCounter = 1;
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(`Congratulations on finishing your first mission!\nYou are rewarded with one **L4E- laser cannon**`, "TUTORIAL phase 6")], components: [tutorial] });
@@ -315,7 +315,7 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.greenEmbed(`Item bought\n*You are rewarded with **repair bot (r1)** and equipped to your ship*`, "TUTORIAL phase 5")], components: [tutorial] });
                             await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ?, credit = credit - ? WHERE user_id = ?`, [tutorialCounter, items[index][2] * 100, interaction.user.id]);
                             await interaction.client.databaseEditData(`UPDATE ammunition SET x2_magazine = x2_magazine + ? WHERE user_id = ?`, [100, interaction.user.id]);
-                            phaseCounter = 1;                            
+                            phaseCounter = 1;
                         }
                         else {
                             await i.update({ embeds: [interaction.client.redEmbed(`**To continue, you need to buy missile ammunition (x2) __x100__**\n**Quantity**: ${quantity}`, "TUTORIAL phase 5")], components: [quantityButtonUp, quantityButtonDown] });
@@ -360,6 +360,37 @@ module.exports = {
                     else {
                         await i.update({ embeds: [interaction.client.redEmbed("To continue, you are required to **accept** this mission\nDo you really want to accepted this mission?", "TUTORIAL phase 6")], components: [rowYesNo] });
                     }
+                }
+            }
+            else if (tutorialCounter == 6) {
+                if (phaseCounter == 1) {
+                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`When an alien is defeated, it drops resources which are stored in your cargo\nTo clear up space for more resources you can do **/refine** which would merge multiple resources to an higher element`, "TUTORIAL phase 7")], components: [tutorial] });
+                    phaseCounter++;
+                }
+                if (phaseCounter == 2) {
+                    let resources = userInfo.resources.split("; ").map(Number);
+                    let cargo = userInfo.cargo;
+                    message = "**Refined materials:**" + "\`\`\`yaml\n";
+                    let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
+                    let refined = false;
+                    [resources, message, refined] = await materialToRefine(resources, 0, 1, 3, message, refined, resourcesName);
+                    [resources, message, refined] = await materialToRefine(resources, 1, 2, 4, message, refined, resourcesName);
+                    [resources, message, refined] = await materialToRefine(resources, 3, 4, 5, message, refined, resourcesName);
+                    [resources, message, refined] = await materialToRefine(resources, 5, 6, 7, message, refined, resourcesName);
+
+                    message += " \`\`\`" + "\`\`\`yaml\n" + `Cargo ${cargo} => `;
+                    cargo = resources.reduce((a, b) => a + b);
+                    message += `${cargo}` + " \`\`\`";
+                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed("Refinement successful\n" + message, "TUTORIAL phase 7")] });
+                    resources = resources.join("; ");
+                    await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
+                    phaseCounter++;
+                }
+                if (phaseCounter == 3) {
+                    await i.update({ content: " ", embeds: [interaction.client.greenEmbed(`Congratulations on your first successful refinement!\nRefining can save time from making too many trips in base to empty cargo\nYou are rewarded with one **E4 engine**\n*Engines can not be upgraded which is why it does not have a rating*`, "TUTORIAL phase 7")], components: [tutorial] });
+                    await interaction.client.databaseEditData(`INSERT INTO user_engines (user_id, engine_model) VALUES (?, ?)`, [interaction.user.id, "E4"]);
+                    tutorialCounter++;
+                    await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
                 }
             }
             //}               
@@ -683,3 +714,18 @@ const rowYesNo = new MessageActionRow()
             .setLabel('NO')
             .setStyle('DANGER'),
     );
+async function materialToRefine(resources, mat1, mat2, result, message, refined, resourcesName) {
+    let numberOfMaetrialToConvert = 0;
+    if (resources[mat1] >= 10 && resources[mat2] >= 10) {
+        if (resources[mat1] < resources[mat2])
+            numberOfMaetrialToConvert = Math.floor(resources[mat1] / 10);
+        else
+            numberOfMaetrialToConvert = Math.floor(resources[mat2] / 10);
+        resources[mat1] -= 10 * numberOfMaetrialToConvert;
+        resources[mat2] -= 10 * numberOfMaetrialToConvert;
+        resources[result] += numberOfMaetrialToConvert;
+        message += `${resourcesName[result]}:  ${resources[3]}\n`;
+        refined = true;
+    }
+    return [resources, message, refined]
+}
