@@ -32,7 +32,7 @@ module.exports = {
                 return;
             }
 
-            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
+            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "]
             let maxCargo = userInfo.max_cargo;
             let cargo = userInfo.cargo;
             let damageDealt = 0;
@@ -153,10 +153,10 @@ module.exports = {
 
             let emojiMessage = `\n**Your Info**:\n**[${shipEmiji}]** <a:hp:896118360125870170>: **${userStats[1]}**\t<a:sd:896118359966511104>: **${userStats[3]}**\n`;
             emojiMessage += `\n**Alien Info**:\n**[${enemyStats[12]}]** <a:hp:896118360125870170>: **${enemyStats[1]}**\t<a:sd:896118359966511104>: **${enemyStats[2]}**`;
-            await interaction.editReply({ embeds: [interaction.client.blueEmbed(emojiMessage, `**Engaging Combat with ${enemyStats[6]}**`)], components: [runRow] });
+            await interaction.editReply({ embeds: [interaction.client.blueEmbed(emojiMessage, `**Engaging Combat with ->|${enemyStats[6]}|<-**`)], components: [runRow] });
             await interaction.client.wait(1000);
 
-            let logMessage = [[message, `**Engaging Combat with ${enemyStats[6]}**`]];
+            let logMessage = [[message, `**Engaging Combat with ->|${enemyStats[6]}|<-**`]];
             let messageAmmo = "";
             userLaserConfig.push([-2, 0, 0, 1000000, "No AMMO"]);
             userLaserConfig = userLaserConfig.sort(function (a, b) {

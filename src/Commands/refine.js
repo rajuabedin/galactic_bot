@@ -16,16 +16,20 @@ module.exports = {
             let resources = userInfo.resources.split("; ").map(Number);
             let cargo = userInfo.cargo;
             let message = "**Refined materials:**" + "\`\`\`yaml\n";
-            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Palladium     "]
+            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "]
             let refined = false;
             [resources, message, refined] = await materialToRefine(resources, 0, 1, 3, message, refined, resourcesName);
             [resources, message, refined] = await materialToRefine(resources, 1, 2, 4, message, refined, resourcesName);
             [resources, message, refined] = await materialToRefine(resources, 3, 4, 5, message, refined, resourcesName);
             [resources, message, refined] = await materialToRefine(resources, 5, 6, 7, message, refined, resourcesName);
 
-            message += " \`\`\`" + "\`\`\`yaml\n" + `Cargo ${cargo} => `;
+            let space = " ";
+            let spaceCount = space.repeat(4 - cargo.toString().length + 3);
+            message += `---------------------\n`;
+            message += "\`\`\`\`\`\`yaml\n" + `Cargo:${spaceCount}${cargo} =>`;
             cargo = resources.reduce((a, b) => a + b);
-            message += `${cargo}` + " \`\`\`";
+            spaceCount = space.repeat(4 - cargo.toString().length + 1);
+            message += `${spaceCount}${cargo}` + " \`\`\`";
             if (refined)
                 await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Refinement successful")] });
             else
@@ -55,7 +59,9 @@ async function materialToRefine(resources, mat1, mat2, result, message, refined,
         resources[mat1] -= 10 * numberOfMaetrialToConvert;
         resources[mat2] -= 10 * numberOfMaetrialToConvert;
         resources[result] += numberOfMaetrialToConvert;
-        message += `${resourcesName[result]}:  ${resources[3]}\n`;
+        let space = " ";
+        space = space.repeat(4 - resources[result].toString().length + 2)
+        message += `${resourcesName[result]}:${space}${resources[result]}\n`;
         refined = true;
     }
     return [resources, message, refined]

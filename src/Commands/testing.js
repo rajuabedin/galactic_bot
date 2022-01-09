@@ -1,5 +1,5 @@
-const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed, MessageAttachment } = require('discord.js');
-const errorLog = require('../Utility/logger').logger;
+//const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed, MessageAttachment } = require('discord.js');
+//const errorLog = require('../Utility/logger').logger;
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { createCanvas } = require('canvas')
 
@@ -13,160 +13,35 @@ module.exports = {
         if (!interaction.client.developersID.includes(interaction.user.id)) {
             return;
         }
-
-        // START MACRO DETECTOR
-        const width = 500
-        const height = 80
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        const canvas = createCanvas(width, height)
-        const context = canvas.getContext('2d')
-        context.fillStyle = '#00000'
-        context.fillRect(0, 0, width, height)
-
-        function generateString(length) {
-            let result = ' ';
-            const charactersLength = characters.length;
-            for (let i = 0; i < length; i++) {
-                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        await interaction.reply("Executing...");
+        /*
+        //let oldAlienNames = ["L1", "L1_boss", "L2", "L2_boss", "L3", "L3_boss", "L4", "L4_boss", "L5", "L5_boss", "L6", "L6_boss", "L7", "L7_boss", "L8", "L8_boss", "L9", "L9_boss", "L10", "L10_boss"];
+        let newAlienNames = ["Exyon", "Boss Exyon", "Neon", "Boss Neon", "Skraper", "Boss Skraper", "Comet", "Boss Comet", "Pulsar", "Boss Pulsar", "Yve", "Boss Yve", "Menhir", "Boss Menhir", "Monolith", "Boss Monolith", "Primus", "Boss Primus", "Bastion", "Boss Bastion"];
+        for (index in newAlienNames) {
+            //let alien = await interaction.client.databaseSelcetData("SELECT * from aliens WHERE alien_name = ?", [oldAlienNames[index]]);
+            let alien = await interaction.client.databaseSelcetData("SELECT * from aliens WHERE alien_name = ?", [newAlienNames[index]]);
+            if (typeof alien == 'undefined')
+                continue;
+            else {
+                //await interaction.client.databaseSelcetData("UPDATE aliens SET alien_name = ? WHERE alien_name = ?", [newAlienNames[index], oldAlienNames[index]]);
+                //await interaction.client.databaseSelcetData("CREATE TEMPORARY TABLE tmp${index} SELECT * from aliens WHERE alien_name = ?", [oldAlienNames[index]]);
+                await interaction.client.databaseSelcetData(`CREATE TEMPORARY TABLE tmp${index} SELECT * from aliens WHERE alien_name = ? AND map_id NOT IN (?, ?)`, [newAlienNames[index], 41, 42]);
+                await interaction.client.databaseSelcetData(`ALTER TABLE tmp${index} drop alien_id`, []);
+                //await interaction.client.databaseSelcetData(`DELETE FROM tmp${index} WHERE map_id = ? AND map_id = ?`, [41, 42]);
+                //await interaction.client.databaseSelcetData("UPDATE tmp${index} SET map_id = map_id + 10, alien_name = ?", [newAlienNames[index]]);
+                await interaction.client.databaseSelcetData(`UPDATE tmp${index} SET map_id = map_id + 10`, []);
+                await interaction.client.databaseSelcetData(`INSERT INTO aliens SELECT 0,tmp${index}.* FROM tmp${index}`, []);
+                //await interaction.client.databaseSelcetData("UPDATE tmp${index} SET map_id = map_id + 10, alien_name = ?", [newAlienNames[index]]);
+                await interaction.client.databaseSelcetData(`UPDATE tmp${index} SET map_id = map_id + 10`, []);
+                await interaction.client.databaseSelcetData(`INSERT INTO aliens SELECT 0,tmp${index}.* FROM tmp${index}`, []);
+                await interaction.client.databaseSelcetData(`DROP TEMPORARY TABLE tmp${index}`, []);
+                await interaction.client.wait(500);
+                await interaction.editReply("Executed index: " + index);
             }
-
-            return result;
-        }
-
-        function getRandomNumberBetween(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        }
-
-        const text = generateString(8);
-        const textWidth = context.measureText(text).width
-        context.fillRect(600 - textWidth / 2 - 10, 170 - 5, textWidth + 20, 120)
-        context.textBaseline = 'middle';
-        context.font = 'bold 20px Arial'
-        context.textAlign = 'center'
-        context.fillStyle = '#fff'
-        context.fillText(text, 250, 40)
-
-        const attachment = new MessageAttachment(canvas.toBuffer(), 'Never_gonna_give_you_up_Never_gonna_let_you_down_Never_gonna_run_around_and_desert_you_Never_gonna_make_you_cry_Never_gonna_say_goodbye_Never_gonna_tell_a_lie_and_hurt_you.png');
-
-        const max_options = 5;
-
-        var options = []
-
-        var rightAnswerIndex = getRandomNumberBetween(1, 5)
-
-        for (var i = 0; i < max_options; i++) {
-            if (i !== rightAnswerIndex) {
-                var tempData = generateString(8);
-                options.push({
-                    label: tempData,
-                    value: tempData
-                })
-            } else {
-                options.push({
-                    label: text,
-                    value: text
-                })
-            }
-        }
-
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageSelectMenu()
-                    .setCustomId('select')
-                    .setPlaceholder('Nothing selected')
-                    .addOptions(options),
-            );
-
-
-        var textToEmbed = new MessageEmbed()
-            .setColor('0x009dff')
-            .setAuthor("Macro Detector", interaction.user.avatarURL())
-            .setImage('attachment://Never_gonna_give_you_up_Never_gonna_let_you_down_Never_gonna_run_around_and_desert_you_Never_gonna_make_you_cry_Never_gonna_say_goodbye_Never_gonna_tell_a_lie_and_hurt_you.png')
-            .setDescription("From the drow down menu please select the option that contain the same text shown on the image.\n**Image:**")
-
-
-        interaction.reply({ embeds: [textToEmbed], components: [row], files: [attachment] });
-
-        const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
-        let selected = false;
-
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
-
-        collector.on('collect', async i => {
-            selected = true;
-            if (i.values[0] !== text) {
-                return await interaction.editReply({ embeds: [interaction.client.redEmbedImage("Captcha validation failed. You have selected the wrong text.", "Validation Failed", i.user)], components: [], files: [] })
-            } else {
-                return await interaction.editReply({ embeds: [interaction.client.greenEmbedImage("You have successfully selected the right text.", "Validation Successfull", i.user)], components: [], files: [] })
-            }
-        });
-        collector.on('end', collected => {
-            if (!selected)
-                interaction.editReply({ embeds: [interaction.client.redEmbed("**Interaction time out**")], components: [] , files: []});
-        });
-        // END MACRO DETECTOR
-
-
-
-        /*} catch (error) {
-            await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
-            errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        };
+        await interaction.editReply("Done");
+        */
+        let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+        console.log((Date.now() - Date.parse(userCd[0].last_repair)) / 60000);
     }
 }
-
-const buy = new MessageActionRow()
-    .addComponents(
-        new MessageButton()
-            .setCustomId('buy')
-            .setLabel('BUY')
-            .setStyle('SUCCESS'),
-    );
-
-const quantityButtonUp = new MessageActionRow()
-    .addComponents(
-        new MessageButton()
-            .setCustomId('1')
-            .setLabel('+1')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('10')
-            .setLabel('+10')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('100')
-            .setLabel('+100')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('1000')
-            .setLabel('+1K')
-            .setStyle('PRIMARY'),
-        new MessageButton()
-            .setCustomId('10000')
-            .setLabel('+10K')
-            .setStyle('PRIMARY'),
-    );
-const quantityButtonDown = new MessageActionRow()
-    .addComponents(
-        new MessageButton()
-            .setCustomId('-1')
-            .setLabel('-1')
-            .setStyle('DANGER'),
-        new MessageButton()
-            .setCustomId('-10')
-            .setLabel('-10')
-            .setStyle('DANGER'),
-        new MessageButton()
-            .setCustomId('-100')
-            .setLabel('-100')
-            .setStyle('DANGER'),
-        new MessageButton()
-            .setCustomId('-1000')
-            .setLabel('-1K')
-            .setStyle('DANGER'),
-        new MessageButton()
-            .setCustomId('-10000')
-            .setLabel('-10K')
-            .setStyle('DANGER'),
-    );
