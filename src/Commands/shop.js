@@ -383,13 +383,20 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                         return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Credit`, "ERROR!")], components: [] });
                     else {
                         if (itemTable === "user_ships") {
-                            await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
-                            collector.stop("Bought");
-                            itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = $', [itemName[index]])
-                            query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
-                            await interaction.client.databaseEditData(query)
-                            await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [quantity * priceCredit[index], interaction.user.id]);
-                            return;
+                            let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                            if (typeof ownedShip == 'undefined') {
+                                await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                collector.stop("Bought");
+                                itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                await interaction.client.databaseEditData(query)
+                                await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [quantity * priceCredit[index], interaction.user.id]);
+                                return;
+                            }
+                            else {
+                                await i.update({ embeds: [interaction.client.redEmbed(`You already own this ship!`, "ERROR!")], components: [] });
+                                return;
+                            }
                         }
                         await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                         buyBool = true;
@@ -400,13 +407,20 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                         return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Units`, "ERROR!")], components: [] });
                     else {
                         if (itemTable === "user_ships") {
-                            await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
-                            collector.stop("Bought");
-                            itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = $', [itemName[index]])
-                            query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
-                            await interaction.client.databaseEditData(query)
-                            await interaction.client.databaseEditData(`UPDATE users SET units = units - ?  WHERE user_id = ?`, [quantity * priceUnits[index], interaction.user.id]);
-                            return;
+                            let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                            if (typeof ownedShip == 'undefined') {
+                                await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                collector.stop("Bought");
+                                itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                await interaction.client.databaseEditData(query)
+                                await interaction.client.databaseEditData(`UPDATE users SET units = units - ?  WHERE user_id = ?`, [quantity * priceUnits[index], interaction.user.id]);
+                                return;
+                            }
+                            else {
+                                await i.update({ embeds: [interaction.client.redEmbed(`You already own this ship!`, "ERROR!")], components: [] });
+                                return;
+                            }
                         }
                         await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                         buyBool = true;
