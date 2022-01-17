@@ -898,7 +898,7 @@ async function getAlien(aliens, addition = 0) {
         indexList = indexList.concat(Array(aliens[index].encounter_chance).fill(index));
     }
     indexList = indexList.sort(() => Math.random() - 0.5);
-    index = indexList[Math.floor(Math.random() * (100 + addition * 20))];
+    index = indexList[Math.floor(Math.random() * (100 + addition * 40))];
     let resources = aliens[index].resources.split("; ").map(Number);
     return [aliens[index].damage, aliens[index].alien_hp, aliens[index].alien_shield, aliens[index].alien_speed, aliens[index].alien_penetration / 100, aliens[index].shield_absortion_rate / 100, aliens[index].alien_name, aliens[index].credit, aliens[index].units, aliens[index].exp_reward, aliens[index].honor, resources, aliens[index].emoji_id, aliens[index].alien_hp, aliens[index].alien_shield];
 }
