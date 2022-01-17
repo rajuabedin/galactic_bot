@@ -26,6 +26,7 @@ module.exports = {
             let activateDeactivate = await buttonHandlerOnOff(0);
             let missileHellstorm = 0;
             let isMissile = false;
+            let mothership = 0;
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
@@ -39,6 +40,8 @@ module.exports = {
                     //console.log(huntConfiguration[0][i.values[0]]);
                     index = (huntConfiguration[0][selectedAmmo]) / 20;
                     ammoValue = (index) * 20;
+                    mothership = 0;
+                    missileHellstorm = 0;
                     //console.log(index);
                     if (selectedAmmo === "missile" || selectedAmmo === "hellstorm") {
                         if (selectedAmmo === "missile") {
@@ -64,31 +67,42 @@ module.exports = {
                                 missileHellstorm = 6;
                         }
                     }
+                    else if (selectedAmmo === "mothership") {
+                        message = "Hunt aliens mothership";
+                        activateDeactivate = await buttonHandlerOnOff(index);
+                        if (index == 0) {
+                            mothership = 1;
+                            await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [row, activateDeactivate] });
+                            storedMessage = `**(${message})**` + "\t**DISABLED**";
+                        }
+                        else {
+                            mothership = 2;
+                            await i.update({ embeds: [interaction.client.greenEmbed(`**ENABLED**`, message)], components: [row, activateDeactivate] });
+                            storedMessage = `**(${message})**` + "\t**ENABLED**";
+                        }
+                    }
                     else if (index < 0) {
-                        missileHellstorm = 0;
                         [hp, sh] = await buttonHandler(-1, "DANGER");
                         await i.update({ embeds: [interaction.client.redEmbed(`**DISABLED**`, message)], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${i.values[0]})**` + "\t**DISABLED**";
                     }
                     else if (index === 0) {
-                        missileHellstorm = 0;
                         [hp, sh] = await buttonHandler();
                         await i.update({ embeds: [interaction.client.yellowEmbed("**HP: 0 || SH: 0**", message)], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${i.values[0]})**` + "\t**HP: 0 || SH: 0**";
                     }
                     else if (index < 5) {
-                        missileHellstorm = 0;
                         [hp, sh] = await buttonHandler(index - 1);
                         await i.update({ embeds: [interaction.client.greenEmbed(`**HP: ${index * 20} || SH: 0**`, message)], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${i.values[0]})**` + `\t**HP: ${index * 20} || SH: 0**`;
                     }
                     else {
-                        missileHellstorm = 0;
                         [hp, sh] = await buttonHandler(index - 1);
                         await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${(index - 5) * 20}**`, message)], components: [hp, sh, row, settingRow] });
                         storedMessage = `**(${i.values[0]})**` + `\t**HP: 100 || SH: ${(index - 5) * 20}**`;
                     }
                 }
+
                 else if (message !== null) {
                     index = parseInt(i.customId);
                     if (missileHellstorm > 0) {
@@ -125,28 +139,60 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.redEmbed("**DISABLED**", message)], components: [row, activateDeactivate] });
                         }
                         else {
-                            activateDeactivate = await buttonHandlerOnOff(1);
-                            await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
+                            //activateDeactivate = await buttonHandlerOnOff(1);
+                            //await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
                             if (isMissile) {
                                 missileHellstorm = 2;
                                 activateDeactivate = await buttonHandlerOnOff(1);
                                 await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
                             }
                             else {
-                                if (huntConfiguration[0].helstorm_missiles_number === 0){
-                                    activateDeactivate = await buttonHandlerOnOff(1);
-                                    await i.update({ embeds: [interaction.client.greenEmbed("**DISABLED**\n*To enable, **buy** a hellstorm*", message)], components: [row, activateDeactivate] });
+                                if (huntConfiguration[0].helstorm_missiles_number === 0) {
+                                    activateDeactivate = await buttonHandlerOnOff(0);
+                                    await i.update({ embeds: [interaction.client.redEmbed("**DISABLED**\n*To enable, **buy** a hellstorm*", message)], components: [row, activateDeactivate] });
                                     missileHellstorm = 1;
                                 }
-                                else{
+                                else {
                                     activateDeactivate = await buttonHandlerOnOff(0);
                                     await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
                                     missileHellstorm = 6;
                                 }
-                                
+
                             }
                         }
                     }
+
+                    else if (mothership > 0) {
+                        if (i.customId === "save2") {
+                            huntConfiguration[0][selectedAmmo] = mothership - 1;
+                            if (mothership == 1) {
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\tDISABLED**`, "**SAVED**")], components: [row, activateDeactivate] });
+                                await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
+                                storedMessage = `**(${message})**` + "\t**DISABLED**";
+                            }
+                            else {
+                                await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\tENABLED**`, "**SAVED**")], components: [row, activateDeactivate] });
+                                await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
+                                storedMessage = `**(${message})**` + "\t**ENABLED**";
+                            }
+                        }
+                        else if (i.customId === "discard2") {
+                            discarded = true;
+                            await i.update({ embeds: [interaction.client.redEmbed(storedMessage, "**Interaction ended**")], components: [] });
+                            collector.stop("Ended");
+                        }
+                        else if (i.customId === "deactivateButton") {
+                            mothership = 1;
+                            activateDeactivate = await buttonHandlerOnOff(0);
+                            await i.update({ embeds: [interaction.client.redEmbed("**DISABLED**", message)], components: [row, activateDeactivate] });
+                        }
+                        else {
+                            mothership = 2;
+                            activateDeactivate = await buttonHandlerOnOff(1);
+                            await i.update({ embeds: [interaction.client.greenEmbed("**ENABLED**", message)], components: [row, activateDeactivate] });
+                        }
+                    }
+
                     else if (i.customId === "save") {
                         await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
                         huntConfiguration[0][selectedAmmo] = ammoValue;
@@ -344,6 +390,11 @@ const row = new MessageActionRow()
             .setCustomId('select')
             .setPlaceholder('Select ammo to configure')
             .addOptions([
+                {
+                    label: 'hunt_mothership',
+                    description: 'Activate/Deactivate chance to hunt aliens mothership',
+                    value: 'mothership',
+                },
                 {
                     label: 'missile',
                     description: 'Activate/Deactivate missiles',
