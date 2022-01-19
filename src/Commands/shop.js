@@ -25,369 +25,371 @@ module.exports = {
 
     async execute(interaction, userInfo) {
         //try {
-            //if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition', 'extra'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
-            if (userInfo.tutorial_counter < 5) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
-                return;
-            }
-            var searchItem = interaction.options.getString('search')
-            var items = [];
-            var embed;
-            var count = 0;
-            var itemsPerPage = 1;
-            var currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-            let priceCredit = [];
-            let priceUnits = [];
-            let itemName = [];
-            let itemTable = 0;
-            let itemColumn = 0;
-            let shipsList = 0;
-            let lasersList = 0;
-            let shieldsList = 0;
-            let enginesList = 0;
-            let ammunitionList = 0;
-            let extrasList = 0;
-            let maxPages = 0;
+        //if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition', 'extra'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
+        if (userInfo.tutorial_counter < 5) {
+            await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+            return;
+        }
+        var searchItem = interaction.options.getString('search')
+        var items = [];
+        var embed;
+        var count = 0;
+        var itemsPerPage = 1;
+        var currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+        let priceCredit = [];
+        let priceUnits = [];
+        let itemName = [];
+        let itemTable = 0;
+        let itemColumn = 0;
+        let shipsList = 0;
+        let lasersList = 0;
+        let shieldsList = 0;
+        let enginesList = 0;
+        let ammunitionList = 0;
+        let extrasList = 0;
+        let maxPages = 0;
 
-            // check if its a valid category            
+        // check if its a valid category            
 
-            if (interaction.options.getString('category').toLowerCase() === "ships") {
-                if (searchItem === null) {
-                    shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1`);
-                } else {
-                    shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [searchItem.toUpperCase()]);
-                }
-
-                if (shipsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
-
-                itemTable = "user_ships";
-                itemColumn = "ship_model";
-                await shipsList.forEach((ship, index) => {
-                    count++;
-                    priceCredit.push(ship.credit);
-                    priceUnits.push(ship.units);
-                    itemName.push(ship.ship_model);
-
-                    currentData += `**${ship.emoji_id} SHIP MODEL:** **[${ship.ship_model}](https://obelisk.club/)** `
-
-                    if (ship.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${ship.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${ship.credit}**__ \n`
-                    }
-
-                    currentData += `<a:hp:896118360125870170> **HP **[${ship.ship_hp}](https://obelisk.club/) \n`
-                    currentData += `<a:sp:896440044456378398> **Speed **[${ship.ship_base_speed}](https://obelisk.club/) \n`
-                    currentData += `<a:LS:896440044464767036> **Lasers **[${ship.laser_quantity}](https://obelisk.club/) \n`
-                    currentData += `<a:ex:896440044515106846> **Exstras **[${ship.extra_quantity}](https://obelisk.club/) \n`
-                    currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
-                    currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < shipsList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS");
-                } else {
-                    await interaction.reply({ embeds: [embed] });
-                }
-
-            } else if (interaction.options.getString('category').toLowerCase() === "lasers") {
-                if (searchItem === null) {
-                    lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1`);
-                } else {
-                    lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1 and laser_model = ?`, [searchItem.toUpperCase()]);
-                }
-
-                if (lasersList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
-
-                itemTable = "user_lasers";
-                itemColumn = "laser_model";
-                await lasersList.forEach((laser, index) => {
-                    count++;
-                    priceCredit.push(laser.credit);
-                    priceUnits.push(laser.units);
-                    itemName.push(laser.laser_model);
-
-                    currentData += `**${laser.emoji_id} LASER MODEL:** **[${laser.laser_model}](https://obelisk.club/)** `
-
-                    if (laser.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${laser.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${laser.credit}**__ \n`
-                    }
-
-                    currentData += `<a:dmg:896724820149035048> **Damage **[${laser.damage_value}](https://obelisk.club/) \n`
-                    currentData += `<a:up:896725276023717958> **DMG Increse per LvL **[${laser.per_increase_by_level}](https://obelisk.club/) \n`
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < lasersList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS");
-                } else {
-                    await interaction.reply({ embeds: [embed] });
-                }
-
-            } else if (interaction.options.getString('category').toLowerCase() === "shields") {
-                if (searchItem === null) {
-                    shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1`);
-                } else {
-                    shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1 and shield_model = ?`, [searchItem.toLowerCase()]);
-                }
-
-                if (shieldsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
-
-
-                itemTable = "user_shields";
-                itemColumn = "shield_model";
-                await shieldsList.forEach((shield, index) => {
-                    count++;
-                    priceCredit.push(shield.credit);
-                    priceUnits.push(shield.units);
-                    itemName.push(shield.shield_model);
-
-                    currentData += `**${shield.emoji_id} SHIELD MODEL:** **[${shield.shield_model}](https://obelisk.club/)** `
-
-                    if (shield.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${shield.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${shield.credit}**__ \n`
-                    }
-
-                    currentData += `<a:sd:896118359966511104> **Shield **[${shield.shield_value}](https://obelisk.club/) \n`
-                    currentData += `<a:ab:896726792944119828> **Absortion Percentage **[${shield.absorption_rate}](https://obelisk.club/) \n`
-                    currentData += `<a:up:896725276023717958> **Shield increse per LvL **[${shield.per_increase_by_level}](https://obelisk.club/) \n`
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < shieldsList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS");
-                } else {
-                    await interaction.reply({ embeds: [embed] });
-                }
-
-            } else if (interaction.options.getString('category').toLowerCase() === "engines") {
-                //itemsPerPage = 3;
-                count = 0;
-                if (searchItem === null) {
-                    enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1`);
-                } else {
-                    enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1 and engine_model = ?`, [searchItem.toUpperCase()]);
-                }
-
-                if (enginesList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
-
-                itemTable = "user_engines";
-                itemColumn = "engine_model";
-                await enginesList.forEach((engine, index) => {
-                    count++;
-                    priceCredit.push(engine.credit);
-                    priceUnits.push(engine.units);
-                    itemName.push(engine.engine_model);
-
-
-                    currentData += `**${engine.emoji_id} ENGINE MODEL:** **[${engine.engine_model}](https://obelisk.club/)** `
-
-                    if (engine.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${engine.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${engine.credit}**__ \n`
-                    }
-
-                    currentData += `<a:sp:896440044456378398> **Speed **[${engine.speed_value}](https://obelisk.club/) \n`
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < enginesList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE");
-                } else {
-                    await interaction.reply({ embeds: [embed] });
-                }
-
-            } else if (interaction.options.getString('category').toLowerCase() === "ammunition") {
-                if (searchItem === null) {
-                    ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
-                } else {
-                    ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1 and ammo_id = ?`, [searchItem.toUpperCase()]);
-                }
-                count = 0;
-                //itemsPerPage = 4;
-                if (ammunitionList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
-
-
-                itemTable = "ammunition";
-                itemColumn = "ammunition";
-                await ammunitionList.forEach((ammunition, index) => {
-                    count++;
-                    priceCredit.push(ammunition.credit);
-                    priceUnits.push(ammunition.units);
-                    itemName.push(ammunition.ammo_id);
-
-                    currentData += `**⦿ Ammunition ID:** **[${ammunition.ammo_id}](https://obelisk.club/)** `
-
-                    if (ammunition.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${ammunition.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`
-                    }
-
-                    currentData += `**Description**\n${ammunition.description}\n`
-
-
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < ammunitionList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "AMMUNITION");
-                } else {
-                    await interaction.reply({ embeds: [embed] });
-                }
-
+        if (interaction.options.getString('category').toLowerCase() === "ships") {
+            if (searchItem === null) {
+                shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1`);
             } else {
-                if (searchItem === null) {
-                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1`);
+                shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [searchItem.toUpperCase()]);
+            }
+
+            if (shipsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+            itemTable = "user_ships";
+            itemColumn = "ship_model";
+            await shipsList.forEach((ship, index) => {
+                count++;
+                priceCredit.push(ship.credit);
+                priceUnits.push(ship.units);
+                itemName.push(ship.ship_model);
+
+                currentData += `**${ship.emoji_id} SHIP MODEL:** **[${ship.ship_model}](https://obelisk.club/)** `
+
+                if (ship.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${ship.units}**__ \n`
                 } else {
-                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${ship.credit}**__ \n`
                 }
 
-                if (extrasList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+                currentData += `<a:hp:896118360125870170> **HP **[${ship.ship_hp}](https://obelisk.club/) \n`
+                currentData += `<a:sp:896440044456378398> **Speed **[${ship.ship_base_speed}](https://obelisk.club/) \n`
+                currentData += `<a:LS:896440044464767036> **Lasers **[${ship.laser_quantity}](https://obelisk.club/) \n`
+                currentData += `<a:ex:896440044515106846> **Exstras **[${ship.extra_quantity}](https://obelisk.club/) \n`
+                currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
+                currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < shipsList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
+            }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+
+        } else if (interaction.options.getString('category').toLowerCase() === "lasers") {
+            if (searchItem === null) {
+                lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1`);
+            } else {
+                lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1 and laser_model = ?`, [searchItem.toUpperCase()]);
+            }
+
+            if (lasersList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+            itemTable = "user_lasers";
+            itemColumn = "laser_model";
+            await lasersList.forEach((laser, index) => {
+                count++;
+                priceCredit.push(laser.credit);
+                priceUnits.push(laser.units);
+                itemName.push(laser.laser_model);
+
+                currentData += `**${laser.emoji_id} LASER MODEL:** **[${laser.laser_model}](https://obelisk.club/)** `
+
+                if (laser.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${laser.units}**__ \n`
+                } else {
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${laser.credit}**__ \n`
+                }
+
+                currentData += `<a:dmg:896724820149035048> **Damage **[${laser.damage_value}](https://obelisk.club/) \n`
+                currentData += `<a:up:896725276023717958> **DMG Increse per LvL **[${laser.per_increase_by_level}](https://obelisk.club/) \n`
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < lasersList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
+            }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+
+        } else if (interaction.options.getString('category').toLowerCase() === "shields") {
+            if (searchItem === null) {
+                shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1`);
+            } else {
+                shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1 and shield_model = ?`, [searchItem.toLowerCase()]);
+            }
+
+            if (shieldsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+
+            itemTable = "user_shields";
+            itemColumn = "shield_model";
+            await shieldsList.forEach((shield, index) => {
+                count++;
+                priceCredit.push(shield.credit);
+                priceUnits.push(shield.units);
+                itemName.push(shield.shield_model);
+
+                currentData += `**${shield.emoji_id} SHIELD MODEL:** **[${shield.shield_model}](https://obelisk.club/)** `
+
+                if (shield.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${shield.units}**__ \n`
+                } else {
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${shield.credit}**__ \n`
+                }
+
+                currentData += `<a:sd:896118359966511104> **Shield **[${shield.shield_value}](https://obelisk.club/) \n`
+                currentData += `<a:ab:896726792944119828> **Absortion Percentage **[${shield.absorption_rate}](https://obelisk.club/) \n`
+                currentData += `<a:up:896725276023717958> **Shield increse per LvL **[${shield.per_increase_by_level}](https://obelisk.club/) \n`
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < shieldsList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
+            }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+
+        } else if (interaction.options.getString('category').toLowerCase() === "engines") {
+            //itemsPerPage = 3;
+            count = 0;
+            if (searchItem === null) {
+                enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1`);
+            } else {
+                enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1 and engine_model = ?`, [searchItem.toUpperCase()]);
+            }
+
+            if (enginesList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+            itemTable = "user_engines";
+            itemColumn = "engine_model";
+            await enginesList.forEach((engine, index) => {
+                count++;
+                priceCredit.push(engine.credit);
+                priceUnits.push(engine.units);
+                itemName.push(engine.engine_model);
+
+
+                currentData += `**${engine.emoji_id} ENGINE MODEL:** **[${engine.engine_model}](https://obelisk.club/)** `
+
+                if (engine.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${engine.units}**__ \n`
+                } else {
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${engine.credit}**__ \n`
+                }
+
+                currentData += `<a:sp:896440044456378398> **Speed **[${engine.speed_value}](https://obelisk.club/) \n`
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < enginesList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
+            }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+
+        } else if (interaction.options.getString('category').toLowerCase() === "ammunition") {
+            if (searchItem === null) {
+                ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
+            } else {
+                ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1 and ammo_id = ?`, [searchItem.toUpperCase()]);
+            }
+            count = 0;
+            //itemsPerPage = 4;
+            if (ammunitionList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+
+            itemTable = "ammunition";
+            itemColumn = "ammunition";
+            await ammunitionList.forEach((ammunition, index) => {
+                count++;
+                priceCredit.push(ammunition.credit);
+                priceUnits.push(ammunition.units);
+                itemName.push(ammunition.ammo_id);
+
+                currentData += `**⦿ Ammunition ID:** **[${ammunition.ammo_id}](https://obelisk.club/)** `
+
+                if (ammunition.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${ammunition.units}**__ \n`
+                } else {
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`
+                }
+
+                currentData += `**Description**\n${ammunition.description}\n`
+
+
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < ammunitionList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
+            }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "AMMUNITION");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+
+        } else {
+            if (searchItem === null) {
+                extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1`);
+            } else {
+                extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
+            }
+
+            if (extrasList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+            itemColumn = "extra_model";
+            itemTable = [];
+            await extrasList.forEach((extra, index) => {
+                count++;
+                priceCredit.push(extra.credit);
+                priceUnits.push(extra.units);
+                itemName.push(extra.extra_model);
+
+                currentData += `**${extra.emoji_id} EXTRA MODEL:** **[${extra.extra_model}](https://obelisk.club/)** `
 
                 itemColumn = "extra_model";
-                itemTable = [];
-                await extrasList.forEach((extra, index) => {
-                    count++;
-                    priceCredit.push(extra.credit);
-                    priceUnits.push(extra.units);
-                    itemName.push(extra.extra_model);                    
-
-                    currentData += `**${extra.emoji_id} EXTRA MODEL:** **[${extra.extra_model}](https://obelisk.club/)** `
-
-                    itemColumn = "extra_model";
-                    if (extra.credit === 0) {
-                        currentData += `${interaction.client.defaultEmojis['units']} __**${extra.units}**__ \n`
-                    } else {
-                        currentData += `${interaction.client.defaultEmojis['credit']} __**${extra.credit}**__ \n`
-                    }
-
-                    if (extra.item_type === "repair") {
-                        itemTable.push(["repair_bot", extra.function]);
-                        currentData += `<a:dmg:896724820149035048> **Repair Rate **[${extra.function}](https://obelisk.club/) \n`
-                    } else {
-                        itemTable.push(["hellstorm_model", extra.function]);
-                        currentData += `<a:dmg:896724820149035048> **Clip Size **[${extra.function}](https://obelisk.club/) \n`
-                    }
-
-                    if (count === itemsPerPage) {
-                        items.push(currentData);
-                        count = 0;
-                        if (index < extrasList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
-                        } else {
-                            currentData = ``;
-                        }
-
-                    }
-                });
-
-                if (currentData !== "") {
-                    items.push(currentData);
-                }
-
-                maxPages = items.length;
-
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `Page 1 of ${maxPages}`);
-                if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS");
+                if (extra.credit === 0) {
+                    currentData += `${interaction.client.defaultEmojis['units']} __**${extra.units}**__ \n`
                 } else {
-                    await interaction.reply({ embeds: [embed] });
+                    currentData += `${interaction.client.defaultEmojis['credit']} __**${extra.credit}**__ \n`
                 }
+
+                if (extra.item_type === "repair") {
+                    itemTable.push(["repair_bot", extra.function]);
+                    currentData += `<a:RR:933406090077560852> **Repair Rate **[${extra.function}](https://obelisk.club/) \n`
+                    currentData += `\n*Repair Rate: how much of ship HP  is repaired per minute* \n`
+                } else {
+                    itemTable.push(["hellstorm_model", extra.function]);
+                    currentData += `<a:CS:933406089863626802> **Clip Size **[${extra.function}](https://obelisk.club/) \n`
+                    currentData += `\n*Clip Size: quantity of hellstorm missiles launched together* \n`
+                }
+
+                if (count === itemsPerPage) {
+                    items.push(currentData);
+                    count = 0;
+                    if (index < extrasList.length - 1) {
+                        currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                    } else {
+                        currentData = ``;
+                    }
+
+                }
+            });
+
+            if (currentData !== "") {
+                items.push(currentData);
             }
+
+            maxPages = items.length;
+
+            embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `Page 1 of ${maxPages}`);
+            if (items.length > 1) {
+                await interaction.reply({ embeds: [embed], components: [row] });
+                buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS");
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
+        }
         /*}
         catch (error) {
             if (interaction.replied) {
