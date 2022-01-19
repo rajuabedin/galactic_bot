@@ -11,7 +11,7 @@ module.exports = {
         .addStringOption(option =>
             option
                 .setName('option')
-                .setDescription('Select from [ laser - shield - engine ]')
+                .setDescription('Select from [ ship - laser - shield - engine ]')
                 .setRequired(true)
                 .addChoice('ship', 'ship')
                 .addChoice('laser', 'laser')

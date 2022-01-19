@@ -15,7 +15,8 @@ module.exports = {
                 .addChoice('lasers', 'lasers')
                 .addChoice('shields', 'shields')
                 .addChoice('engines', 'engines')
-                .addChoice('ammunition', 'ammunition'))
+                .addChoice('ammunition', 'ammunition')
+                .addChoice('extra', 'extra'))
         .addStringOption(option =>
             option.setName('search')
                 .setDescription('Enter the item you want to search')
@@ -23,7 +24,8 @@ module.exports = {
 
 
     async execute(interaction, userInfo) {
-        try {
+        //try {
+            //if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition', 'extra'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
             if (userInfo.tutorial_counter < 5) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
                 return;
@@ -39,9 +41,15 @@ module.exports = {
             let itemName = [];
             let itemTable = 0;
             let itemColumn = 0;
+            let shipsList = 0;
+            let lasersList = 0;
+            let shieldsList = 0;
+            let enginesList = 0;
+            let ammunitionList = 0;
+            let extrasList = 0;
+            let maxPages = 0;
 
-            // check if its a valid category
-            if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
+            // check if its a valid category            
 
             if (interaction.options.getString('category').toLowerCase() === "ships") {
                 if (searchItem === null) {
@@ -91,7 +99,7 @@ module.exports = {
                     items.push(currentData);
                 }
 
-                var maxPages = items.length;
+                maxPages = items.length;
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
@@ -144,7 +152,7 @@ module.exports = {
                     items.push(currentData);
                 }
 
-                var maxPages = items.length;
+                maxPages = items.length;
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
@@ -199,7 +207,7 @@ module.exports = {
                     items.push(currentData);
                 }
 
-                var maxPages = items.length;
+                maxPages = items.length;
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
@@ -254,7 +262,7 @@ module.exports = {
                     items.push(currentData);
                 }
 
-                var maxPages = items.length;
+                maxPages = items.length;
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
@@ -276,7 +284,7 @@ module.exports = {
 
 
                 itemTable = "ammunition";
-                itemColumn = "engine_model";
+                itemColumn = "ammunition";
                 await ammunitionList.forEach((ammunition, index) => {
                     count++;
                     priceCredit.push(ammunition.credit);
@@ -310,7 +318,7 @@ module.exports = {
                     items.push(currentData);
                 }
 
-                var maxPages = items.length;
+                maxPages = items.length;
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `Page 1 of ${maxPages}`);
                 if (items.length > 1) {
@@ -320,8 +328,67 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
 
+            } else {
+                if (searchItem === null) {
+                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1`);
+                } else {
+                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
+                }
+
+                if (extrasList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any item with: `" + searchItem.toUpperCase() + "`", "Error!!")], ephemeral: true });
+
+                itemColumn = "extra_model";
+                itemTable = [];
+                await extrasList.forEach((extra, index) => {
+                    count++;
+                    priceCredit.push(extra.credit);
+                    priceUnits.push(extra.units);
+                    itemName.push(extra.extra_model);                    
+
+                    currentData += `**${extra.emoji_id} EXTRA MODEL:** **[${extra.extra_model}](https://obelisk.club/)** `
+
+                    itemColumn = "extra_model";
+                    if (extra.credit === 0) {
+                        currentData += `${interaction.client.defaultEmojis['units']} __**${extra.units}**__ \n`
+                    } else {
+                        currentData += `${interaction.client.defaultEmojis['credit']} __**${extra.credit}**__ \n`
+                    }
+
+                    if (extra.item_type === "repair") {
+                        itemTable.push(["repair_bot", extra.function]);
+                        currentData += `<a:dmg:896724820149035048> **Repair Rate **[${extra.function}](https://obelisk.club/) \n`
+                    } else {
+                        itemTable.push(["hellstorm_model", extra.function]);
+                        currentData += `<a:dmg:896724820149035048> **Clip Size **[${extra.function}](https://obelisk.club/) \n`
+                    }
+
+                    if (count === itemsPerPage) {
+                        items.push(currentData);
+                        count = 0;
+                        if (index < extrasList.length - 1) {
+                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                        } else {
+                            currentData = ``;
+                        }
+
+                    }
+                });
+
+                if (currentData !== "") {
+                    items.push(currentData);
+                }
+
+                maxPages = items.length;
+
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `Page 1 of ${maxPages}`);
+                if (items.length > 1) {
+                    await interaction.reply({ embeds: [embed], components: [row] });
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS");
+                } else {
+                    await interaction.reply({ embeds: [embed] });
+                }
             }
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
@@ -330,7 +397,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
     }
 
 }
@@ -384,13 +451,14 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     else {
                         if (itemTable === "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
-                            if (typeof ownedShip == 'undefined') {
+                            if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                 await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
                                 collector.stop("Bought");
-                                itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
-                                query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                itemInfo = itemInfo[0];
+                                let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                 await interaction.client.databaseEditData(query)
-                                await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [quantity * priceCredit[index], interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
                                 return;
                             }
                             else {
@@ -398,7 +466,36 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 return;
                             }
                         }
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                        else if (itemColumn === "extra_model") {
+                            if (itemTable[index][0] === "repair_bot") {
+                                if (userInfo.repair_rate < itemTable[index][1]) {
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    collector.stop("Bought");
+                                    await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?, repair_rate = ? WHERE user_id = ?`, [priceCredit[index], itemTable[index][1], interaction.user.id]);
+                                    return;
+                                }
+                                else {
+                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better repair robot!`, "ERROR!")], components: [] });
+                                    return;
+                                }
+                            }
+                            else if (itemTable[index][0] === "hellstorm_model") {
+                                let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                currentClipRate = currentClipRate[0].helstorm_missiles_number;
+                                if (currentClipRate < itemTable[index][1]) {
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    collector.stop("Bought");
+                                    await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ? WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
+                                    return;
+                                }
+                                else {
+                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better hellstorm!`, "ERROR!")], components: [] });
+                                    return;
+                                }
+                            }
+                        }
+                        await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemColumn.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                         buyBool = true;
 
                     }
@@ -408,18 +505,48 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     else {
                         if (itemTable === "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
-                            if (typeof ownedShip == 'undefined') {
+                            if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                 await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
                                 collector.stop("Bought");
-                                itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
-                                query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                itemInfo = itemInfo[0];
+                                let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                 await interaction.client.databaseEditData(query)
-                                await interaction.client.databaseEditData(`UPDATE users SET units = units - ?  WHERE user_id = ?`, [quantity * priceUnits[index], interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
                                 return;
                             }
                             else {
                                 await i.update({ embeds: [interaction.client.redEmbed(`You already own this ship!`, "ERROR!")], components: [] });
                                 return;
+                            }
+                        }
+                        else if (itemColumn === "extra_model") {
+                            if (itemTable[index][0] === "repair_bot") {
+                                if (userInfo.repair_rate < itemTable[index][1]) {
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    collector.stop("Bought");
+                                    await interaction.client.databaseEditData(`UPDATE users SET units = units - ?, repair_rate = ? WHERE user_id = ?`, [priceUnits[index], itemTable[index][1], interaction.user.id]);
+                                    return;
+                                }
+                                else {
+                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better repair robot!`, "ERROR!")], components: [] });
+                                    return;
+                                }
+                            }
+                            else if (itemTable[index][0] === "hellstorm_model") {
+                                let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                currentClipRate = currentClipRate[0].helstorm_missiles_number;
+                                if (currentClipRate < itemTable[index][1]) {
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    collector.stop("Bought");
+                                    await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
+                                    return;
+                                }
+                                else {
+                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better hellstorm!`, "ERROR!")], components: [] });
+                                    return;
+                                }
                             }
                         }
                         await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
