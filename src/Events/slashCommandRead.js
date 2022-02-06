@@ -29,7 +29,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             }
         }
         const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
-        command.execute(interaction, userInfo);
+        command.execute(interaction, userInfo, serverSettings[0]);
     } catch (error) {
         if (interaction.replied) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });

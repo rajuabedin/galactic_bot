@@ -7,11 +7,18 @@ module.exports = {
         .setName('ping')
         .setDescription('Ping command!'),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+
         try {
             await interaction.reply({ embeds: [interaction.client.redEmbed(`Pong ${interaction.client.ws.ping} ms!`)], ephemeral: true });
         } catch (error) {
-            await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     }

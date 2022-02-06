@@ -11,7 +11,14 @@ module.exports = {
                 .setDescription('Enter the item you want to search')
                 .setRequired(false)),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+        
         try {
             let user = userInfo;
             var user_lasers = await interaction.client.databaseSelcetData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);

@@ -6,16 +6,17 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('map')
         .setDescription('choose the map to warp to'),
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+
         try {
-            /*
-            let date = new Date();
-            console.log(date);
-            date.setMinutes(date.getMinutes() + 60);
-            console.log(date.toJSON()); 
-            */
             if (userInfo.tutorial_counter < 2) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
@@ -31,7 +32,7 @@ module.exports = {
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
                 map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                interaction.reply({ embeds: [interaction.client.yellowEmbed(`Currently at **${map[0].map_name}**\nSelect destination:`, "Select map")], components: [row] });
+                interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
             }
             else if (userInfo.next_map_id !== 1) {
                 mapId = userInfo.map_id;
@@ -42,13 +43,13 @@ module.exports = {
                 elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
                 elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                interaction.reply({ embeds: [interaction.client.yellowEmbed(`Currently at **${map[0].map_name}**\n**${elapsedTimeFromWarpMinutes}m and ${elapsedTimeFromWarpSeconds}s** to reach **${nextMapName}**\nChange destination to:`, "Select map")], components: [row] });
+                interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap_2').format(map[0].map_name, elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, nextMapName,), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
             }
             else {
                 mapId = userInfo.map_id;
                 map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                interaction.reply({ embeds: [interaction.client.yellowEmbed(`Currently at **${map[0].map_name}**\nSelect destination:`, "Select map")], components: [row] });
+                interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
             }
 
 
@@ -65,21 +66,21 @@ module.exports = {
                     elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / 60;
                     elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
                     elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
-                    i.update({ embeds: [interaction.client.greenEmbed(`**${elapsedTimeFromWarpMinutes}m and ${elapsedTimeFromWarpSeconds}s** to warp to map **${i.values[0]}**`,)], components: [] });
+                    i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, i.values[0]))], components: [] });
                 }
                 else {
                     mapId = i.values[0].split("-");
                     if (i.values[0] === "111" || i.values[0] === "222" || i.values[0] === "333" || i.values[0] === "444")
-                        i.update({ embeds: [interaction.client.redEmbed("Command cancelled",)], components: [] });
+                        i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
                     else {
-                        let level_requirement = 0;
-                        if ((userInfo.firm === "Moon" && mapId[0] === "1") || (userInfo.firm === "Earth" && mapId[0] === "2") || (userInfo.firm === "Mars" && mapId[0] === "3")) {
-                            level_requirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
-                            level_requirement = level_requirement[0].level_requirement;
+                        let levelRequirement = 0;
+                        if ((userInfo.firm === "Luna" && mapId[0] === "1") || (userInfo.firm === "Terra" && mapId[0] === "2") || (userInfo.firm === "Marte" && mapId[0] === "3")) {
+                            levelRequirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                            levelRequirement = levelRequirement[0].level_requirement;
                         }
                         else {
-                            level_requirement = await interaction.client.databaseSelcetData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
-                            level_requirement = level_requirement[0].enemy_level_requirement;
+                            levelRequirement = await interaction.client.databaseSelcetData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                            levelRequirement = levelRequirement[0].enemy_level_requirement;
                         }
 
                         let timeToReachMapMinutes = 400000 / (userInfo.user_speed * userInfo.user_speed);
@@ -91,13 +92,13 @@ module.exports = {
                         dateToReachMap = dateToReachMap.toJSON().split(".");
                         dateToReachMap = dateToReachMap[0];
 
-                        if (userInfo.level >= level_requirement) {
+                        if (userInfo.level >= levelRequirement) {
                             await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
                             await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
-                            i.update({ embeds: [interaction.client.greenEmbed(`**${timeToReachMapMinutes}m and ${timeToReachMapSeconds}s** to warp to map **${i.values[0]}**`,)], components: [] });
+                            i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
                         }
                         else {
-                            i.update({ embeds: [interaction.client.redEmbed(`**You do not meet the level requirement.**\n*Reach level ${level_requirement} to unlock*`, "ERROR!")], components: [] });
+                            i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warpFail').format(levelRequirement), "ERROR!")], components: [] });
                         }
 
                     }
@@ -112,9 +113,9 @@ module.exports = {
 
         } catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             }
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }

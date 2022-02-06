@@ -8,13 +8,20 @@ module.exports = {
         .setName('hunt')
         .setDescription('Hunt Allien!'),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+        
         try {
             let mission = 0;
             if (userInfo.tutorial_counter < 6) {
                 mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions WHERE user_id = ? AND mission_status = 'active'", [interaction.user.id]);
                 if (typeof mission == 'undefined' || mission.length == 0) {
-                    await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                    await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                     return;
                 }
             }
@@ -29,7 +36,7 @@ module.exports = {
             let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromHunt = Math.floor((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(`Please wait ${60 - elapsedTimeFromHunt} seconds before hunting again`, "Hunt in cooldown")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))] });
                 return;
             }
 
@@ -133,7 +140,7 @@ module.exports = {
                 honorBoost = true;
 
             if (shipModel === "S5") {
-                if (mapIDSecond < 5 && ((userInfo.firm === "Moon" && mapIDFrist == 2) || (userInfo.firm === "Earth" && mapIDFrist == 1) || (userInfo.firm === "Mars" && mapIDFrist == 3))) {
+                if (mapIDSecond < 5 && ((userInfo.firm === "Luna" && mapIDFrist == 2) || (userInfo.firm === "Terra" && mapIDFrist == 1) || (userInfo.firm === "Marte" && mapIDFrist == 3))) {
                     userStats[1] += 60000;
                     userStats[0] *= 2;
                     userStats[2] *= 2;
@@ -703,34 +710,36 @@ module.exports = {
             else if (userStats[1] > 0) {
                 await interaction.editReply({ embeds: [interaction.client.greenEmbed(messageUserInfo + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!")], components: [row] });
                 logMessage.push([messageUserInfo + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "VICTORY!"]);
+                
+                let userResources = await interaction.client.databaseSelcetData("SELECT resources FROM users WHERE user_id = ?", [interaction.user.id]);
+
+                userResources = await userResources[0].resources.split("; ").map(Number);
+                resources = resources.map(function (num, idx) { return num + userResources[idx]; });
+                cargo = resources.reduce((a, b) => a + b);
+                resources = resources.join("; ");
             }
             else {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(messageUserInfo + "\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!")], components: [row] });
                 logMessage.push([messageUserInfo + "\n\`\`\`diff\n" + messageAmmo + " \`\`\`" + messageReward, "DEFEAT! Ship is destroyed!"]);
-                if (userInfo.firm === "Earth") {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [11, interaction.user.id]);
+                if (userInfo.firm === "Terra") {
+                    userInfo.map_id = 11;
                 }
-                else if (userInfo.firm === "Moon") {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [21, interaction.user.id]);
+                else if (userInfo.firm === "Luna") {
+                    userInfo.map_id = 21;
                 }
                 else {
-                    await interaction.client.databaseEditData(`UPDATE users SET map_id = ? WHERE user_id = ?`, [31, interaction.user.id]);
+                    userInfo.map_id = 31;
                 }
-            }
-
-            let userResources = await interaction.client.databaseSelcetData("SELECT resources FROM users WHERE user_id = ?", [interaction.user.id]);
-
-            userResources = await userResources[0].resources.split("; ").map(Number);
-            resources = resources.map(function (num, idx) { return num + userResources[idx]; });
-            cargo = resources.reduce((a, b) => a + b);
-            resources = resources.join("; ");
+                cargo = 0;
+                resources = "0; 0; 0; 0; 0; 0; 0; 0; 0";
+            }            
 
             if ((userInfo.exp + expReward) >= expRequirement) {
-                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0 WHERE user_id = ?", [userInfo.exp + expReward - expRequirement, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = ?, level = level + 1, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0, map_id = ? WHERE user_id = ?", [userInfo.exp + expReward - expRequirement, credit, units, honor, userStats[1], resources, cargo, userInfo.map_id, interaction.user.id]);
                 logMessage[turnCounter][0] += "\n**YOU LEVELLED UP**";
             }
             else
-                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0 WHERE user_id = ?", [expReward, credit, units, honor, userStats[1], resources, cargo, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, resources = ?, cargo = ?, in_hunt = 0, map_id = ? WHERE user_id = ?", [expReward, credit, units, honor, userStats[1], resources, cargo, userInfo.map_id, interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
                 [ammunition[0].x1_magazine - userLaserConfig[1][3], ammunition[0].x2_magazine - userLaserConfig[2][3], ammunition[0].x3_magazine - userLaserConfig[3][3], ammunition[0].x4_magazine - userLaserConfig[4][3], ammunition[0].xS1_magazine - userLaserConfig[5][3], ammunition[0].m1_magazine - userMissileConfig[1][2], ammunition[0].m2_magazine - userMissileConfig[2][2], ammunition[0].m3_magazine - userMissileConfig[3][2], ammunition[0].m4_magazine - userMissileConfig[4][2], ammunition[0].h1_magazine - userHellstormConfig[1][3], ammunition[0].h2_magazine - userHellstormConfig[2][3], ammunition[0].hS1_magazine - userHellstormConfig[3][3], ammunition[0].hS2_magazine - userHellstormConfig[4][3], interaction.user.id]);
@@ -746,9 +755,9 @@ module.exports = {
         }
         catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });

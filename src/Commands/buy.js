@@ -26,21 +26,28 @@ module.exports = {
                 .setRequired(true)),
 
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+        
         try {
             // check if its a valid category
             if (!(['ships', 'lasers', 'shields', 'engines', 'ammunition'].includes(interaction.options.getString('category').toLowerCase()))) return await interaction.reply({ embeds: [interaction.client.redEmbed("Please use the correct category.", "Error!!")], ephemeral: true });
 
             var quantity = interaction.options.getInteger('quantity');
 
-            if (quantity < 1) return await interaction.reply({ embeds: [interaction.client.redEmbed("Dude.... Really? You want buy negative quantity?.", "Really!!")], ephemeral: true });
+            if (quantity < 1) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'sellNot'), "Error!!")], ephemeral: true });
 
             if (interaction.options.getString('category').toLowerCase() === "ships") {
                 shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [interaction.options.getString('item').toUpperCase()]);
 
                 shipsList = shipsList[0]
 
-                if (typeof shipsList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed("Sorry, I was not able to find the specified ship.", "Error!!")], ephemeral: true });
+                if (typeof shipsList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shipFoundNot'), "Error!!")], ephemeral: true });
 
                 let cost = "for "
 
@@ -50,7 +57,7 @@ module.exports = {
                     cost += `__**${shipsList.units * quantity} Units**__`
                 }
 
-                await interaction.reply({ embeds: [interaction.client.blueEmbed(`Do you want to buy **${quantity}**x **[${shipsList.ship_model}]('https://obelisk.club/')** ${cost} ?`, "Buy Item")], components: [row] });
+                await interaction.reply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shipBuy').format(shipsList.ship_model, cost), interaction.client.getWordLanguage(serverSettings.lang, 'buy'))], components: [row] });
                 buttonHandler(interaction, shipsList, "SHIPS", quantity);
 
 
@@ -59,7 +66,7 @@ module.exports = {
 
                 lasersList = await lasersList[0];
 
-                if (typeof lasersList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed("Sorry, I was not able to find the specified ship.", "Error!!")], ephemeral: true });
+                if (typeof lasersList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'laserFoundNot'), "Error!!")], ephemeral: true });
 
                 let cost = "for "
 
@@ -79,7 +86,7 @@ module.exports = {
 
                 shieldsList = shieldsList[0];
 
-                if (typeof shieldsList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed("Sorry, I was not able to find the specified ship.", "Error!!")], ephemeral: true });
+                if (typeof shieldsList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shieldFoundNot'), "Error!!")], ephemeral: true });
 
                 let cost = "for "
 
@@ -99,7 +106,7 @@ module.exports = {
 
                 enginesList = enginesList[0];
 
-                if (typeof enginesList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed("Sorry, I was not able to find the specified ship.", "Error!!")], ephemeral: true });
+                if (typeof enginesList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'engineFoundNot'), "Error!!")], ephemeral: true });
 
                 let cost = "for "
 
@@ -118,7 +125,7 @@ module.exports = {
 
                 ammunitionList = ammunitionList[0];
 
-                if (typeof ammunitionList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed("Sorry, I was not able to find the specified ship.", "Error!!")], ephemeral: true });
+                if (typeof ammunitionList === 'undefined') return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ammoFoundNot'), "Error!!")], ephemeral: true });
 
                 let cost = "for "
 

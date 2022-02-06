@@ -7,15 +7,22 @@ module.exports = {
         .setName('refine')
         .setDescription('refine cargo to their superior resources'),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+
         try {
             if (userInfo.tutorial_counter < 7) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let resources = userInfo.resources.split("; ").map(Number);
             let cargo = userInfo.cargo;
-            let message = "**Refined materials:**" + "\`\`\`yaml\n";
+            let message = interaction.client.getWordLanguage(serverSettings.lang, 'refine') + "\`\`\`yaml\n";
             let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "]
             let refined = false;
             [resources, message, refined] = await materialToRefine(resources, 0, 1, 3, message, refined, resourcesName);
@@ -31,17 +38,17 @@ module.exports = {
             spaceCount = space.repeat(4 - cargo.toString().length + 1);
             message += `${spaceCount}${cargo}` + " \`\`\`";
             if (refined)
-                await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Refinement successful")] });
+                await interaction.reply({ embeds: [interaction.client.greenEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'refineSuccess'))] });
             else
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Not enough material to refine**", "Refinement failure")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'refineFailMessage'), interaction.client.getWordLanguage(serverSettings.lang, 'refineFail'))] });
             resources = resources.join("; ");
             await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
         }
         catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });

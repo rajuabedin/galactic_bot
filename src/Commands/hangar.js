@@ -19,14 +19,21 @@ module.exports = {
                 .addChoice('engine', 'engine')
         ),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+
         try {
             if (userInfo.tutorial_counter < 3) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("There is **no hanger in this map**\nPlease go to a **base map** and try again", "ERROR!")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noHangar'), "ERROR!!")] });
                 return;
             }
             let baseSpeed = 0;
@@ -42,41 +49,18 @@ module.exports = {
 
             if (selectedOption === 'ship') {
                 let currentData = "";
-                /*shipList = await interaction.client.databaseSelcetData("SELECT ship_id, equipped FROM user_ships WHERE user_id = ?", [interaction.user.id]);
-                let query = "";                
-                let shiplenght = shipList.length - 1;
-                if (shiplenght == 0)
-                    query = `ship_id = ${shipList[0].ship_id}`;
-                else if (shiplenght == 1)
-                    if (shipList[0].equipped == 1)
-                        query = `ship_id = ${shipList[0].ship_id} OR ship_id = ${shipList[1].ship_id}`;
-                    else
-                        query = `ship_id = ${shipList[1].ship_id} OR ship_id = ${shipList[0].ship_id}`;
-                else {
-                    let querry2 = ""
-                    shipList.forEach((ship, index) => {
-                        if (ship.equipped != 1)
-                            if (index < shiplenght)
-                                query += `ship_id = ${ship.ship_id} OR `;
-                            else
-                                query += `ship_id = ${ship.ship_id}`;
-                        else
-                            querry2 = `ship_id = ${ship.ship_id} OR `;
-                        query = querry2 + query;
-                    })
-                }
-                shiplenght = await interaction.client.databaseSelcetData("SELECT ships_info.*, user_ships.ship_current_hp FROM ships_info WHERE ?", [query]);*/
+
                 let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_id, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
                 shipList = [""];
                 //console.log(shipArray);
                 shipArray.forEach(ship => {
                     currentData = `**[${ship.emoji_id}]** \n`;
-                    currentData += `<a:hp:896118360125870170> **Current HP **[${ship.ship_current_hp}](https://obelisk.club/) \n`
-                    currentData += `<a:sp:896440044456378398> **Speed **[${ship.ship_base_speed}](https://obelisk.club/) \n`
-                    currentData += `<a:LS:896440044464767036> **Lasers **[${ship.laser_quantity}](https://obelisk.club/) \n`
-                    currentData += `<a:ex:896440044515106846> **Exstras **[${ship.extra_quantity}](https://obelisk.club/) \n`
+                    currentData += `<a:hp:896118360125870170> **` + interaction.client.getWordLanguage(serverSettings.lang, 'currentHP') + ` **[${ship.ship_current_hp}](https://obelisk.club/) \n`
+                    currentData += `<a:sp:896440044456378398> **` + interaction.client.getWordLanguage(serverSettings.lang, 'speed') + ` **[${ship.ship_base_speed}](https://obelisk.club/) \n`
+                    currentData += `<a:LS:896440044464767036> **` + interaction.client.getWordLanguage(serverSettings.lang, 'lasers') + ` **[${ship.laser_quantity}](https://obelisk.club/) \n`
+                    //currentData += `<a:ex:896440044515106846> **Exstras **[${ship.extra_quantity}](https://obelisk.club/) \n`
                     currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
-                    currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
+                    currentData += `<a:ca:896440044536102983> **` + interaction.client.getWordLanguage(serverSettings.lang, 'cargo') + ` **[${ship.max_cargo}](https://obelisk.club/) \n`
                     if (ship.equipped != 1)
                         shipList.push([currentData, ship.ship_id, ship.ship_current_hp, ship.ship_base_speed, ship.max_cargo, ship.ship_hp]);
                     else
@@ -146,9 +130,6 @@ module.exports = {
             else
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
 
-            //let equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items:**`;
-            //let storedMessage = `**Data returned to:**\nEquipped ${displayEquippedItemlenght}/${maxEquipableItem} items:\n ${message}`;
-            //await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, equippedItemMessage)], ephemeral: true, components: [row, row1, row2, row3, row4] });
 
             if (selectedOption === 'ship')
                 await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
@@ -165,7 +146,6 @@ module.exports = {
                 collector.resetTimer({ time: 25000 });
                 let index = parseInt(i.customId);
                 if (i.component.customId === "save") {
-                    //await i.update({ embeds: [interaction.client.greenEmbed(`${equippedItemMessage}\n${message}`, "SAVED")], components: [] });
                     await i.update({ content: message, components: [] });
                     discardedMessage = false;
                     if (selectedOption === 'laser') {
@@ -254,8 +234,6 @@ module.exports = {
                         [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
                     else
                         [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                    //equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items**\n`;
-                    //await i.update({ embeds: [interaction.client.greenEmbed(message, equippedItemMessage)], components: [row, row1, row2, row3, row4] });
                     await i.update({ content: message, components: [row, row1, row2, row3, row4] });
                 }
                 else if (i.component.style === "SUCCESS") {
@@ -263,13 +241,10 @@ module.exports = {
                     displayEquippedItemlenght--;
                     itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
                     [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                    //equippedItemMessage = `**You have equipped ${displayEquippedItemlenght}/${maxEquipableItem} items**\n`;
-                    //await i.update({ embeds: [interaction.client.blueEmbed(message, equippedItemMessage)], components: [row, row1, row2, row3, row4] });
                     await i.update({ content: message, components: [row, row1, row2, row3, row4] });
                 }
                 else {
-                    //await i.update({ embeds: [interaction.client.redEmbed(message, "**ERROR! Max capacity reached!**")], components: [row, row1, row2, row3, row4] });
-                    await i.update({ content: "**ERROR! Max capacity reached!**", components: [] });
+                    await i.update({ content: interaction.client.getWordLanguage(serverSettings.lang, 'maxCapacity'), components: [] });
                     await interaction.client.wait(1000);
                     await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                 }
@@ -280,14 +255,13 @@ module.exports = {
                     interaction.editReply({ content: "**Discarded**", components: [] });
                 else
                     interaction.editReply({ components: [] })
-                //interaction.editReply({ embeds: [], components: [], files: [`./User_Log/${userID}.txt`]})
             });
         }
         catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
@@ -484,7 +458,7 @@ const row4 = new MessageActionRow()
     );
 
 async function shipButton(buttonStyile = "SUCCESS") {
-    let shipRow = new MessageActionRow()
+    return new MessageActionRow()
         .addComponents(
             new MessageButton()
                 .setCustomId('left')
@@ -505,6 +479,5 @@ async function shipButton(buttonStyile = "SUCCESS") {
                 .setEmoji("888579708114059334")
                 .setStyle(buttonStyile),
         );
-    return shipRow;
 }
 

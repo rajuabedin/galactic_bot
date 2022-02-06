@@ -116,104 +116,93 @@ class Client extends Discord.Client {
      * @returns 
      */
     bluePagesEmbed(text, tittle = "", user, footer) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x009dff')
             .setAuthor(tittle, user.avatarURL())
             .setDescription(text)
             .setFooter(footer)
-        return textToEmbed
     }
 
     bluePagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x009dff')
             .setAuthor(tittle, user.avatarURL())
             .setDescription(text)
             .setThumbnail(imageUrl)
             .setFooter(footer)
-        return textToEmbed
     }
 
     blueEmbed(text, tittle = "") {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x009dff')
             .setTitle(tittle)
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     blueEmbedImage(text, tittle = "", user) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x009dff')
             .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     greenEmbed(text, tittle = "") {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x14e188')
             .setTitle(tittle)
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     greenEmbedImage(text, tittle = "", user) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0x14e188')
             .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     redEmbed(text, tittle = "") {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0xe1143d')
             .setTitle(tittle)
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     redEmbedImage(text, tittle = "", user) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0xe1143d')
             .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     yellowEmbed(text, tittle = "") {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0xffff00')
             .setTitle(tittle)
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     yellowEmbedImage(text, tittle = "", user) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0xffff00')
             .setAuthor(tittle, user.avatarURL())
             .setURL('https://obelisk.club/')
             .setDescription(text)
-        return textToEmbed
     }
 
     yellowPagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
-        const textToEmbed = new Discord.MessageEmbed()
+        return new Discord.MessageEmbed()
             .setColor('0xffff00')
             .setAuthor(tittle, user.avatarURL())
             .setDescription(text)
             .setThumbnail(imageUrl)
             .setFooter(footer)
-        return textToEmbed
     }
 
 

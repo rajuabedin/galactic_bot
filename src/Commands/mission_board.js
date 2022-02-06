@@ -11,10 +11,17 @@ module.exports = {
                 .setDescription('Please enter mission type, id or monster name...')
                 .setRequired(false)),
 
-    async execute(interaction, userInfo) {
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+        
         try {
             if (userInfo.tutorial_counter < 6) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**Please finish the tutorial first**")] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
@@ -191,9 +198,9 @@ module.exports = {
             }
         } catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
             }
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
@@ -219,7 +226,6 @@ const row = new MessageActionRow()
 
 const rowYesNo = new MessageActionRow()
     .addComponents(
-
         new MessageButton()
             .setCustomId('yes')
             .setLabel('YES')
