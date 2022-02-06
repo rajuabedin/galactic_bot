@@ -256,11 +256,11 @@ function buttonHandler(interaction, missionsData, userInfo) {
         } else if (i.customId === "get") {
             if (userInfo.missions_id != null) {
                 var userMission = await interaction.client.databaseSelcetData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
-                var userMission = userMission[0];
+                userMission = userMission[0];
 
                 if (typeof userMission !== 'undefined') {
                     var userMissionInfo = await interaction.client.databaseSelcetData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
-                    var userMissionInfo = userMissionInfo[0];
+                    userMissionInfo = userMissionInfo[0];
                     var mySqlTimeStamp = userMission.mission_started_at;
                     var nowTimeStamp = new Date();
                     var resolutionTime = ((((nowTimeStamp - mySqlTimeStamp) / 1000) / 60) / 60);

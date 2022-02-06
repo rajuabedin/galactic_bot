@@ -110,7 +110,7 @@ module.exports = {
 
 
 
-                for (index = 0; index < task.length; index++) {
+                for (let index = 0; index < task.length; index++) {
                     todo += "⦿ " + task[index] + " - " + taskQuantityLeft[index] + "/" + taskQuantity[index] + "\n";
                 }
 
