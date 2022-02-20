@@ -18,7 +18,7 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        
+
         try {
             if (userInfo.tutorial_counter < 6) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
@@ -26,7 +26,7 @@ module.exports = {
             }
             var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
             if (missionListDB === undefined || missionListDB.length == 0) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed("Unable to find any missions!")] });
+                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error'))] });
             } else {
                 var searchMission = interaction.options.getString('search')
                 var missionList = [];
@@ -43,7 +43,7 @@ module.exports = {
                         var task = mission.mission_task.split(";");
                         var taskQuantity = mission.mission_task_quantity.split(";");
                         var timeLeftMsg = "";
-                        var availableMap = "No Map Restriction";
+                        var availableMap = interaction.client.getWordLanguage(serverSettings.lang, 'missions_no_map');
 
                         if (mission.map_id > 0) {
                             availableMap = mission.map_id;
@@ -53,7 +53,7 @@ module.exports = {
                         if (mission.mission_limit > 0) {
                             timeLeftMsg = mission.mission_limit + " H";
                         } else {
-                            timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                            timeLeftMsg = `[${interaction.client.getWordLanguage(serverSettings.lang, 'no_time_limit_u')}](https://obelisk.club/)`;
                         }
 
                         for (index = 0; index < task.length; index++) {
@@ -83,21 +83,21 @@ module.exports = {
 
                         if (mission.mission_reward_honor > 0) {
                             if (reward != "") {
-                                reward += ` | Honor - ${mission.mission_reward_honor}`;
+                                reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
                             } else {
-                                reward += `Honor - ${mission.mission_reward_honor}`;
+                                reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
                             }
                         }
 
                         if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
                             if (reward != "") {
-                                reward += ` | Materials: ${mission.mission_reward_items}`;
+                                reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: ${mission.mission_reward_items}`;
                             } else {
-                                reward += `Materials: - ${mission.mission_reward_items}`;
+                                reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: - ${mission.mission_reward_items}`;
                             }
                         }
 
-                        currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Duration:** " + timeLeftMsg + "\n**Mission Objective:**```" + todo + "```";
+                        currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_info')}**\n**ID :**  ${mission.mission_id} \n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_type')}:** [${mission.mission_type}](https://obelisk.club/)\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_restiction')}:** ${availableMap}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_rewards')}**\n${reward}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_duration')}:** ${timeLeftMsg}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_o')}:**\`\`\`${todo}\`\`\``;
 
                         if (count === missionsPerPage) {
                             missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
@@ -116,65 +116,66 @@ module.exports = {
                             var task = mission.mission_task.split(";");
                             var taskQuantity = mission.mission_task_quantity.split(";");
                             var timeLeftMsg = "";
-                            var availableMap = "No Map Restriction";
+                            var availableMap = interaction.client.getWordLanguage(serverSettings.lang, 'missions_no_map')
+                        }
 
-                            if (mission.map_id > 0) {
-                                availableMap = mission.map_id;
-                            }
 
-                            if (mission.mission_limit > 0) {
-                                timeLeftMsg = mission.mission_limit + " H";
+                        if (mission.map_id > 0) {
+                            availableMap = mission.map_id;
+                        }
+
+                        if (mission.mission_limit > 0) {
+                            timeLeftMsg = mission.mission_limit + " H";
+                        } else {
+                            timeLeftMsg = `[${interaction.client.getWordLanguage(serverSettings.lang, 'no_time_limit_u')}](https://obelisk.club/)`;
+                        }
+
+                        for (index = 0; index < task.length; index++) {
+                            todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
+                        }
+
+                        var reward = "";
+
+                        if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
+
+                        if (mission.mission_reward_units > 0) {
+                            if (reward != "") {
+                                reward += ` | Units - ${mission.mission_reward_units}`;
                             } else {
-                                timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)";
+                                reward += `Units - ${mission.mission_reward_units}`;
                             }
+                        }
 
-                            for (index = 0; index < task.length; index++) {
-                                todo += "⦿ " + task[index] + " - " + taskQuantity[index] + "\n";
+                        if (mission.mission_reward_exp > 0) {
+                            if (reward != "") {
+                                reward += ` | Exp - ${mission.mission_reward_exp}`;
+                            } else {
+                                reward += `Exp - ${mission.mission_reward_exp}`;
                             }
+                        }
 
-                            var reward = "";
-
-                            if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
-
-                            if (mission.mission_reward_units > 0) {
-                                if (reward != "") {
-                                    reward += ` | Units - ${mission.mission_reward_units}`;
-                                } else {
-                                    reward += `Units - ${mission.mission_reward_units}`;
-                                }
+                        if (mission.mission_reward_honor > 0) {
+                            if (reward != "") {
+                                reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
+                            } else {
+                                reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
                             }
+                        }
 
-                            if (mission.mission_reward_exp > 0) {
-                                if (reward != "") {
-                                    reward += ` | Exp - ${mission.mission_reward_exp}`;
-                                } else {
-                                    reward += `Exp - ${mission.mission_reward_exp}`;
-                                }
+                        if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
+                            if (reward != "") {
+                                reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: ${mission.mission_reward_items}`;
+                            } else {
+                                reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: - ${mission.mission_reward_items}`;
                             }
+                        }
 
-                            if (mission.mission_reward_honor > 0) {
-                                if (reward != "") {
-                                    reward += ` | Honor - ${mission.mission_reward_honor}`;
-                                } else {
-                                    reward += `Honor - ${mission.mission_reward_honor}`;
-                                }
-                            }
+                        currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_info')}**\n**ID :**  ${mission.mission_id} \n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_type')}:** [${mission.mission_type}](https://obelisk.club/)\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_restiction')}:** ${availableMap}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_rewards')}**\n${reward}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_duration')}:** ${timeLeftMsg}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_o')}:**\`\`\`${todo}\`\`\``;
 
-                            if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
-                                if (reward != "") {
-                                    reward += ` | Materials: ${mission.mission_reward_items}`;
-                                } else {
-                                    reward += `Materials: - ${mission.mission_reward_items}`;
-                                }
-                            }
-
-                            currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Duration:** " + timeLeftMsg + "\n**Mission Objective:**```" + todo + "```";
-
-                            if (count === missionsPerPage) {
-                                missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
-                                count = 0;
-                                currentData = "";
-                            }
+                        if (count === missionsPerPage) {
+                            missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
+                            count = 0;
+                            currentData = "";
                         }
                     });
                 }
@@ -183,13 +184,13 @@ module.exports = {
                 var maxPages = missionList.length;
 
                 if (missionList == "") {
-                    embed = interaction.client.redEmbed("Mission not found!");
+                    embed = interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_nf'));
                 } else {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "MISSION BOARD", interaction.user, `Page 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
                 }
                 if (missionList.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, missionList, userInfo);
+                    buttonHandler(interaction, missionList, userInfo, serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -236,7 +237,7 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, missionsData, userInfo) {
+function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
     let maxIndex = missionsData.length - 1;
     let index = 0;
     let selectedMissionID = -1;
@@ -275,16 +276,16 @@ function buttonHandler(interaction, missionsData, userInfo) {
             selectedMissionID = missionsData[index][1];
             if (hasActiveMission) {
                 if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.blueEmbed("You already have active mission. Do you still want to continue?", "Active Mission Found")], components: [rowYesNo] });
+                    await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
                 } else {
-                    await i.update({ embeds: [interaction.client.blueEmbed("You already have active mission. Do you still want to continue?", "Active Mission Found")], components: [rowYesNo] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
                 }
 
             } else {
                 if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this mission?", "Start Mission")], components: [rowYesNo] });
+                    await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
                 } else {
-                    await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to accepted this mission?", "Start Mission")], components: [rowYesNo] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
                 }
 
             }
@@ -293,16 +294,16 @@ function buttonHandler(interaction, missionsData, userInfo) {
             var missionId = await interaction.client.databaseEditDataReturnID(query, [selectedMissionID, missionsData[index][2], interaction.user.id])
             await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id])
             if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.greenEmbed("You have successfully started the mission.", "Successfull")], components: [] })
+                await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
             } else {
-                await i.update({ embeds: [interaction.client.greenEmbed("You have successfully started the mission.", "Successfull")], components: [] })
+                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
             }
             if (hasActiveMission) {
                 await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, activeMissionID])
             }
             return collector.stop();
         } else {
-            interaction.editReply({ embeds: [interaction.client.redEmbed("Interaction has been canceled.", "Cancelled")], components: [] })
+            interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
         }
 
         if (["left", "right"].includes(i.customId)) {
@@ -312,7 +313,7 @@ function buttonHandler(interaction, missionsData, userInfo) {
             if (index > maxIndex) {
                 index -= maxIndex + 1;
             }
-            await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "MISSION BOARD", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
+            await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
         }
 
     });
