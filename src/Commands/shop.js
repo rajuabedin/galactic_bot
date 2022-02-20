@@ -42,7 +42,7 @@ module.exports = {
             var embed;
             var count = 0;
             var itemsPerPage = 1;
-            var currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+            var currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
             let priceCredit = [];
             let priceUnits = [];
             let itemName = [];
@@ -94,7 +94,7 @@ module.exports = {
                         items.push(currentData);
                         count = 0;
                         if (index < shipsList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -108,10 +108,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -141,14 +141,14 @@ module.exports = {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${laser.credit}**__ \n`
                     }
 
-                    currentData += `<a:dmg:896724820149035048> **Damage **[${laser.damage_value}](https://obelisk.club/) \n`
-                    currentData += `<a:up:896725276023717958> **DMG Increse per LvL **[${laser.per_increase_by_level}](https://obelisk.club/) \n`
+                    currentData += `<a:dmg:896724820149035048> **DMG **[${laser.damage_value}](https://obelisk.club/) \n`
+                    currentData += `<a:up:896725276023717958> **DMG ${interaction.client.getWordLanguage(serverSettings.lang, 'upgrade_lvl')} **[${laser.per_increase_by_level}](https://obelisk.club/) \n`
 
                     if (count === itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < lasersList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -161,10 +161,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -196,14 +196,14 @@ module.exports = {
                     }
 
                     currentData += `<a:sd:896118359966511104> **Shield **[${shield.shield_value}](https://obelisk.club/) \n`
-                    currentData += `<a:ab:896726792944119828> **Absortion Percentage **[${shield.absorption_rate}](https://obelisk.club/) \n`
-                    currentData += `<a:up:896725276023717958> **Shield increse per LvL **[${shield.per_increase_by_level}](https://obelisk.club/) \n`
+                    currentData += `<a:ab:896726792944119828> **${interaction.client.getWordLanguage(serverSettings.lang, 'absortion_%')} **[${shield.absorption_rate}](https://obelisk.club/) \n`
+                    currentData += `<a:up:896725276023717958> **Shield ${interaction.client.getWordLanguage(serverSettings.lang, 'upgrade_lvl')} **[${shield.per_increase_by_level}](https://obelisk.club/) \n`
 
                     if (count === itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < shieldsList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -216,10 +216,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -258,7 +258,7 @@ module.exports = {
                         items.push(currentData);
                         count = 0;
                         if (index < enginesList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -271,10 +271,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -306,7 +306,7 @@ module.exports = {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`
                     }
 
-                    currentData += `**Description**\n${ammunition.description}\n`
+                    currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'description')}**\n${ammunition.description}\n`
 
 
 
@@ -314,7 +314,7 @@ module.exports = {
                         items.push(currentData);
                         count = 0;
                         if (index < ammunitionList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -327,10 +327,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "AMMUNITION");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "AMMUNITION", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -363,19 +363,19 @@ module.exports = {
 
                     if (extra.item_type === "repair") {
                         itemTable.push(["repair_bot", extra.function]);
-                        currentData += `<a:RR:933406090077560852> **Repair Rate **[${extra.function}](https://obelisk.club/) \n`
-                        currentData += `\n*Repair Rate: how much of ship HP  is repaired per minute* \n`
+                        currentData += `<a:RR:933406090077560852> **${interaction.client.getWordLanguage(serverSettings.lang, 'repair_rate')}**[${extra.function}](https://obelisk.club/) \n`
+                        currentData += `\n*${interaction.client.getWordLanguage(serverSettings.lang, 'repair_rate_desc')}* \n`
                     } else {
                         itemTable.push(["hellstorm_model", extra.function]);
-                        currentData += `<a:CS:933406089863626802> **Clip Size **[${extra.function}](https://obelisk.club/) \n`
-                        currentData += `\n*Clip Size: quantity of hellstorm missiles launched together* \n`
+                        currentData += `<a:CS:933406089863626802> **${interaction.client.getWordLanguage(serverSettings.lang, 'clip_size')}**[${extra.function}](https://obelisk.club/) \n`
+                        currentData += `\n*${interaction.client.getWordLanguage(serverSettings.lang, 'clip_size_desc')}* \n`
                     }
 
                     if (count === itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < extrasList.length - 1) {
-                            currentData = `**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n`;
+                            currentData = interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
                         } else {
                             currentData = ``;
                         }
@@ -389,10 +389,10 @@ module.exports = {
 
                 maxPages = items.length;
 
-                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `Page 1 of ${maxPages}`);
+                embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
                     await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS");
+                    buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS", serverSettings);
                 } else {
                     await interaction.reply({ embeds: [embed] });
                 }
@@ -429,7 +429,7 @@ const row = new MessageActionRow()
             .setStyle('SUCCESS'),
     );
 
-function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, inventoryData, category) {
+function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, inventoryData, category, serverSettings) {
     let maxIndex = inventoryData.length - 1;
     let index = 0;
     let buyBool = false;
@@ -456,12 +456,12 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     itemColumn = `${itemName[index]}_magazine`;
                 if (priceCredit[index] > 0)
                     if (priceCredit[index] > userInfo.credit)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Credit`, "ERROR!")], components: [] });
+                        return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, `no_credit`), "ERROR!")], components: [] });
                     else {
                         if (itemTable === "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                             if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
-                                await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                 collector.stop("Bought");
                                 let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
                                 itemInfo = itemInfo[0];
@@ -471,20 +471,20 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 return;
                             }
                             else {
-                                await i.update({ embeds: [interaction.client.redEmbed(`You already own this ship!`, "ERROR!")], components: [] });
+                                await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
                                 return;
                             }
                         }
                         else if (itemColumn === "extra_model") {
                             if (itemTable[index][0] === "repair_bot") {
                                 if (userInfo.repair_rate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
                                     await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?, repair_rate = ? WHERE user_id = ?`, [priceCredit[index], itemTable[index][1], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better repair robot!`, "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
@@ -492,30 +492,30 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                 currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                 if (currentClipRate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
                                     await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ? WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
                                     await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better hellstorm!`, "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
                         }
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemColumn.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemColumn.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                         buyBool = true;
 
                     }
                 else
                     if (priceUnits[index] > userInfo.units)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Units`, "ERROR!")], components: [] });
+                        return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
                     else {
                         if (itemTable === "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                             if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
-                                await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                 collector.stop("Bought");
                                 let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
                                 itemInfo = itemInfo[0];
@@ -525,20 +525,20 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 return;
                             }
                             else {
-                                await i.update({ embeds: [interaction.client.redEmbed(`You already own this ship!`, "ERROR!")], components: [] });
+                                await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
                                 return;
                             }
                         }
                         else if (itemColumn === "extra_model") {
                             if (itemTable[index][0] === "repair_bot") {
                                 if (userInfo.repair_rate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
                                     await interaction.client.databaseEditData(`UPDATE users SET units = units - ?, repair_rate = ? WHERE user_id = ?`, [priceUnits[index], itemTable[index][1], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better repair robot!`, "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
@@ -546,36 +546,36 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                 currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                 if (currentClipRate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
                                     await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
                                     await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(`You already own this or better hellstorm!`, "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
                         }
-                        await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                         buyBool = true;
                     }
             }
             else
-                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
+                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)] });
         }
         else {
             if (i.customId === "cancelItem") {
                 buyBool = false;
-                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)], components: [row] });
+                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)], components: [row] });
             }
             else if (i.customId === "buyItem") {
                 if (priceCredit[index] > 0)
                     if (priceCredit[index] * quantity > userInfo.credit)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Credit`, "ERROR!")], components: [] });
+                        return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'no_credit'), "ERROR!")], components: [] });
                     else {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                         if (itemTable === "ammunition")
                             await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
                         else
@@ -587,9 +587,9 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     }
                 else
                     if (priceUnits[index] * quantity > userInfo.units)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`Not enough Units`, "ERROR!")], components: [] });
+                        return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
                     else {
-                        await i.update({ embeds: [interaction.client.greenEmbed(`item bought`, "bought!")], components: [] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                         if (itemTable === "ammunition")
                             await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
                         else
@@ -606,12 +606,12 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     quantity += add
                 if (quantity < 1) {
                     quantity -= add;
-                    await i.update({ embeds: [interaction.client.redEmbed(`**Quantity can not be less than 1!**\n**Quantity**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
+                    await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_low_quantity')}**\n**${interaction.client.getWordLanguage(serverSettings.lang, 'quantity_c')}**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
                 }
                 else if (priceCredit[index] > 0)
-                    await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                 else
-                    await i.update({ embeds: [interaction.client.blueEmbed(`**⦿ You currently have ${interaction.client.defaultEmojis['credit']}${userInfo.credit} | ${interaction.client.defaultEmojis['units']}${userInfo.units}**\n**Quantity Buying:** ${quantity}\n**Total Price:** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `Buying [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                    await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
             }
         }
     });
