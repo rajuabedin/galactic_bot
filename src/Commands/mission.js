@@ -37,9 +37,9 @@ module.exports = {
             }
             if (missionListDB === undefined || missionListDB.length == 0) {
                 if (searchMissionByStatus !== null) {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any missions with status [${searchMissionByStatus.toUpperCase()}](https://obelisk.club/)!`)] });
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'mission_error_status_s')} [${searchMissionByStatus.toUpperCase()}](https://obelisk.club/)!`)] });
                 } else {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`Unable to find any missions!`)] });
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'missions_error')}`)] });
                 }
             }
             var missionList = [];
@@ -58,7 +58,7 @@ module.exports = {
                 var task = mission.mission_task.split(";");
                 var taskQuantity = mission.mission_task_quantity.split(";");
                 var taskQuantityLeft = mission.mission_task_left.split(";");
-                var availableMap = "No Map Restriction";
+                var availableMap = interaction.client.getWordLanguage(serverSettings.lang, 'missions_no_map');
 
                 if (mission.map_id > 0) {
                     availableMap = mission.map_id;
@@ -84,7 +84,7 @@ module.exports = {
                 var timeLeftMsg = ""
                 if (mission.mission_limit > 0) {
                     if (distance < 0) {
-                        timeLeftMsg = "[EXPIRED❗](https://obelisk.club/)";
+                        timeLeftMsg = `[${interaction.client.getWordLanguage(serverSettings.lang, 'expired_u')}❗](https://obelisk.club/)`;
                         missionExpired = true;
                         await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, mission.id])
                     } else {
@@ -104,7 +104,7 @@ module.exports = {
                         timeLeftMsg += "__"
                     }
                 } else {
-                    timeLeftMsg = "[NO TIME LIMIT](https://obelisk.club/)"
+                    timeLeftMsg = `[${interaction.client.getWordLanguage(serverSettings.lang, 'no_time_limit_u')}](https://obelisk.club/)`
                 }
 
 
@@ -117,13 +117,13 @@ module.exports = {
 
                 var reward = "";
 
-                if (mission.mission_reward_credit > 0) reward += `Credit - ${mission.mission_reward_credit}`;
+                if (mission.mission_reward_credit > 0) reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'credits_c')} - ${mission.mission_reward_credit}`;
 
                 if (mission.mission_reward_units > 0) {
                     if (reward != "") {
-                        reward += ` | Units - ${mission.mission_reward_units}`;
+                        reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'units_c')} - ${mission.mission_reward_units}`;
                     } else {
-                        reward += `Units - ${mission.mission_reward_units}`;
+                        reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'units_c')} - ${mission.mission_reward_units}`;
                     }
                 }
 
@@ -137,21 +137,21 @@ module.exports = {
 
                 if (mission.mission_reward_honor > 0) {
                     if (reward != "") {
-                        reward += ` | Honor - ${mission.mission_reward_honor}`;
+                        reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
                     } else {
-                        reward += `Honor - ${mission.mission_reward_honor}`;
+                        reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'honor_c')} - ${mission.mission_reward_honor}`;
                     }
                 }
 
                 if (mission.mission_reward_items != null && mission.mission_reward_items !== "") {
                     if (reward != "") {
-                        reward += ` | Materials: ${mission.mission_reward_items}`;
+                        reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: ${mission.mission_reward_items}`;
                     } else {
-                        reward += `Materials: - ${mission.mission_reward_items}`;
+                        reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'material_c')}: - ${mission.mission_reward_items}`;
                     }
                 }
 
-                currentData += "**Mission Info**\n**ID :** `" + mission.mission_id + "`\n**Mission Type:** [" + mission.mission_type + "](https://obelisk.club/)\n**Map Restriction:** " + availableMap + "\n**Mission Reward(s)**\n" + reward + "\n**Mission Time Left:** " + timeLeftMsg + "\n**Mission Objective Status:**```" + todo + "```";
+                currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_info')}**\n**ID :**  ${mission.mission_id} \n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_type')}:** [${mission.mission_type}](https://obelisk.club/)\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_restiction')}:** ${availableMap}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_rewards')}**\n${reward}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_time_left')}:** ${timeLeftMsg}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_o_status')}:**\`\`\`${todo}\`\`\``;
 
 
                 if (count === missionsPerPage) {
@@ -165,16 +165,16 @@ module.exports = {
 
             if (missionList == "") {
                 if (!missionExpired) {
-                    embed = interaction.client.redEmbed("Mission not found!");
+                    embed = interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_nf'));
                 } else {
-                    embed = interaction.client.redEmbed("Mission expired!");
+                    embed = interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_exp'));
                 }
 
             } else {
                 if (searchMissionByStatus === null) {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], "MISSIONS LIST", interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages} `, "https://i.imgur.com/RBt8b5B.gif");
                 } else {
-                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], `MISSIONS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page 1 of ${maxPages}`, "https://i.imgur.com/RBt8b5B.gif");
+                    embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], `${interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u')} < ${searchMissionByStatus.toUpperCase()}> `, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages} `, "https://i.imgur.com/RBt8b5B.gif");
                 }
 
 
@@ -190,7 +190,7 @@ module.exports = {
                 await interaction.reply({ embeds: [embed], components: [rowLeftRight] });
             }
 
-            buttonHandler(interaction, missionList, userInfo, searchMissionByStatus);
+            buttonHandler(interaction, missionList, userInfo, searchMissionByStatus, serverSettings);
         } catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -237,7 +237,7 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatus) {
+function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatus, serverSettings) {
     let maxIndex = missionsData.length - 1;
     let index = 0;
 
@@ -253,20 +253,20 @@ function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatu
             index++;
         } else if (i.customId === "cancel") {
             if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.blueEmbed("Do you really want to stop this mission?", "Mission Cancellation")], components: [rowYesNo] });
+                await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
             } else {
-                await i.update({ embeds: [interaction.client.blueEmbed("Do you really want to stop this mission?", "Mission Cancellation")], components: [rowYesNo] });
+                await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
             }
         } else if (i.customId === "yes") {
             if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the mission.", "Cancelled")], components: [] })
+                await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
             } else {
-                await i.update({ embeds: [interaction.client.greenEmbed("You have successfully cancelled the mission.", "Cancelled")], components: [] })
+                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
             }
-            await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, userInfo.missions_id])
+            await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ? `, ["cancelled", interaction.user.id, userInfo.missions_id])
             return collector.stop();
         } else {
-            interaction.editReply({ embeds: [interaction.client.redEmbed("Interaction has been canceled.", "Stopped")], components: [] })
+            interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'stopped_c'))], components: [] })
         }
 
         if (["left", "right"].includes(i.customId)) {
@@ -277,9 +277,9 @@ function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatu
                 index -= maxIndex + 1;
             }
             if (searchMissionByStatus === null) {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], "MISSIONS LIST", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
             } else {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `MISSIONS LIST <${searchMissionByStatus.toUpperCase()}>`, interaction.user, `Page ${index + 1} of ${maxIndex + 1}`, "https://i.imgur.com/RBt8b5B.gif")] });
+                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `${interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u')} < ${searchMissionByStatus.toUpperCase()}> `, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
             }
         }
 
