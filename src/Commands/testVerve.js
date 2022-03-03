@@ -55,15 +55,14 @@ module.exports = {
 
         await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
         await interaction.client.wait(1000);
-        let player = [await playerHandler(interaction, aliensName, alien[0].speed, mapId)]
-        //        let runRow = battleButtonHandler();
+        let player = [await playerHandler(interaction, aliensName, alien[0].speed, mapId)];
         player[0].log = `Engaging Combat with ->|${alien[0].name}|<-`
             + `\nYour Info : \nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}`
             + `\nAlien Info:\nHP: ${alien[0].hp}\tShield: ${alien[0].shield}\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
 
         let message = `\n**Your Info**:\n**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`
             + `\n**Alien Info**:\n**[${alien[0].emoji}]** <a:hp:896118360125870170>: **${alien[0].hp}**\t<a:sd:896118359966511104>: **${alien[0].shield}**`;
-        await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ->|${alien[0].name}|<-**`)] });
+        await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ->|${alien[0].name}|<-**`)], components: [runRow] });
         await interaction.client.wait(1500);
 
         let shieldDamage = 0;
@@ -84,6 +83,9 @@ module.exports = {
         let alienMessage = "";
         let alienInfo = "";
         let run = false;
+        let next = false;
+        let storedAlien = 0;
+
 
         if (!group) {
             const filterRun = iRun => iRun.user.id === interaction.user.id && iRun.message.interaction.id === interaction.id;
@@ -95,8 +97,9 @@ module.exports = {
                     run = true;
                     collectorRun.stop();
                 }
-                else if (iRun.customId === "NextAlien" && alienList.length > 0) {
-                    await player[0].info.reloadammo();
+                else if (iRun.customId === "NextAlien" && alien.length > 0) {
+                    next = true;
+                    iRun.update({});                    
                 }
             });
             while (player[0].info.userStats.hp > 0 && alien.length > 0) {
@@ -133,7 +136,7 @@ module.exports = {
                             player[0].info.userStats.hp -= alienHullDamage;
                         }
 
-                        message = `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${Math.max(0, player[0].info.userStats.shield - shieldAbsorption)}<a:Absorb:949004754678341633>${shieldAbsorption}**\n`;
+                        message = `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
 
                         player[0].log +=
                             `*${escapeTurns} turs till escape*`
@@ -163,6 +166,13 @@ module.exports = {
                         await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
                     }
                     return;
+                }
+                if (next) {
+                    next = false;
+                    storedAlien = alien[0];
+                    alien.shift();
+                    alien.push(storedAlien);
+                    await player[0].info.reloadammo();
                 }
                 alienHullDamage = 0;
                 alienShieldDamage = 0;
@@ -292,7 +302,7 @@ module.exports = {
                 if (interaction.client.random(0, 100) <= newAlienChance) {
                     alien.push(await getAlien(aliens));
                     player[0].log += "NEW ALIEN ENCOUNTERED !!!\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
-                    await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")], components: [] });
+                    await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")]});
                     await interaction.client.wait(2000);
                 }
 
@@ -348,6 +358,18 @@ async function getAlien(aliens, addition = 0) {
     }
 }
 
+const runRow = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId("Run")
+            .setLabel("ESCAPE")
+            .setStyle("DANGER"),
+        new MessageButton()
+            .setCustomId("NextAlien")
+            .setLabel("NEXT")
+            .setStyle("PRIMARY"),
+
+    );
 
 async function missionHandler(interaction, aliens, id, boost) {
     let missionTask = 0;
@@ -585,7 +607,7 @@ async function infoHandler(interaction, alienSpeed) {
                     laserCounter -= 1;
                 }
                 userLaserConfig[laserCounter].magazine -= 1;
-                this.laser = userLaserConfig[laserCounter];            
+                this.laser = userLaserConfig[laserCounter];
             },
             update: async function () {
 
@@ -621,7 +643,7 @@ async function infoHandler(interaction, alienSpeed) {
                         laserCounter -= 1;
                     }
                     userLaserConfig[laserCounter].magazine -= 1;
-                    this.laser = userLaserConfig[laserCounter]; 
+                    this.laser = userLaserConfig[laserCounter];
                     if (!(turn % 3)) {
                         while (!userMissileConfig[missileCounter].magazine || threshold <= userMissileConfig[missileCounter].threshold) {
                             if (!userMissileConfig[missileCounter].magazine) {
@@ -722,7 +744,7 @@ async function infoHandler(interaction, alienSpeed) {
                     laserCounter -= 1;
                 }
                 userLaserConfig[laserCounter].magazine -= 1;
-                this.laser = userLaserConfig[laserCounter];  
+                this.laser = userLaserConfig[laserCounter];
                 if (!(turn % 3)) {
                     while (!userMissileConfig[missileCounter].magazine || threshold <= userMissileConfig[missileCounter].threshold) {
                         if (!userMissileConfig[missileCounter].magazine) {
@@ -797,10 +819,3 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
         }
     return { active: false }
 }
-const testButton = new MessageActionRow()
-    .addComponents(
-        new MessageButton()
-            .setCustomId('test')
-            .setLabel('TEST')
-            .setStyle('PRIMARY'),
-    );
