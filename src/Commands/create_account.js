@@ -37,7 +37,7 @@ module.exports = {
                 }
                 interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'selectFirm').format(boostedFirm), interaction.client.getWordLanguage(serverSettings.lang, 'create'))], components: [firm] });
             }
-            else if (userInfo.tutorial_counter >= 8) {
+            else if (userInfo.tutorial_counter >= 7) {
                 interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialEnd'))] });
                 return
             }
@@ -99,10 +99,10 @@ module.exports = {
             let ended = false;
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 });
 
             collector.on('collect', async i => {
-                collector.resetTimer({ time: 60000 });
+                collector.resetTimer({ time: 120000 });
                 if (i.customId === "End") {
                     await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialStop'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialStopTittle'))], components: [] });
                     ended = true;
@@ -604,7 +604,7 @@ const firm = new MessageActionRow()
         new MessageButton()
             .setCustomId('Marte')
             //.setLabel('Ending')
-            .setEmoji("🍅")
+            .setEmoji("949404774657327134")
             .setStyle('SUCCESS'),
 
     );

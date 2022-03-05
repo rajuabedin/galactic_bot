@@ -111,7 +111,7 @@ module.exports = {
 
 
                 for (let index = 0; index < task.length; index++) {
-                    todo += "⦿ " + task[index] + " - " + taskQuantityLeft[index] + "/" + taskQuantity[index] + "\n";
+                    todo += "⦿ " + task[index] + " left - " + taskQuantityLeft[index] + "/" + taskQuantity[index] + "\n";
                 }
 
 
