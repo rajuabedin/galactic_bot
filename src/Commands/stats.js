@@ -6,8 +6,8 @@ require('dotenv').config();
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('profile')
-        .setDescription('This command is used to check your profile.'),
+        .setName('stats')
+        .setDescription('This command is used to check your stats.'),
 
     async execute(interaction, userInfo, serverSettings) {
         String.prototype.format = function () {
@@ -32,32 +32,48 @@ module.exports = {
 
         try {
 
-            var userMapData = await interaction.client.databaseSelcetData('select * from map where map_id = ?', [userInfo.map_id]);
-            userMapData = userMapData[0];
+            var userShipData = await interaction.client.databaseSelcetData('select ships_info.ship_model, ships_info.laser_quantity, ships_info.extra_quantity, ships_info.max_cargo from user_ships join ships_info on user_ships.ship_model = ships_info.ship_model where user_ships.user_id = ? and user_ships.equipped = 1', [interaction.user.id]);
+            userShipData = userShipData[0];
 
-            var userLevelData = await interaction.client.databaseSelcetData('select * from level where level = ?', [userInfo.level + 1]);
-            userLevelData = userLevelData[0];
+            var userShieldData = await interaction.client.databaseSelcetData('select * from user_shields where user_id = ? and equipped = 1', [interaction.user.id]);
+            if (userShieldData[0] !== undefined) {
+                userShieldData = userShieldData[0].lenght;
+            } else {
+                userShieldData = 0
+            }
+
+
+            var userEngineData = await interaction.client.databaseSelcetData('select * from user_engines where user_id = ? and equipped = 1', [interaction.user.id]);
+            if (userEngineData[0] !== undefined) {
+                userEngineData = userEngineData[0].lenght;
+            } else {
+                userEngineData = 0
+            }
 
 
             const requestBody = {
                 user_id: interaction.user.id,
                 pfp_image: interaction.user.avatarURL(),
-                current_exp: userInfo.exp.toString(),
-                required_exp: userLevelData.exp_to_lvl_up.toString(),
                 username: interaction.user.username,
                 discord_username: interaction.user.username + "#" + interaction.user.discriminator,
                 achievement_title: userInfo.selected_title,
                 clan_tag: userInfo.clan_tag,
-                current_map: userMapData.map_name,
-                level: userInfo.level.toString(),
-                race: userInfo.race,
-                colony: userInfo.firm,
-                joined_on: timeConverter(userInfo.joined_on),
-                aliens_killed: userInfo.aliens_killed,
-                enemy_killed: userInfo.enemy_killed,
+                equipped_ship: userShipData.ship_model,
+                lasers: `${userInfo.laser_quantity}/${userShipData.laser_quantity}`,
+                shields: `${userShieldData}/${userShipData.extra_quantity}`,
+                engines: `${userEngineData}/${userShipData.extra_quantity}`,
+                speed: userInfo.user_speed.toString(),
+                dmg: userInfo.user_damage.toString(),
+                cargo: userInfo.cargo,
+                max_cargo: userShipData.max_cargo,
+                hp: userInfo.user_hp,
+                max_hp: userInfo.max_hp,
+                shield_value: userInfo.user_shield,
+                max_shield: userInfo.max_shield
             }
 
-            var data = await fetch(`https://api.obelisk.club/SpaceAPI/profile`, {
+
+            var data = await fetch(`https://api.obelisk.club/SpaceAPI/stats`, {
                 method: 'POST',
                 headers: {
                     'x-api-key': process.env.API_KEY,
