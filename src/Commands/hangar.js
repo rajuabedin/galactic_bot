@@ -71,7 +71,7 @@ module.exports = {
             else if (selectedOption === 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedLaser) {
                     itemsEquipped.push([rawEquippedLaser[item].damage_value * (1 + rawEquippedLaser[item].per_increase_by_level / 1000 * rawEquippedLaser[item].level), rawEquippedLaser[item].laser_model + `${itemRank[rawEquippedLaser[item].level]}`, rawEquippedLaser[item].laser_id, rawEquippedLaser[item].emoji_id]);
@@ -86,7 +86,7 @@ module.exports = {
                 let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
                 let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedEngine) {
                     unequipableItems.push([0, 1, 2, rawEquippedEngine[item].emoji_id]);
@@ -104,7 +104,7 @@ module.exports = {
                 let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 0", [interaction.user.id]);
                 let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.ship_base_speed, ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.ship_base_speed, ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedShield) {
                     unequipableItems.push([0, 1, 2, rawEquippedShield[item].emoji_id]);
@@ -132,15 +132,16 @@ module.exports = {
 
 
             if (selectedOption === 'ship')
-                await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
+                await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
             else
-                await interaction.reply({ content: message, ephemeral: true, components: [row, row1, row2, row3, row4] });
+                await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4] });
 
             const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
 
             let discardedMessage = true;
+
 
             collector.on('collect', async i => {
                 collector.resetTimer({ time: 25000 });
@@ -169,9 +170,10 @@ module.exports = {
                             absortionRate += itemsEquipped[shield][4] * itemsEquipped[shield][0];
                             await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 1 WHERE shield_id = ?`, [itemsEquipped[shield][2]]);
                         }
-                        absortionRate = Math.floor(absortionRate / totalShield);
-                        totalDamage = Math.floor(totalShield)
-                        await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ?`, [totalShield, absortionRate, displayEquippedItemlenght, interaction.user.id]);
+                        if (absortionRate > 0)
+                            absortionRate = Math.floor(absortionRate / totalShield);
+                        //totalShield = Math.floor(totalShield)
+                        await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [totalShield, absortionRate, displayEquippedItemlenght, interaction.user.id]);
                         await interaction.client.databaseEditData(`UPDATE users SET max_shield = ?, user_shield = ?, absorption_rate = ? WHERE user_id = ?`, [totalShield, totalShield, absortionRate, interaction.user.id]);
                     }
                     else {
@@ -180,7 +182,7 @@ module.exports = {
                             baseSpeed += itemsEquipped[engine][0];
                             await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 1 WHERE engine_id = ?`, [itemsEquipped[engine][2]]);
                         }
-                        await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ?`, [baseSpeed, displayEquippedItemlenght, interaction.user.id]);
+                        await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [baseSpeed, displayEquippedItemlenght, interaction.user.id]);
                         await interaction.client.databaseEditData(`UPDATE users SET user_speed = ? WHERE user_id = ?`, [baseSpeed, interaction.user.id]);
                     }
                     collector.stop("Saved");
@@ -216,7 +218,7 @@ module.exports = {
                         shipRow = await shipButton("SECONDARY");
                     else
                         shipRow = await shipButton();
-                    await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], ephemeral: true, components: [shipRow] });
+                    await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
                 }
                 else if (i.component.customId === "discard") {
                     await i.update({ content: "**DISCARDED**", components: [] });
@@ -259,9 +261,9 @@ module.exports = {
         }
         catch (error) {
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")]/*, ephemeral: true */ });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")]/*, ephemeral: true */ });
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });

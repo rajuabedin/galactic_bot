@@ -51,7 +51,18 @@ module.exports = {
 
 
                         if (mission.mission_limit > 0) {
-                            timeLeftMsg = mission.mission_limit + " H";
+                            let timeH = 0;
+                            let timeM = mission.mission_limit * 60;
+                            while (timeM >= 60) {
+                                timeH++;
+                                timeM -= 60;
+                            }
+                            if (timeH && timeM)
+                                timeLeftMsg = timeH + " H " + timeM + " M";
+                            else if (timeH)
+                                timeLeftMsg = timeH + " H"
+                            else
+                                timeLeftMsg = timeM + " M"
                         } else {
                             timeLeftMsg = `[${interaction.client.getWordLanguage(serverSettings.lang, 'no_time_limit_u')}](https://obelisk.club/)`;
                         }
@@ -259,7 +270,7 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
                 var userMission = await interaction.client.databaseSelcetData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
                 userMission = userMission[0];
 
-                if (typeof userMission !== 'undefined') {
+                if (typeof userMission !== 'undefined' && userMission.mission_status != "completed") {
                     var userMissionInfo = await interaction.client.databaseSelcetData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
                     userMissionInfo = userMissionInfo[0];
                     var mySqlTimeStamp = userMission.mission_started_at;

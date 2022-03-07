@@ -36,7 +36,7 @@
     "tutorialStop": "Tutorial ended by user",
     "tutorialStopTittle": "TUTORIAL ENDED",
     "tutorilPhase": "TUTORIAL phase {}",
-    "selectFirm": "Which firm would you like to create an account on?\n***{}*** *has* ***10% EXP*** *and* ***Damage*** *boost for a* ***week***",
+    "selectFirm": "Which firm would you like to create an account on?\n**[Terra], [Luna] or [Marte]**\n***{}*** *has* ***10% EXP*** *and* ***Damage*** *boost for a* ***week***",
     "TC1_1": "To move in the company base do **/map** then select the **map** that you wish to navigate to",
     "TC2_1": "To equip the laser cannon do **/hanger** and select the **option: laser**",
     "TC3_1": "To edit the hunt configuration, do **/hunt_configuration** and select the **ammo to configure**",

@@ -4,8 +4,8 @@ const { MessageActionRow, MessageButton } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('test')
-        .setDescription('Verve Testing'),
+        .setName('repair')
+        .setDescription('repair current ship'),
 
     async execute(interaction, userInfo, serverSettings) {
 
