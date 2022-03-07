@@ -1,0 +1,82 @@
+const Command = require('../Structures/Command.js');
+const errorLog = require('../Utility/logger').logger;
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const fetch = require("node-fetch");
+require('dotenv').config();
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('profile')
+        .setDescription('This command is used to check your profile.'),
+
+    async execute(interaction, userInfo, serverSettings) {
+        String.prototype.format = function () {
+            var i = 0, args = arguments;
+            return this.replace(/{}/g, function () {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
+
+        function timeConverter(UNIX_timestamp) {
+            var a = new Date(UNIX_timestamp);
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var year = a.getFullYear();
+            var month = months[a.getMonth()];
+            var date = a.getDate();
+            var hour = a.getHours();
+            var min = a.getMinutes();
+            var sec = a.getSeconds();
+            var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
+            return time;
+        }
+
+        try {
+
+            var userMapData = await interaction.client.databaseSelcetData('select * from map where map_id = ?', [userInfo.map_id]);
+            userMapData = userMapData[0];
+
+            var userLevelData = await interaction.client.databaseSelcetData('select * from level where level = ?', [userInfo.level + 1]);
+            userLevelData = userLevelData[0];
+
+
+            const requestBody = {
+                user_id: interaction.user.id,
+                pfp_image: interaction.user.avatarURL(),
+                current_exp: userInfo.exp.toString(),
+                required_exp: userLevelData.exp_to_lvl_up.toString(),
+                username: interaction.user.username,
+                discord_username: interaction.user.username + "#" + interaction.user.discriminator,
+                achievement_title: "<! THUNDER !>",
+                clan_tag: "NONE",
+                current_map: userMapData.map_name,
+                level: userInfo.level.toString(),
+                race: "Martian",
+                colony: userInfo.firm,
+                joined_on: timeConverter(userInfo.joined_on),
+                aliens_killed: "9999",
+                enemy_killed: "99999"
+            }
+
+            var data = await fetch(`https://api.obelisk.club/SpaceAPI/profile`, {
+                method: 'POST',
+                headers: {
+                    'x-api-key': process.env.API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+                .then(response => response.json())
+                .then(data => { return data });
+            if (data.success == true) {
+                await interaction.reply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                errorLog.error(data.Error, { 'command_name': interaction.commandName });
+            }
+
+        } catch (error) {
+            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
+        }
+    }
+}
