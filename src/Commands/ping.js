@@ -18,7 +18,12 @@ module.exports = {
         try {
             await interaction.reply({ embeds: [interaction.client.redEmbed(`Pong ${interaction.client.ws.ping} ms!`)], ephemeral: true });
         } catch (error) {
-            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+            if (interaction.replied) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+            } else {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+            }
+
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     }
