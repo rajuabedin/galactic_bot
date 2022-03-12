@@ -16,6 +16,10 @@ module.exports = {
         };
 
         try {
+            if (userInfo.tutorial_counter < 7) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                return;
+            }
             let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "];
             let resources = userInfo.resources.split("; ").map(Number);
             let message = "\`\`\`yaml\n";

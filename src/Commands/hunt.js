@@ -40,6 +40,7 @@ module.exports = {
 
         let aliens = 0;
         let newAlien = 0;
+        let noDamage = 0;
         let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
         if (huntConfiguration[0].mothership === 1)
             aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
@@ -189,7 +190,7 @@ module.exports = {
                     alien.shift();
                     alien.push(storedAlien);
                     await player[0].info.reloadammo();
-                    await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target allien...**", "")], components: []});
+                    await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target allien...**", "")], components: [] });
                     await interaction.client.wait(1000);
                     alienMessage = "";
                     for (let index in alien) {
@@ -198,7 +199,7 @@ module.exports = {
                     message = `**User Info**:\n`
                         + `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`
                         + "\n**Alien Info**:\n<:aim:902625135050235994>" + alienMessage;
-                    await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Changed aimed alien**`)], components: [runRow]});
+                    await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Changed aimed alien**`)], components: [runRow] });
                     await interaction.client.wait(1500);
                 }
                 alienHullDamage = 0;
@@ -335,7 +336,7 @@ module.exports = {
                     newAlien = await getAlien(aliens);
                     alien.push(newAlien);
                     player[0].log += "NEW ALIEN ENCOUNTERED !!!\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
-                    await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")], components: []});
+                    await interaction.editReply({ embeds: [interaction.client.yellowEmbed("\`\`\`json\n\"NEW ALIEN ENCOUNTERED !!!\"\n\`\`\`")], components: [] });
                     await interaction.client.wait(1500);
                     message = `**User Info**:\n`
                         + `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`
@@ -348,6 +349,19 @@ module.exports = {
                 if (alien[0].hp <= 0)
                     alien.shift();
                 turnCounter++;
+
+                if (hullDamage + shieldDamage + shieldAbsorption <= 0) {
+                    noDamage++;
+                    if (noDamage == 6) {
+                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("**No usable ammonitions found!**", `**Ammo deplenished!!**`)] });
+                        await interaction.client.wait(1700);
+                        player[0].log += "Run out of usable ammunition!!!\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
+                        run = true;
+                    }
+                }
+                else
+                    noDamage = 0;
+
             }
         }
         player[0].log += `*VICTORY!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo

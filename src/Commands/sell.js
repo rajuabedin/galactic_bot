@@ -26,10 +26,10 @@ module.exports = {
         };
 
         try {
-            /*if (userInfo.tutorial_counter < 9) {
+            if (userInfo.tutorial_counter < 7) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
-            }*/
+            }
             if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("There is **no hanger in this map**\nPlease go to a **base map** and try again", "ERROR!")] });
                 return;
