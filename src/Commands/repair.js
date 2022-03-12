@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
 const { MessageActionRow, MessageButton } = require('discord.js');
 
-
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('repair')
