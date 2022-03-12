@@ -32,6 +32,11 @@ module.exports = {
 
         try {
 
+            let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                userInfo.map_id = userInfo.next_map_id;
+            }
+
             var userMapData = await interaction.client.databaseSelcetData('select * from map where map_id = ?', [userInfo.map_id]);
             userMapData = userMapData[0];
 
