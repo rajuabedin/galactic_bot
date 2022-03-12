@@ -31,6 +31,10 @@ module.exports = {
         }
 
         try {
+            if (userInfo.tutorial_counter < 8) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                return;
+            }
 
             let userCd = await interaction.client.databaseSelcetData("SELECT last_repair FROM user_cd WHERE user_id = ?", [interaction.user.id]);
 

@@ -66,9 +66,14 @@ module.exports = {
                 selectedTutorial = 5;
             else if (selectedOption === 'cargo')
                 selectedTutorial = 6;
-            else
+            else if (selectedOption === 'cargo1')
+                selectedTutorial = 7;
+            else {
                 selectedTutorial = tutorialCounter;
-            tutorialCounter = userInfo.tutorial_counter;
+                if (tutorialCounter = 8)
+                    interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialEnd'), "Tutorial Completed!")] });
+            }
+
             phaseCounter = 2;
             if (selectedTutorial > tutorialCounter) {
                 interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialBlocked'), "Error!!")] });
@@ -119,15 +124,18 @@ module.exports = {
                         await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
                         await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L4"]);
                         await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
-                    }
+                        phaseCounter = 1;
+                    }                    
                 }
                 else {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
-                }
-                phaseCounter = 1;
+                }                
             }
             else if (selectedTutorial == 6) {
                 await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC6_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+            }
+            else if (selectedTutorial == 7) {
+                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
             }
         }
 
@@ -146,7 +154,16 @@ module.exports = {
             }
             if (selectedTutorial == 0) {
                 tutorialCounter++;
-                await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm) VALUES (?, ?)`, [interaction.user.id, i.customId]);
+                selectedFirm = i.customId;
+                if (selectedFirm === "Terra") {
+                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "XYZ"]);
+                }
+                else if (selectedFirm === "Luna") {
+                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Lunian"]);
+                }
+                else {
+                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Martian"]);
+                }                
                 await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
                 await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
                 await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
@@ -160,8 +177,7 @@ module.exports = {
                     dateToBoostTill = dateToBoostTill.toJSON().split(".");
                     dateToBoostTill = dateToBoostTill[0];
                     await interaction.client.databaseEditData(`UPDATE boost SET exp_boost = ?, damage_boost = ? WHERE user_id = ?`, [dateToBoostTill, dateToBoostTill, interaction.user.id]);
-                }
-                selectedFirm = i.customId;
+                }                
             }
             else if (selectedTutorial == 1) {
                 if (phaseCounter == 1) {
@@ -473,8 +489,21 @@ module.exports = {
             }
             else if (selectedTutorial == 7) {
                 if (phaseCounter == 1) {
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC6_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
                     phaseCounter++;
+                }
+                if (phaseCounter == 2) {
+                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_2'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+                    phaseCounter++;
+                }
+                if (phaseCounter == 3) {
+                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_3'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+                    phaseCounter++;
+                }
+                if (phaseCounter == 4) {
+                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+                    tutorialCounter++;
+                    await interaction.client.databaseEditData(`UPDATE users SET units = units + 5000, tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
                 }
             }
 

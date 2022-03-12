@@ -16,11 +16,17 @@ module.exports = {
         };
 
         try {
+            if (userInfo.tutorial_counter < 8) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                return;
+            }
+
             let userCd = await interaction.client.databaseSelcetData("SELECT last_bonus_box FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].last_bonus_box)) / 1000);
             if (elapsedTimeFromBox < 60) {
                 await interaction.reply({
-                    embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'boxCD').format(60 - elapsedTimeFromBox), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))] });
+                    embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'boxCD').format(60 - elapsedTimeFromBox), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))]
+                });
                 return;
             }
             let box = await interaction.client.databaseSelcetData("SELECT * FROM bonus_box", []);

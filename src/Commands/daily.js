@@ -15,6 +15,11 @@ module.exports = {
         };
         
         try {
+            if (userInfo.tutorial_counter < 8) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                return;
+            }
+            
             var dailyInfo = await interaction.client.databaseSelcetData(`select * from user_daily where user_id = '${interaction.user.id}'`)
 
             var today = new Date();
