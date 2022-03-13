@@ -156,7 +156,7 @@ module.exports = {
                 tutorialCounter++;
                 selectedFirm = i.customId;
                 if (selectedFirm === "Terra") {
-                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "XYZ"]);
+                    await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Terrestrian"]);
                 }
                 else if (selectedFirm === "Luna") {
                     await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Lunian"]);
