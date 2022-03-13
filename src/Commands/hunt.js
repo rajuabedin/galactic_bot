@@ -19,7 +19,7 @@ module.exports = {
             });
         };
 
-        //try {
+        try {
         if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
             return;
@@ -383,7 +383,7 @@ module.exports = {
         resources = resources.map(function (num, idx) { return num + userResources[idx]; });
         player[0].cargo.resources = resources.join("; ")
         await player[0].update(interaction.client.greenEmbed(message, `**VICTORY!**`));
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -392,7 +392,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
     }
 }
 
