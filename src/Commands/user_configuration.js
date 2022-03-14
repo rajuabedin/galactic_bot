@@ -28,7 +28,7 @@ module.exports = {
             let storedMessage = "";
             let selectedAmmo = "";
             let ammoValue = 0;
-            await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'user_config_msg'))], ephemeral: true, components: [row, settingRow] });
+            await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'user_config_msg'))], components: [row, settingRow] });
             message = null;
             let activateDeactivate = await buttonHandlerOnOff(0);
             let missileHellstorm = 0;
