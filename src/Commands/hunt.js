@@ -546,7 +546,7 @@ async function infoHandler(interaction, alienSpeed) {
     if (userInfo.user_hp > userInfo.max_hp)
         userInfo.user_hp = userInfo.max_hp;
 
-    let ship = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id, user_ships.ship_model FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
+    let ship = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id, user_ships.ship_model, user_ships.durability FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
     ship = ship[0];
     let mapIDFrist = ~~userInfo.map_id / 10;
     let mapIDSecond = ~~((userInfo.map_id % 1.0) * 10);
@@ -585,7 +585,9 @@ async function infoHandler(interaction, alienSpeed) {
         level: userInfo.level,
         cargo: userInfo.cargo,
         resources: userInfo.resources,
-        shipEmoji: ship.emoji_id
+        shipEmoji: ship.emoji_id,
+        firm: userInfo.firm,
+        durability: ship.durability
     };
     if (ship.ship_model === "S5") {
         if (mapIDSecond < 5 && ((userInfo.firm === "Luna" && mapIDFrist == 2) || (userInfo.firm === "Terra" && mapIDFrist == 1) || (userInfo.firm === "Marte" && mapIDFrist == 3))) {
@@ -892,14 +894,44 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
                 this.reward.honor += this.mission.reward.honor;
                 this.reward.credit += this.mission.reward.credit;
                 this.reward.units += this.mission.reward.units;
-                if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
-                    await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
-                    await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)] });
-                }
-                await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+
+
                 await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ?, last_hunt = ? WHERE user_id = ?", [new Date(), new Date(), interaction.user.id]);
-                await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ? WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
+
+                let baseMapID = 0;
+                if (playerInfo.userStats.firm === "Terra") {
+                    baseMapID = 11;
+                }
+                else if (playerInfo.userStats.firm === "Luna") {
+                    baseMapID = 21;
+                }
+                else {
+                    baseMapID = 31;
+                }
+
+                if (playerInfo.userStats.hp == 0)
+                    mapID = baseMapID;
+
                 await interaction.editReply({ embeds: [embed], components: [download] });
+                if (playerInfo.userStats.durability == 1) {
+                    await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`Your ship durability has reached zero and got destroyed!`, "Ship destroyed!", interaction.user)] });
+                    if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
+                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)] });
+                    }
+                    else
+                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                    await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [interaction.user.id]);
+                }
+                else {
+                    if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
+                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)] });
+                    }
+                    else
+                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                    await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = durability - 1 WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
+                }
             }
         }
     return { active: false }
