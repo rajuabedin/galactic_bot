@@ -3,7 +3,7 @@ const errorLog = require('../Utility/logger').logger;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('echo')
+        .setName('echo1')
         .setDescription('Replies with your input.')
         .addStringOption(option =>
             option.setName('input')
@@ -17,10 +17,14 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        
-        try {
-            await interaction.reply(interaction.options.getString('input'));
-        }
+
+        //try {
+        let echo = interaction.options.getString('input')
+        await interaction.reply(echo);
+        await interaction.followUp({ embeds: [interaction.client.blueEmbed(echo + " 1")] })
+        await interaction.followUp({ embeds: [interaction.client.yellowEmbed(echo + " 2")] })
+        await interaction.followUp({ embeds: [interaction.client.redEmbed(echo + " 3")] })
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -29,6 +33,6 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
     }
 }

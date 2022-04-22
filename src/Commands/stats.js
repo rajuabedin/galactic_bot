@@ -36,9 +36,11 @@ module.exports = {
                 return;
             }
 
-            let userCd = await interaction.client.databaseSelcetData("SELECT last_repair FROM user_cd WHERE user_id = ?", [interaction.user.id]);
-
-            userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+            if (userInfo.in_hunt != 1) {
+                let userCd = await interaction.client.databaseSelcetData("SELECT last_repair FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+                userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+            }
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
             if (userInfo.user_hp > userInfo.max_hp)
                 userInfo.user_hp = userInfo.max_hp;
 

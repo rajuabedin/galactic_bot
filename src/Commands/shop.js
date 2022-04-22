@@ -58,14 +58,14 @@ module.exports = {
 
             // check if its a valid category            
 
-            if (interaction.options.getString('category').toLowerCase() === "ships") {
-                if (searchItem === null) {
+            if (interaction.options.getString('category').toLowerCase() == "ships") {
+                if (searchItem == null) {
                     shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1`);
                 } else {
                     shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [searchItem.toUpperCase()]);
                 }
 
-                if (shipsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (shipsList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
                 itemTable = "user_ships";
                 itemColumn = "ship_model";
@@ -77,7 +77,7 @@ module.exports = {
 
                     currentData += `**${ship.emoji_id} SHIP MODEL:** **[${ship.ship_model}](https://obelisk.club/)** `
 
-                    if (ship.credit === 0) {
+                    if (ship.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${ship.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${ship.credit}**__ \n`
@@ -90,7 +90,7 @@ module.exports = {
                     currentData += `<a:hs:896442508207341598> **HellStorm **[${ship.hellstorm_quantity}](https://obelisk.club/) \n`
                     currentData += `<a:ca:896440044536102983> **Cargo **[${ship.max_cargo}](https://obelisk.club/) \n`
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < shipsList.length - 1) {
@@ -116,14 +116,14 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
 
-            } else if (interaction.options.getString('category').toLowerCase() === "lasers") {
-                if (searchItem === null) {
+            } else if (interaction.options.getString('category').toLowerCase() == "lasers") {
+                if (searchItem == null) {
                     lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1`);
                 } else {
                     lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1 and laser_model = ?`, [searchItem.toUpperCase()]);
                 }
 
-                if (lasersList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (lasersList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
                 itemTable = "user_lasers";
                 itemColumn = "laser_model";
@@ -135,7 +135,7 @@ module.exports = {
 
                     currentData += `**${laser.emoji_id} LASER MODEL:** **[${laser.laser_model}](https://obelisk.club/)** `
 
-                    if (laser.credit === 0) {
+                    if (laser.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${laser.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${laser.credit}**__ \n`
@@ -144,7 +144,7 @@ module.exports = {
                     currentData += `<a:dmg:896724820149035048> **DMG **[${laser.damage_value}](https://obelisk.club/) \n`
                     currentData += `<a:up:896725276023717958> **DMG ${interaction.client.getWordLanguage(serverSettings.lang, 'upgrade_lvl')} **[${laser.per_increase_by_level}](https://obelisk.club/) \n`
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < lasersList.length - 1) {
@@ -169,14 +169,14 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
 
-            } else if (interaction.options.getString('category').toLowerCase() === "shields") {
-                if (searchItem === null) {
+            } else if (interaction.options.getString('category').toLowerCase() == "shields") {
+                if (searchItem == null) {
                     shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1`);
                 } else {
                     shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1 and shield_model = ?`, [searchItem.toLowerCase()]);
                 }
 
-                if (shieldsList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (shieldsList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
 
                 itemTable = "user_shields";
@@ -189,7 +189,7 @@ module.exports = {
 
                     currentData += `**${shield.emoji_id} SHIELD MODEL:** **[${shield.shield_model}](https://obelisk.club/)** `
 
-                    if (shield.credit === 0) {
+                    if (shield.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${shield.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${shield.credit}**__ \n`
@@ -199,7 +199,7 @@ module.exports = {
                     currentData += `<a:ab:896726792944119828> **${interaction.client.getWordLanguage(serverSettings.lang, 'absortion_%')} **[${shield.absorption_rate}](https://obelisk.club/) \n`
                     currentData += `<a:up:896725276023717958> **Shield ${interaction.client.getWordLanguage(serverSettings.lang, 'upgrade_lvl')} **[${shield.per_increase_by_level}](https://obelisk.club/) \n`
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < shieldsList.length - 1) {
@@ -224,16 +224,16 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
 
-            } else if (interaction.options.getString('category').toLowerCase() === "engines") {
+            } else if (interaction.options.getString('category').toLowerCase() == "engines") {
                 //itemsPerPage = 3;
                 count = 0;
-                if (searchItem === null) {
+                if (searchItem == null) {
                     enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1`);
                 } else {
                     enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1 and engine_model = ?`, [searchItem.toUpperCase()]);
                 }
 
-                if (enginesList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (enginesList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
                 itemTable = "user_engines";
                 itemColumn = "engine_model";
@@ -246,7 +246,7 @@ module.exports = {
 
                     currentData += `**${engine.emoji_id} ENGINE MODEL:** **[${engine.engine_model}](https://obelisk.club/)** `
 
-                    if (engine.credit === 0) {
+                    if (engine.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${engine.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${engine.credit}**__ \n`
@@ -254,7 +254,7 @@ module.exports = {
 
                     currentData += `<a:sp:896440044456378398> **Speed **[${engine.speed_value}](https://obelisk.club/) \n`
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < enginesList.length - 1) {
@@ -279,15 +279,15 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
 
-            } else if (interaction.options.getString('category').toLowerCase() === "ammunition") {
-                if (searchItem === null) {
+            } else if (interaction.options.getString('category').toLowerCase() == "ammunition") {
+                if (searchItem == null) {
                     ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
                 } else {
                     ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1 and ammo_id = ?`, [searchItem.toUpperCase()]);
                 }
                 count = 0;
                 //itemsPerPage = 4;
-                if (ammunitionList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (ammunitionList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
 
                 itemTable = "ammunition";
@@ -300,7 +300,7 @@ module.exports = {
 
                     currentData += `**⦿ Ammunition ID:** **[${ammunition.ammo_id}](https://obelisk.club/)** `
 
-                    if (ammunition.credit === 0) {
+                    if (ammunition.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${ammunition.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`
@@ -310,7 +310,7 @@ module.exports = {
 
 
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < ammunitionList.length - 1) {
@@ -336,13 +336,13 @@ module.exports = {
                 }
 
             } else {
-                if (searchItem === null) {
+                if (searchItem == null) {
                     extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1`);
                 } else {
                     extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
                 }
 
-                if (extrasList.length === 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
+                if (extrasList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
 
                 itemColumn = "extra_model";
                 itemTable = [];
@@ -355,13 +355,13 @@ module.exports = {
                     currentData += `**${extra.emoji_id} EXTRA MODEL:** **[${extra.extra_model}](https://obelisk.club/)** `
 
                     itemColumn = "extra_model";
-                    if (extra.credit === 0) {
+                    if (extra.credit == 0) {
                         currentData += `${interaction.client.defaultEmojis['units']} __**${extra.units}**__ \n`
                     } else {
                         currentData += `${interaction.client.defaultEmojis['credit']} __**${extra.credit}**__ \n`
                     }
 
-                    if (extra.item_type === "repair") {
+                    if (extra.item_type == "repair") {
                         itemTable.push(["repair_bot", extra.function]);
                         currentData += `<a:RR:933406090077560852> **${interaction.client.getWordLanguage(serverSettings.lang, 'repair_rate')}**[${extra.function}](https://obelisk.club/) \n`
                         currentData += `\n*${interaction.client.getWordLanguage(serverSettings.lang, 'repair_rate_desc')}* \n`
@@ -371,7 +371,7 @@ module.exports = {
                         currentData += `\n*${interaction.client.getWordLanguage(serverSettings.lang, 'clip_size_desc')}* \n`
                     }
 
-                    if (count === itemsPerPage) {
+                    if (count == itemsPerPage) {
                         items.push(currentData);
                         count = 0;
                         if (index < extrasList.length - 1) {
@@ -435,7 +435,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
     let buyBool = false;
     let quantity = 1;
 
-    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+    const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
@@ -443,22 +443,22 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
         collector.resetTimer({ time: 15000 });
         if (!buyBool) {
             quantity = 1;
-            if (i.customId === 'left')
+            if (i.customId == 'left')
                 index--;
-            else if (i.customId === 'right')
+            else if (i.customId == 'right')
                 index++;
             if (index < 0)
                 index += maxIndex + 1;
             if (index > maxIndex)
                 index -= maxIndex + 1;
-            if (i.customId === "buy") {
-                if (itemTable === "ammunition")
+            if (i.customId == "buy") {
+                if (itemTable == "ammunition")
                     itemColumn = `${itemName[index]}_magazine`;
                 if (priceCredit[index] > 0)
                     if (priceCredit[index] > userInfo.credit)
                         return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, `no_credit`), "ERROR!")], components: [] });
                     else {
-                        if (itemTable === "user_ships") {
+                        if (itemTable == "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                             if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                 await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
@@ -475,8 +475,8 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 return;
                             }
                         }
-                        else if (itemColumn === "extra_model") {
-                            if (itemTable[index][0] === "repair_bot") {
+                        else if (itemColumn == "extra_model") {
+                            if (itemTable[index][0] == "repair_bot") {
                                 if (userInfo.repair_rate < itemTable[index][1]) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
@@ -488,7 +488,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     return;
                                 }
                             }
-                            else if (itemTable[index][0] === "hellstorm_model") {
+                            else if (itemTable[index][0] == "hellstorm_model") {
                                 let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                 currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                 if (currentClipRate < itemTable[index][1]) {
@@ -512,7 +512,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     if (priceUnits[index] > userInfo.units)
                         return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
                     else {
-                        if (itemTable === "user_ships") {
+                        if (itemTable == "user_ships") {
                             let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                             if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                 await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
@@ -529,8 +529,8 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                 return;
                             }
                         }
-                        else if (itemColumn === "extra_model") {
-                            if (itemTable[index][0] === "repair_bot") {
+                        else if (itemColumn == "extra_model") {
+                            if (itemTable[index][0] == "repair_bot") {
                                 if (userInfo.repair_rate < itemTable[index][1]) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
@@ -542,7 +542,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     return;
                                 }
                             }
-                            else if (itemTable[index][0] === "hellstorm_model") {
+                            else if (itemTable[index][0] == "hellstorm_model") {
                                 let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                 currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                 if (currentClipRate < itemTable[index][1]) {
@@ -566,17 +566,17 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                 await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)] });
         }
         else {
-            if (i.customId === "cancelItem") {
+            if (i.customId == "cancelItem") {
                 buyBool = false;
                 await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)], components: [row] });
             }
-            else if (i.customId === "buyItem") {
+            else if (i.customId == "buyItem") {
                 if (priceCredit[index] > 0)
                     if (priceCredit[index] * quantity > userInfo.credit)
                         return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'no_credit'), "ERROR!")], components: [] });
                     else {
                         await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                        if (itemTable === "ammunition")
+                        if (itemTable == "ammunition")
                             await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
                         else
                             for (i = 0; i < quantity; i++)
@@ -590,7 +590,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                         return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
                     else {
                         await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                        if (itemTable === "ammunition")
+                        if (itemTable == "ammunition")
                             await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
                         else
                             for (i = 0; i < quantity; i++)

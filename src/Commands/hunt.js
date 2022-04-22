@@ -32,6 +32,7 @@ module.exports = {
             }
             let mapId = userInfo.map_id;
             if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 mapId = userInfo.next_map_id;
             }
 
@@ -42,11 +43,11 @@ module.exports = {
             let newAlien = 0;
             let noDamage = 0;
             let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
-            if (huntConfiguration[0].mothership === 1)
+            if (huntConfiguration[0].mothership == 1)
                 aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
             else
                 aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
-            if (typeof aliens[0] === 'undefined') {
+            if (typeof aliens[0] == 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
                 return;
             }
@@ -91,23 +92,24 @@ module.exports = {
             let run = false;
             let next = false;
             let storedAlien = 0;
+            let alienAccuracy = 0;
 
 
             if (!group) {
-                const filterRun = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+                const filterRun = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
                 const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
                 collector.on('collect', async i => {
                     collector.resetTimer({ time: 120000 });
                     if (!i.replied)
-                        if (i.customId === "Run") {
+                        if (i.customId == "Run") {
                             run = true;
                             await i.update({ components: [] });
                         }
-                        else if (i.customId === "NextAlien" && alien.length > 0) {
+                        else if (i.customId == "NextAlien" && alien.length > 0) {
                             next = true;
                             await i.update({});
                         }
-                        else if (i.customId === "download") {
+                        else if (i.customId == "download") {
                             let attachment = new MessageAttachment(Buffer.from(player[0].log, 'utf-8'), `Hunt-Log.txt`);
                             await i.update({ embeds: [], components: [], files: [attachment] });
                             collector.stop();
@@ -134,22 +136,29 @@ module.exports = {
                                 alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                                 alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                             }
-                            alienHullDamage = ~~(alienHullDamage * interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100) / 100)
-                            alienMessage += `**Total received damage: __${alienHullDamage}__**`;
+                            alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
+                            if (alienAccuracy > 60) {
+                                alienHullDamage = ~~(alienHullDamage * alienAccuracy / 100)
+                                alienMessage += `**Total received damage: __${alienHullDamage}__**`;
 
-                            if (player[0].info.userStats.shield > 0) {
-                                alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
-                                if (player[0].info.userStats.shield <= alienShieldDamage) {
-                                    player[0].info.userStats.shield = 0;
-                                    player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                                if (player[0].info.userStats.shield > 0) {
+                                    alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
+                                    if (player[0].info.userStats.shield <= alienShieldDamage) {
+                                        player[0].info.userStats.shield = 0;
+                                        player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                                    }
+                                    else {
+                                        player[0].info.userStats.shield = alienShieldDamage;
+                                        player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                                    }
                                 }
                                 else {
-                                    player[0].info.userStats.shield = alienShieldDamage;
-                                    player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                                    player[0].info.userStats.hp -= alienHullDamage;
                                 }
                             }
                             else {
-                                player[0].info.userStats.hp -= alienHullDamage;
+                                alienHullDamage = "MISS";
+                                alienMessage += `**Total received damage: __MISS__**`;
                             }
 
                             message = `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
@@ -264,22 +273,29 @@ module.exports = {
                         alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                         alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                     }
-                    alienHullDamage = ~~(alienHullDamage * interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100) / 100)
-                    alienMessage += `**Total received damage: __${alienHullDamage}__**`;
+                    alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
+                    if (alienAccuracy > 60) {
+                        alienHullDamage = ~~(alienHullDamage * alienAccuracy / 100)
+                        alienMessage += `**Total received damage: __${alienHullDamage}__**`;
 
-                    if (player[0].info.userStats.shield > 0) {
-                        alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
-                        if (player[0].info.userStats.shield <= alienShieldDamage) {
-                            player[0].info.userStats.shield = 0;
-                            player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                        if (player[0].info.userStats.shield > 0) {
+                            alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
+                            if (player[0].info.userStats.shield <= alienShieldDamage) {
+                                player[0].info.userStats.shield = 0;
+                                player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                            }
+                            else {
+                                player[0].info.userStats.shield = alienShieldDamage;
+                                player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                            }
                         }
                         else {
-                            player[0].info.userStats.shield = alienShieldDamage;
-                            player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                            player[0].info.userStats.hp -= alienHullDamage;
                         }
                     }
                     else {
-                        player[0].info.userStats.hp -= alienHullDamage;
+                        alienHullDamage = 0;
+                        alienMessage += `**Total received damage: __MISS__**`;
                     }
                     if (player[0].info.userStats.hp <= 0) {
                         player[0].info.userStats.hp = 0;
@@ -442,6 +458,7 @@ const download = new MessageActionRow()
     );
 
 async function missionHandler(interaction, aliens, id, boost) {
+    let killedAliens = aliens.reduce((acc, curr) => (acc[curr] = 0, acc), {});
     let missionTask = 0;
     let missionTaskLeft = 0;
     let reward = 0;
@@ -484,6 +501,7 @@ async function missionHandler(interaction, aliens, id, boost) {
         active: mission,
         reward: { credit: 0, units: 0, exp: 0, honor: 0 },
         isCompleted: async function (alien) {
+            killedAliens[alien]++;
             if (mission) {
                 let index = missionTask.indexOf(alien);
                 if (missionTaskLeft[index]) {
@@ -515,6 +533,13 @@ async function missionHandler(interaction, aliens, id, boost) {
             return false;
         },
         update: async function () {
+            let querry = "UPDATE user_log SET";
+            for (const [key, value] of Object.entries(killedAliens)) {
+                querry += ` ${key} = ${key} + ${value},`
+            }
+            querry = querry.replace(/Boss /g, "Boss_");
+            querry = querry.slice(0, -1) + ` WHERE user_id = ${interaction.user.id}`;
+            await interaction.client.databaseEditData(querry, []);
             if (mission) {
                 if (initialTotal > total) {
                     missionTaskLeft.pop();
@@ -531,12 +556,12 @@ async function missionHandler(interaction, aliens, id, boost) {
 
 async function infoHandler(interaction, alienSpeed) {
     let userInfo = await interaction.client.getUserAccount(interaction.user.id);
-    if (userInfo.user_hp === 0) {
-        await interaction.followUp({ embeds: [interaction.client.redEmbed(`Please **repair** ship before hunting`, "Ship destroyed!")] });
+    if (userInfo.user_hp == 0) {
+        await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)] });
         return { canHunt: false };
     }
-    if (userInfo.in_hunt === 1) {
-        await interaction.followUp({ embeds: [interaction.client.redEmbed(`You are already in a battle`, "Battle in progress...")], ephemeral: true });
+    if (userInfo.in_hunt == 1) {
+        await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)] });
         return { canHunt: false };
     }
 
@@ -551,21 +576,9 @@ async function infoHandler(interaction, alienSpeed) {
     let mapIDFrist = ~~userInfo.map_id / 10;
     let mapIDSecond = ~~((userInfo.map_id % 1.0) * 10);
 
-    let minimumAccuracyUser = 0;
-    let minimumAccuracyAlien = 0;
-
-    if (userInfo.user_speed > alienSpeed) {
-        minimumAccuracyUser = 90 - (userInfo.user_speed - alienSpeed) / 5;
-        minimumAccuracyAlien = 85 + (alienSpeed - userInfo.user_speed) / 2.5;
-    }
-    else if (userInfo.user_speed == alienSpeed) {
-        minimumAccuracyUser = 80;
-        minimumAccuracyAlien = 80;
-    }
-    else {
-        minimumAccuracyUser = 85 + (alienSpeed - userInfo.user_speed) / 2.5;
-        minimumAccuracyAlien = 90 - (userInfo.user_speed - alienSpeed) / 5;
-    }
+    let x = (165 - 0.6 * (userInfo.user_speed - alienSpeed))
+    let minimumAccuracyAlien = Math.round(0.0015 * x * x);
+    let minimumAccuracyUser = 96 - minimumAccuracyAlien;
 
     let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
 
@@ -589,8 +602,8 @@ async function infoHandler(interaction, alienSpeed) {
         firm: userInfo.firm,
         durability: ship.durability
     };
-    if (ship.ship_model === "S5") {
-        if (mapIDSecond < 5 && ((userInfo.firm === "Luna" && mapIDFrist == 2) || (userInfo.firm === "Terra" && mapIDFrist == 1) || (userInfo.firm === "Marte" && mapIDFrist == 3))) {
+    if (ship.ship_model == "S5") {
+        if (mapIDSecond < 5 && ((userInfo.firm == "Luna" && mapIDFrist == 2) || (userInfo.firm == "Terra" && mapIDFrist == 1) || (userInfo.firm == "Marte" && mapIDFrist == 3))) {
             userStats.hp += 60000;
             userStats.laserDamage *= 2;
             userStats.shield *= 2;
@@ -899,10 +912,10 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
                 await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ?, last_hunt = ? WHERE user_id = ?", [new Date(), new Date(), interaction.user.id]);
 
                 let baseMapID = 0;
-                if (playerInfo.userStats.firm === "Terra") {
+                if (playerInfo.userStats.firm == "Terra") {
                     baseMapID = 11;
                 }
-                else if (playerInfo.userStats.firm === "Luna") {
+                else if (playerInfo.userStats.firm == "Luna") {
                     baseMapID = 21;
                 }
                 else {

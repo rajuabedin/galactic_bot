@@ -25,7 +25,7 @@ module.exports = {
                 return;
             }
             var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
-            if (missionListDB === undefined || missionListDB.length == 0) {
+            if (missionListDB == undefined || missionListDB.length == 0) {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error'))] });
             } else {
                 var searchMission = interaction.options.getString('search')
@@ -35,7 +35,7 @@ module.exports = {
                 var missionsPerPage = 1;
                 var currentData = "";
 
-                if (searchMission === null) {
+                if (searchMission == null) {
                     await missionListDB.forEach((mission, index) => {
                         count++;
 
@@ -110,7 +110,7 @@ module.exports = {
 
                         currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_info')}**\n**ID :**  ${mission.mission_id} \n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_type')}:** [${mission.mission_type}](https://obelisk.club/)\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_restiction')}:** ${availableMap}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_rewards')}**\n${reward}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_duration')}:** ${timeLeftMsg}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_o')}:**\`\`\`${todo}\`\`\``;
 
-                        if (count === missionsPerPage) {
+                        if (count == missionsPerPage) {
                             missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
                             count = 0;
                             currentData = "";
@@ -120,7 +120,7 @@ module.exports = {
                     await missionListDB.forEach((mission, index) => {
 
                         if (mission.mission_type.toLowerCase().includes(searchMission.toLowerCase()) || mission.mission_task.toLowerCase().includes(searchMission.toLowerCase())
-                            || mission.mission_reward_items.toLowerCase().includes(searchMission.toLowerCase()) || mission.mission_id === parseInt(searchMission)) {
+                            || mission.mission_reward_items.toLowerCase().includes(searchMission.toLowerCase()) || mission.mission_id == parseInt(searchMission)) {
                             count++;
 
                             var todo = "";
@@ -183,7 +183,7 @@ module.exports = {
 
                         currentData += `**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_info')}**\n**ID :**  ${mission.mission_id} \n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_type')}:** [${mission.mission_type}](https://obelisk.club/)\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_restiction')}:** ${availableMap}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_rewards')}**\n${reward}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_duration')}:** ${timeLeftMsg}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'mission_o')}:**\`\`\`${todo}\`\`\``;
 
-                        if (count === missionsPerPage) {
+                        if (count == missionsPerPage) {
                             missionList.push([currentData, mission.mission_id, mission.mission_task_quantity]);
                             count = 0;
                             currentData = "";
@@ -255,17 +255,17 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
     var hasActiveMission = false;
     var activeMissionID = 0;
 
-    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+    const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
-        if (i.customId === 'left') {
+        if (i.customId == 'left') {
             index--;
-        } else if (i.customId === 'right') {
+        } else if (i.customId == 'right') {
             index++;
-        } else if (i.customId === "get") {
+        } else if (i.customId == "get") {
             if (userInfo.missions_id != null) {
                 var userMission = await interaction.client.databaseSelcetData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
                 userMission = userMission[0];
@@ -300,7 +300,7 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
                 }
 
             }
-        } else if (i.customId === "yes") {
+        } else if (i.customId == "yes") {
             var query = `insert into user_missions (mission_id, mission_task_left, user_id) values (?,?,?)`;
             var missionId = await interaction.client.databaseEditDataReturnID(query, [selectedMissionID, missionsData[index][2], interaction.user.id])
             await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id])

@@ -32,6 +32,12 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
+            let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
+                userInfo.map_id = userInfo.next_map_id;
+                await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, interaction.user.id]);
+            }
             if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noHangar'), "ERROR!!")] });
                 return;
@@ -47,7 +53,7 @@ module.exports = {
             let shipIndex = 0;
             let shipLenght = 0;
 
-            if (selectedOption === 'ship') {
+            if (selectedOption == 'ship') {
                 let currentData = "";
 
                 let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_id, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
@@ -68,7 +74,7 @@ module.exports = {
                 })
                 shipLenght = shipList.length - 1;
             }
-            else if (selectedOption === 'laser') {
+            else if (selectedOption == 'laser') {
                 let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
                 maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
@@ -82,7 +88,7 @@ module.exports = {
                 displayEquippedItemlenght = itemsEquipped.length;
                 maxEquipableItem = maxEquipableItem[0].laser_quantity;
             }
-            else if (selectedOption === 'shield') {
+            else if (selectedOption == 'shield') {
                 let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
                 let rawUnequippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
                 let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
@@ -125,18 +131,18 @@ module.exports = {
 
             let [row, row1, row2, row3, message] = [0, 0, 0, 0, 0];
             let shipRow = await shipButton("SECONDARY");
-            if (displayEquippedItemlenght === maxEquipableItem)
+            if (displayEquippedItemlenght == maxEquipableItem)
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
             else
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
 
 
-            if (selectedOption === 'ship')
+            if (selectedOption == 'ship')
                 await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
             else
                 await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4] });
 
-            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+            const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
 
@@ -147,10 +153,10 @@ module.exports = {
                 collector.resetTimer({ time: 25000 });
                 if (!i.replied) {
                     let index = parseInt(i.customId);
-                    if (i.component.customId === "save") {
+                    if (i.component.customId == "save") {
                         await i.update({ content: message, components: [] });
                         discardedMessage = false;
-                        if (selectedOption === 'laser') {
+                        if (selectedOption == 'laser') {
                             let totalDamage = 0;
                             await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                             for (laser in itemsEquipped) {
@@ -162,7 +168,7 @@ module.exports = {
                             await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlenght, interaction.user.id]);
                             //Send data to database
                         }
-                        else if (selectedOption === 'shield') {
+                        else if (selectedOption == 'shield') {
                             let totalShield = 0;
                             let absortionRate = 0;
                             await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
@@ -188,23 +194,23 @@ module.exports = {
                         }
                         collector.stop("Saved");
                     }
-                    else if (selectedOption === 'ship') {
-                        if (i.component.customId === "left") {
+                    else if (selectedOption == 'ship') {
+                        if (i.component.customId == "left") {
                             shipIndex--;
                             if (shipIndex < 0)
                                 shipIndex = shipLenght;
                         }
-                        else if (i.component.customId === "right") {
+                        else if (i.component.customId == "right") {
                             shipIndex++;
                             if (shipIndex > shipLenght)
                                 shipIndex = 0;
                         }
-                        else if (i.component.customId === "discard2") {
+                        else if (i.component.customId == "discard2") {
                             await i.update({ content: "**DISCARDED**", components: [] });
                             discardedMessage = false;
                             collector.stop("Discarded");
                         }
-                        else if (i.component.customId === "equip" && shipIndex > 0) {
+                        else if (i.component.customId == "equip" && shipIndex > 0) {
                             await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                             await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
                             await interaction.client.databaseEditData(`UPDATE users SET user_damage = 0, max_hp = ?, user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][5], shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
@@ -221,7 +227,7 @@ module.exports = {
                             shipRow = await shipButton();
                         await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
                     }
-                    else if (i.component.customId === "discard") {
+                    else if (i.component.customId == "discard") {
                         await i.update({ content: "**DISCARDED**", components: [] });
                         discardedMessage = false;
                         collector.stop("Discarded");
@@ -229,17 +235,17 @@ module.exports = {
                     else if (!i.component.label.trim()) {
                         await i.update({});
                     }
-                    else if (i.component.style === "PRIMARY") {
+                    else if (i.component.style == "PRIMARY") {
                         equippedItemLength++;
                         displayEquippedItemlenght++;
                         itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
-                        if (displayEquippedItemlenght === maxEquipableItem)
+                        if (displayEquippedItemlenght == maxEquipableItem)
                             [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
                         else
                             [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
                         await i.update({ content: message, components: [row, row1, row2, row3, row4] });
                     }
-                    else if (i.component.style === "SUCCESS") {
+                    else if (i.component.style == "SUCCESS") {
                         equippedItemLength--;
                         displayEquippedItemlenght--;
                         itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));

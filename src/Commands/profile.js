@@ -38,7 +38,9 @@ module.exports = {
             
             let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 userInfo.map_id = userInfo.next_map_id;
+                await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, interaction.user.id]);
             }
 
             var userMapData = await interaction.client.databaseSelcetData('select * from map where map_id = ?', [userInfo.map_id]);

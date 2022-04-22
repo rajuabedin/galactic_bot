@@ -28,6 +28,7 @@ module.exports = {
             let elapsedTimeFromWarpMinutes = 0;
             let elapsedTimeFromWarpSeconds = 0;
             if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1) {
+                await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 mapId = userInfo.next_map_id;
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
                 map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
@@ -53,14 +54,14 @@ module.exports = {
             }
 
 
-            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+            const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
             let selected = false;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
 
             collector.on('collect', async i => {
                 selected = true;
-                if (nextMapName === i.values[0]) {
+                if (nextMapName == i.values[0]) {
                     userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
                     elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / -1000);
                     elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / 60;
@@ -70,11 +71,11 @@ module.exports = {
                 }
                 else {
                     mapId = i.values[0].split("-");
-                    if (i.values[0] === "111" || i.values[0] === "222" || i.values[0] === "333" || i.values[0] === "444")
+                    if (i.values[0] == "111" || i.values[0] == "222" || i.values[0] == "333" || i.values[0] == "444")
                         i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
                     else {
                         let levelRequirement = 0;
-                        if ((userInfo.firm === "Luna" && mapId[0] === "1") || (userInfo.firm === "Terra" && mapId[0] === "2") || (userInfo.firm === "Marte" && mapId[0] === "3")) {
+                        if ((userInfo.firm == "Luna" && mapId[0] == "1") || (userInfo.firm == "Terra" && mapId[0] == "2") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
                             levelRequirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
                             levelRequirement = levelRequirement[0].level_requirement;
                         }
@@ -126,19 +127,19 @@ async function selectMenu(optionOne, optionTwo, optionThree, optionFour) {
     let descriptionTwo = optionTwo;
     let descriptionThree = optionThree;
     let descriptionFour = optionFour;
-    if (optionOne === "1") {
+    if (optionOne == "1") {
         descriptionOne = "Cancel";
         optionOne = "111";
     }
-    if (optionTwo === "1") {
+    if (optionTwo == "1") {
         descriptionTwo = "Cancel";
         optionTwo = "222";
     }
-    if (optionThree === "1") {
+    if (optionThree == "1") {
         descriptionThree = "Cancel";
         optionThree = "333";
     }
-    if (optionFour === "1") {
+    if (optionFour == "1") {
         descriptionFour = "Cancel";
         optionFour = "444";
     }

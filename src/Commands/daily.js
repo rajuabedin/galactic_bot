@@ -24,7 +24,7 @@ module.exports = {
 
             var today = new Date();
             var diffInDays;
-            if (dailyInfo.length === 0) {
+            if (dailyInfo.length == 0) {
                 await interaction.client.databaseEditData(`insert into user_daily (user_id, next_date) values('${interaction.user.id}', '${today.toJSON().slice(0, 10)}')`)
                 //return await interaction.reply({ embeds: [interaction.client.greenEmbed("You have successfully claimed your daily reward.", "Successfull")], components: [] })
                 diffInDays = 1;

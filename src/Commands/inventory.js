@@ -26,7 +26,7 @@ module.exports = {
             var user_engines = await interaction.client.databaseSelcetData("SELECT user_engines.engine_model as item_name, user_engines.level, user_engines.equipped, engines_info.sell_price, engines_info.description from user_engines INNER JOIN engines_info on user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? ORDER BY user_engines.engine_model", [interaction.user.id]);
 
             var user_inventory = user_lasers.concat(user_shields).concat(user_engines);
-            if (user_inventory === undefined || user_inventory.length == 0) {
+            if (user_inventory == undefined || user_inventory.length == 0) {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed("Your Inventory is empty!")] });
             } else {
                 var searchItem = interaction.options.getString('search')
@@ -36,11 +36,11 @@ module.exports = {
                 var itemsPerPage = 3;
                 var currentData = "";
 
-                if (searchItem === null) {
+                if (searchItem == null) {
                     await user_inventory.forEach((item, index) => {
                         count++;
                         currentData += "`LVL " + item.level + "` " + `**${item.item_name} [<:coin2:784486506051010561> ${item.sell_price}]** ${(item.equipped == '1') ? '<a:equipped:888574837746987098>' : ''}\n${item.description}\n`;
-                        if (count === itemsPerPage) {
+                        if (count == itemsPerPage) {
 
                             items.push(currentData);
                             count = 0;
@@ -52,7 +52,7 @@ module.exports = {
                         if (item.item_name.toLowerCase().includes(searchItem.toLowerCase()) || item.description.toLowerCase().includes(searchItem.toLowerCase())) {
                             count++;
                             currentData += "`LVL " + item.level + "` " + `**${item.item_name} [<:coin2:784486506051010561> ${item.sell_price}]** ${(item.equipped == '1') ? '<a:equipped:888574837746987098>' : ''}\n${item.description}\n`;
-                            if (count === itemsPerPage) {
+                            if (count == itemsPerPage) {
                                 items.push(currentData);
                                 count = 0;
                                 currentData = "";
@@ -111,16 +111,16 @@ function buttonHandler(interaction, inventoryData) {
     let maxIndex = inventoryData.length - 1;
     let index = 0;
 
-    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+    const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
-        if (i.customId === 'left') {
+        if (i.customId == 'left') {
             index--;
         }
-        else if (i.customId === 'right') {
+        else if (i.customId == 'right') {
             index++;
         }
 

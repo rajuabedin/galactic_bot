@@ -35,14 +35,14 @@ module.exports = {
             let isMissile = false;
             let mothership = 0;
 
-            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+            const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 20000 });
             collector.on('collect', async i => {
                 let index = 0;
                 collector.resetTimer({ time: 20000 });
                 if (!i.replied) {
-                    if (i.customId === "select") {
+                    if (i.customId == "select") {
                         message = `**${i.values[0]}:**`;
                         selectedAmmo = `${i.values[0]}`;
                         //console.log(huntConfiguration[0][i.values[0]]);
@@ -51,8 +51,8 @@ module.exports = {
                         mothership = 0;
                         missileHellstorm = 0;
                         //console.log(index);
-                        if (selectedAmmo === "missile" || selectedAmmo === "hellstorm") {
-                            if (selectedAmmo === "missile") {
+                        if (selectedAmmo == "missile" || selectedAmmo == "hellstorm") {
+                            if (selectedAmmo == "missile") {
                                 missileHellstorm = 2;
                                 isMissile = true;
                             }
@@ -75,7 +75,7 @@ module.exports = {
                                     missileHellstorm = 6;
                             }
                         }
-                        else if (selectedAmmo === "mothership") {
+                        else if (selectedAmmo == "mothership") {
                             message = interaction.client.getWordLanguage(serverSettings.lang, "user_config_hunt_a");
                             activateDeactivate = await buttonHandlerOnOff(index);
                             if (index == 0) {
@@ -94,7 +94,7 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [hp, sh, row, settingRow] });
                             storedMessage = `**(${i.values[0]})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
                         }
-                        else if (index === 0) {
+                        else if (index == 0) {
                             [hp, sh] = await buttonHandler();
                             await i.update({ embeds: [interaction.client.yellowEmbed(`**HP: 0 || SH: 0**`, message)], components: [hp, sh, row, settingRow] });
                             storedMessage = `**(${i.values[0]})**` + `\t**HP: 0 || SH: 0**`;
@@ -114,7 +114,7 @@ module.exports = {
                     else if (message !== null) {
                         index = parseInt(i.customId);
                         if (missileHellstorm > 0) {
-                            if (i.customId === "save2") {
+                            if (i.customId == "save2") {
                                 huntConfiguration[0][selectedAmmo] = missileHellstorm - 1;
                                 if (missileHellstorm == 1) {
                                     await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
@@ -129,19 +129,19 @@ module.exports = {
                                     }
                                     else {
                                         await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [huntConfiguration[0].helstorm_missiles_number, interaction.user.id]);
-                                        if (huntConfiguration[0].helstorm_missiles_number === 0)
+                                        if (huntConfiguration[0].helstorm_missiles_number == 0)
                                             storedMessage = `**(${selectedAmmo})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**\n${interaction.client.getWordLanguage(serverSettings.lang, 'user_config_no_hellstorm')}`;
                                         else
                                             storedMessage = `**(${selectedAmmo})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
                                     }
                                 }
                             }
-                            else if (i.customId === "discard2") {
+                            else if (i.customId == "discard2") {
                                 discarded = true;
                                 await i.update({ embeds: [interaction.client.redEmbed(storedMessage, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionEnded')}**`)], components: [] });
                                 collector.stop("Ended");
                             }
-                            else if (i.customId === "deactivateButton") {
+                            else if (i.customId == "deactivateButton") {
                                 missileHellstorm = 1;
                                 activateDeactivate = await buttonHandlerOnOff(0);
                                 await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
@@ -155,7 +155,7 @@ module.exports = {
                                     await i.update({ embeds: [interaction.client.greenEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, message)], components: [row, activateDeactivate] });
                                 }
                                 else {
-                                    if (huntConfiguration[0].helstorm_missiles_number === 0) {
+                                    if (huntConfiguration[0].helstorm_missiles_number == 0) {
                                         activateDeactivate = await buttonHandlerOnOff(0);
                                         await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**\n${interaction.client.getWordLanguage(serverSettings.lang, 'user_config_no_hellstorm')}`, message)], components: [row, activateDeactivate] });
                                         missileHellstorm = 1;
@@ -171,7 +171,7 @@ module.exports = {
                         }
 
                         else if (mothership > 0) {
-                            if (i.customId === "save2") {
+                            if (i.customId == "save2") {
                                 huntConfiguration[0][selectedAmmo] = mothership - 1;
                                 if (mothership == 1) {
                                     await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
@@ -184,12 +184,12 @@ module.exports = {
                                     storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
                                 }
                             }
-                            else if (i.customId === "discard2") {
+                            else if (i.customId == "discard2") {
                                 discarded = true;
                                 await i.update({ embeds: [interaction.client.redEmbed(storedMessage, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionEnded')}**`)], components: [] });
                                 collector.stop("Ended");
                             }
-                            else if (i.customId === "deactivateButton") {
+                            else if (i.customId == "deactivateButton") {
                                 mothership = 1;
                                 activateDeactivate = await buttonHandlerOnOff(0);
                                 await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
@@ -201,7 +201,7 @@ module.exports = {
                             }
                         }
 
-                        else if (i.customId === "save") {
+                        else if (i.customId == "save") {
                             await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
                             huntConfiguration[0][selectedAmmo] = ammoValue;
                             if (ammoValue < 0) {
@@ -217,12 +217,12 @@ module.exports = {
                                 storedMessage = `**(${selectedAmmo})**` + `\tHP: 100 || SH: ${ammoValue - 100}**`;
                             }
                         }
-                        else if (i.customId === "disable" || index == 9) {
+                        else if (i.customId == "disable" || index == 9) {
                             [hp, sh] = await buttonHandler(-1, "DANGER");
                             await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [hp, sh, row, settingRow] });
                             ammoValue = -3;
                         }
-                        else if (i.customId === "empty") {
+                        else if (i.customId == "empty") {
                             [hp, sh] = await buttonHandler();
                             await i.update({ embeds: [interaction.client.yellowEmbed(`**HP: 0 || SH: 0**`, message)], components: [hp, sh, row, settingRow] });
                             ammoValue = 0;
@@ -237,7 +237,7 @@ module.exports = {
                             ammoValue = (index + 1) * 20;
                             await i.update({ embeds: [interaction.client.blueEmbed(`**HP: 100 || SH: ${ammoValue - 100}**`, message)], components: [hp, sh, row, settingRow] });
                         }
-                        else if (i.customId === "discard") {
+                        else if (i.customId == "discard") {
                             discarded = true;
                             await i.update({ embeds: [interaction.client.redEmbed(storedMessage, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionEnded')}**`)], components: [] });
                             collector.stop("Ended");
@@ -245,7 +245,7 @@ module.exports = {
                         else
                             await i.update({});
                     }
-                    else if (i.customId === "discard" || i.customId === "discard2") {
+                    else if (i.customId == "discard" || i.customId == "discard2") {
                         discarded = true;
                         await i.update({ embeds: [interaction.client.redEmbed(`\n*${interaction.client.getWordLanguage(serverSettings.lang, 'interactionAbortedUser')}*`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionAborted')}**`)], components: [] });
                         collector.stop("Ended");

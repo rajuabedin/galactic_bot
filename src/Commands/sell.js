@@ -34,7 +34,7 @@ module.exports = {
                 return;
             }
             let selectedOption = interaction.options.getString('option').toLowerCase();
-            if (selectedOption === 'all') {
+            if (selectedOption == 'all') {
                 let message = "\`\`\`yaml\n";
                 let resources = userInfo.resources.split("; ").map(Number);
                 let price = await interaction.client.databaseSelcetData("SELECT price FROM resources", []);

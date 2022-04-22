@@ -26,7 +26,7 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        //try {
+        try {
         let selectedTutorial = 0;
         let selectedOption = interaction.options.getString('option');
         if (selectedOption != null)
@@ -39,7 +39,7 @@ module.exports = {
         let [message, row, hp, sh, index, maxIndex, quantity] = [0, 0, 0, 0, 0, 0, 0];
         let items = [];
 
-        if (userInfo === undefined) {
+        if (userInfo == undefined) {
             let firmCheck = await interaction.client.databaseSelcetData("SELECT * FROM firms_list", []);
             if (firmCheck[2].users < firmCheck[1].users || firmCheck[2].users < firmCheck[0].users) {
                 boostedFirm = firmCheck[2].firm;
@@ -54,19 +54,19 @@ module.exports = {
         }
         else {
             tutorialCounter = userInfo.tutorial_counter
-            if (selectedOption === 'map')
+            if (selectedOption == 'map')
                 selectedTutorial = 1;
-            else if (selectedOption === 'hanger')
+            else if (selectedOption == 'hanger')
                 selectedTutorial = 2;
-            else if (selectedOption === 'hunt configuration')
+            else if (selectedOption == 'hunt configuration')
                 selectedTutorial = 3;
-            else if (selectedOption === 'shop')
+            else if (selectedOption == 'shop')
                 selectedTutorial = 4;
-            else if (selectedOption === 'mission')
+            else if (selectedOption == 'mission')
                 selectedTutorial = 5;
-            else if (selectedOption === 'cargo')
+            else if (selectedOption == 'cargo')
                 selectedTutorial = 6;
-            else if (selectedOption === 'cargo1')
+            else if (selectedOption == 'cargo1')
                 selectedTutorial = 7;
             else {
                 selectedTutorial = tutorialCounter;
@@ -97,7 +97,7 @@ module.exports = {
 
                     message += interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1Ammo').format(ammunition.ammo_id);
 
-                    if (ammunition.credit === 0) {
+                    if (ammunition.credit == 0) {
                         message += `${interaction.client.defaultEmojis['units']} __**${ammunition.units}**__ \n`;
                     } else {
                         message += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`;
@@ -115,7 +115,7 @@ module.exports = {
                     if (typeof mission == 'undefined' || mission.length == 0) {
                         await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
                     }
-                    else if (mission[0].mission_status === 'active') {
+                    else if (mission[0].mission_status == 'active') {
                         await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))] })
                         return;
                     }
@@ -142,13 +142,13 @@ module.exports = {
 
         let ended = false;
 
-        const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+        const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 });
 
         collector.on('collect', async i => {
             collector.resetTimer({ time: 120000 });
             if (!i.replied) {
-                if (i.customId === "End") {
+                if (i.customId == "End") {
                     await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialStop'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialStopTittle'))], components: [] });
                     ended = true;
                     collector.stop("Ended by user");
@@ -158,10 +158,10 @@ module.exports = {
                     tutorialCounter++;
                     selectedTutorial++;
                     selectedFirm = i.customId;
-                    if (selectedFirm === "Terra") {
+                    if (selectedFirm == "Terra") {
                         await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Terrestrian"]);
                     }
-                    else if (selectedFirm === "Luna") {
+                    else if (selectedFirm == "Luna") {
                         await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Lunian"]);
                     }
                     else {
@@ -172,8 +172,10 @@ module.exports = {
                     await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id, equipped) VALUES (?, 1)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`INSERT INTO boost (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO user_log (user_id) VALUES (?)`, [interaction.user.id]);
+                    await interaction.client.databaseEditData(`INSERT INTO killed_aliens (user_id) VALUES (?)`, [interaction.user.id]);
                     await interaction.client.databaseEditData(`UPDATE firms_list SET users = users + 1 where firm = ?`, [i.customId]);
-                    if (i.customId === boostedFirm) {
+                    if (i.customId == boostedFirm) {
                         let dateToBoostTill = new Date();
                         dateToBoostTill.setDate(dateToBoostTill.getDate() + 7);
                         dateToBoostTill = dateToBoostTill.toJSON().split(".");
@@ -191,14 +193,14 @@ module.exports = {
                         if (tutorialCounter == selectedTutorial) {
                             selectedTutorial++;
                             tutorialCounter++;
-                            if (selectedFirm === "Terra") {
+                            if (selectedFirm == "Terra") {
                                 await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2').format('1-1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [] });
                                 await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [11, tutorialCounter, interaction.user.id]);
                                 await interaction.client.wait(1000);
                                 await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2_1').format("Terra"), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial] });
                                 await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                             }
-                            else if (selectedFirm === "Luna") {
+                            else if (selectedFirm == "Luna") {
                                 await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2').format('2-1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [] });
                                 await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [21, tutorialCounter, interaction.user.id]);
                                 await interaction.client.wait(1000);
@@ -229,12 +231,12 @@ module.exports = {
                     }
                     else if (phaseCounter == 2) {
                         if (laserEquipped) {
-                            if (i.customId === "0") {
+                            if (i.customId == "0") {
                                 laserEquipped = !laserEquipped;
                                 [message, row] = await hangerHandler(laserEquipped);
                                 await i.update({ content: message, components: [row] })
                             }
-                            else if (i.customId === "Continue") {
+                            else if (i.customId == "Continue") {
                                 phaseCounter = 1;
                                 if (tutorialCounter == selectedTutorial) {
                                     tutorialCounter++;
@@ -256,7 +258,7 @@ module.exports = {
                             }
                         }
                         else {
-                            if (i.customId === "0") {
+                            if (i.customId == "0") {
                                 laserEquipped = !laserEquipped;
                                 [message, row] = await hangerHandler(laserEquipped);
                                 await i.update({ content: message, components: [row, tutorial] })
@@ -283,7 +285,7 @@ module.exports = {
                         phaseCounter++;
                     }
                     else if (phaseCounter == 4) {
-                        if (i.customId === "activateButton") {
+                        if (i.customId == "activateButton") {
                             row = await buttonHandlerOnOff(1);
                             await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_3'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [row] });
                             phaseCounter++;
@@ -293,7 +295,7 @@ module.exports = {
                         }
                     }
                     else if (phaseCounter == 5) {
-                        if (i.customId === "save2") {
+                        if (i.customId == "save2") {
                             await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [tutorial] });
                             phaseCounter++;
                         }
@@ -307,14 +309,14 @@ module.exports = {
                         phaseCounter++;
                     }
                     else if (phaseCounter == 7) {
-                        if (i.customId === "empty") {
+                        if (i.customId == "empty") {
                             [hp, sh] = await configurationHandler();
                             await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_6'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [hp, sh, settingRow] });
                             phaseCounter++;
                         }
                         else {
                             index = parseInt(i.customId);
-                            if (i.customId === "disable" || index == 9) {
+                            if (i.customId == "disable" || index == 9) {
                                 [hp, sh] = await configurationHandler(-1, "DANGER");
                                 await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_6_2'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [hp, sh, settingRow] });
                             }
@@ -329,7 +331,7 @@ module.exports = {
                         }
                     }
                     else if (phaseCounter == 8) {
-                        if (i.customId === "save") {
+                        if (i.customId == "save") {
                             await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_7'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [tutorial] });
                             phaseCounter = 1;
                             if (tutorialCounter == selectedTutorial) {
@@ -352,7 +354,7 @@ module.exports = {
 
                             message += interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1Ammo').format(ammunition.ammo_id);
 
-                            if (ammunition.credit === 0) {
+                            if (ammunition.credit == 0) {
                                 message += `${interaction.client.defaultEmojis['units']} __**${ammunition.units}**__ \n`;
                             } else {
                                 message += `${interaction.client.defaultEmojis['credit']} __**${ammunition.credit}**__ \n`;
@@ -385,7 +387,7 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.blueEmbed(items[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('5'))] });
                         }
                         else {
-                            if (items[index][1] === 2) {
+                            if (items[index][1] == 2) {
                                 quantity = 1;
                                 await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC4_3').format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['credit'], items[index][2]), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('5'))], components: [quantityButtonUp, quantityButtonDown, buySetting] });
                                 phaseCounter++;
@@ -396,7 +398,7 @@ module.exports = {
                         }
                     }
                     else if (phaseCounter == 4) {
-                        if (i.customId === "buyItem") {
+                        if (i.customId == "buyItem") {
                             if (quantity == 100) {
                                 await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC4_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('5'))], components: [tutorial] });
                                 if (tutorialCounter == selectedTutorial) {
@@ -431,7 +433,7 @@ module.exports = {
                     }
                     else if (phaseCounter == 2) {
                         message = interaction.client.getWordLanguage(serverSettings.lang, 'TC5_2');
-                        if (i.customId === "get") {
+                        if (i.customId == "get") {
                             await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_2_2'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [rowYesNo] });
                             phaseCounter++;
                         }
@@ -439,7 +441,7 @@ module.exports = {
                             await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(message, "MISSION BOARD", interaction.user, `Page 1 of 1`, "https://obelisk.club/npc/missions.png")], components: [missionRow] });
                     }
                     else if (phaseCounter == 3) {
-                        if (i.customId === "yes") {
+                        if (i.customId == "yes") {
                             await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_3'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [] })
                             var query = `INSERT INTO user_missions (mission_id, mission_task_left, user_id) VALUES (?, ?, ?)`;
                             var missionId = await interaction.client.databaseEditDataReturnID(query, [0, 1, interaction.user.id]);
@@ -519,7 +521,7 @@ module.exports = {
             if (!ended)
                 interaction.editReply({ components: [] });
         });
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -528,7 +530,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
     }
 }
 

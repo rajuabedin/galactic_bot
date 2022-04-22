@@ -26,12 +26,12 @@ module.exports = {
             let price = 0;
             let unit = ""
             if (ship[0].credit > 0) {
-                price = ship[0].credit * 0.1;
+                price = ship[0].credit * 0.075;
                 unit = "credit"
             }
             else if (ship[0].units > 0) {
-                price = ship[0].units * 0.02;
-                unit = "units"
+                price = ship[0].units * 0.5;
+                unit = "credit"
             }
             else {
                 await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
@@ -42,12 +42,16 @@ module.exports = {
             }
             price *= Math.ceil(durability / 25);
             await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
-            const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
+
+            if (ship[0].ship_hp == 0)
+                price = ~~(price * 1.2);
+
+            const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
             collector.on('collect', async i => {
-                if (i.customId === 'yes') {
+                if (i.customId == 'yes') {
                     if (userInfo.credit >= 1000) {
                         await interaction.client.databaseEditData(`UPDATE users SET user_hp = ?, ${unit} = ${unit} - ? WHERE user_id = ?`, [ship[0].ship_hp, price, interaction.user.id]);
                         await interaction.client.databaseEditData("UPDATE user_ships SET ship_hp = ?, durability = 1 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
