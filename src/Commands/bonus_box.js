@@ -42,23 +42,38 @@ module.exports = {
                 "credit": 0,
                 "units": 0
             }
+            let description = {
+                "x1_magazine":  "[x1]  Ammunition :",
+                "x2_magazine":  "[x2]  Ammunition :",
+                "x3_magazine":  "[x3]  Ammunition :",
+                "xS1_magazine": "[xS1] Ammunition :",
+                "credit":       "[C]   Credit     :",
+                "units":        "[U]   Units      :"
+            }
             let random = userInfo.user_speed / 100;
             for (index; index < box.length; index++) {
                 indexList = indexList.concat(Array(box[index].chance).fill(index));
             }
-            let message = "";
             random = interaction.client.random(Math.round(random * 2), Math.trunc(random * 3));
+            let storeRandom = random;
+            let message = `\`\`\`yaml\n`;
+            let space = " ";
+            
             for (random; random > 0; random--) {
                 indexList = indexList.sort(() => Math.random() - 0.5);
                 index = indexList[Math.floor(Math.random() * (100))];
 
                 reward[box[index].column_reward] += box[index].value;
-                message += box[index].description.format(box[index].value) + "\n";
             }
+            for (const [key, value] of Object.entries(reward)) {
+                if (value > 0)
+                    message += `\n-${description[key]}${space.repeat(6 - value.toString().length)}${value}`;
+            }
+            message += " \`\`\`";
             await interaction.reply({
                 embeds: [interaction.client.greenEmbed(
                     message,
-                    interaction.client.getWordLanguage(serverSettings.lang, 'congrats')
+                    `Opening [ ${storeRandom} ] bonus boxes:`
                 )]
             });
             await interaction.client.databaseEditData(`UPDATE ammunition SET x1_magazine = x1_magazine + ?, x2_magazine = x2_magazine + ?, x3_magazine = x3_magazine + ?, xS1_magazine = xS1_magazine + ? WHERE user_id = ?`, [reward.x1_magazine, reward.x2_magazine, reward.x3_magazine, reward.xS1_magazine, interaction.user.id]);

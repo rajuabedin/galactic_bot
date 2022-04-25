@@ -19,16 +19,17 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "];
+            let resourcesName = ["Rhodochrosite :", "Linarite      :", "Dolomite      :", "Rubellite     :", "Prehnite      :", "Diamond       :", "Radtkeite     :", "Dark Matter   :", "Gold          :"];
             let resources = userInfo.resources.split("; ").map(Number);
             let message = "\`\`\`yaml\n";
             let space = " ";
             for (let index in resources) {
                 if (resources[index] > 0) {
-                    message += resourcesName[index] + space.repeat(6 - resources[index].toString().length) + resources[index] + "\n";
+                    message += `${resourcesName[index]}${space.repeat(6 - resources[index].toString().length)}${resources[index]}\n`;
                 }
             }
             message += `---------------------\n`;
+            message += "\`\`\`\`\`\`yaml\n";
             message += `Cargo: ${userInfo.cargo} / ${userInfo.max_cargo}` + "\`\`\`";
             await interaction.reply({ embeds: [interaction.client.yellowEmbed(message, "Cargo")] });
         }
