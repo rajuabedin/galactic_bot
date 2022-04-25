@@ -276,25 +276,30 @@ module.exports = {
                     alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
                     if (alienAccuracy > 60) {
                         alienHullDamage = ~~(alienHullDamage * alienAccuracy / 100)
-                        alienMessage += `**Total received damage: __${alienHullDamage}__**`;
-
-                        if (player[0].info.userStats.shield > 0) {
-                            alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
-                            if (player[0].info.userStats.shield <= alienShieldDamage) {
-                                player[0].info.userStats.shield = 0;
-                                player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                        if (alienHullDamage > 0) {
+                            alienMessage += `**Total received damage: __${alienHullDamage}__**`;
+                            if (player[0].info.userStats.shield > 0) {
+                                alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
+                                if (player[0].info.userStats.shield <= alienShieldDamage) {
+                                    player[0].info.userStats.shield = 0;
+                                    player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                                }
+                                else {
+                                    player[0].info.userStats.shield = alienShieldDamage;
+                                    player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                                }
                             }
                             else {
-                                player[0].info.userStats.shield = alienShieldDamage;
-                                player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                                player[0].info.userStats.hp -= alienHullDamage;
                             }
                         }
                         else {
-                            player[0].info.userStats.hp -= alienHullDamage;
+                            alienMessage += `**Total received damage: __MISS__**`;
+                            alienHullDamage = "MISS";
                         }
                     }
                     else {
-                        alienHullDamage = 0;
+                        alienHullDamage = "MISS";
                         alienMessage += `**Total received damage: __MISS__**`;
                     }
                     if (player[0].info.userStats.hp <= 0) {

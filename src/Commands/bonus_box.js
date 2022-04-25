@@ -34,13 +34,35 @@ module.exports = {
             //bonusBoxCD.setMinutes(bonusBoxCD.getMinutes() + 1);
             let indexList = [];
             let index = 0;
+            let reward = {
+                "x1_magazine": 0,
+                "x2_magazine": 0,
+                "x3_magazine": 0,
+                "xS1_magazine": 0,
+                "credit": 0,
+                "units": 0
+            }
+            let random = userInfo.user_speed / 100;
             for (index; index < box.length; index++) {
                 indexList = indexList.concat(Array(box[index].chance).fill(index));
             }
-            indexList = indexList.sort(() => Math.random() - 0.5)
-            index = indexList[Math.floor(Math.random() * (100))];
-            await interaction.client.databaseEditData(`UPDATE ${box[index].table_reward} SET ${box[index].column_reward} = ${box[index].column_reward} + ${box[index].value} WHERE user_id = ?`, [interaction.user.id]);
-            await interaction.reply({ embeds: [interaction.client.greenEmbed("\`\`\`css\n" + box[index].description + "\`\`\`", interaction.client.getWordLanguage(serverSettings.lang, 'congrats'))] });
+            let message = "";
+            random = interaction.client.random(Math.round(random * 2), Math.trunc(random * 3));
+            for (random; random > 0; random--) {
+                indexList = indexList.sort(() => Math.random() - 0.5);
+                index = indexList[Math.floor(Math.random() * (100))];
+
+                reward[box[index].column_reward] += box[index].value;
+                message += box[index].description.format(box[index].value) + "\n";
+            }
+            await interaction.reply({
+                embeds: [interaction.client.greenEmbed(
+                    message,
+                    interaction.client.getWordLanguage(serverSettings.lang, 'congrats')
+                )]
+            });
+            await interaction.client.databaseEditData(`UPDATE ammunition SET x1_magazine = x1_magazine + ?, x2_magazine = x2_magazine + ?, x3_magazine = x3_magazine + ?, xS1_magazine = xS1_magazine + ? WHERE user_id = ?`, [reward.x1_magazine, reward.x2_magazine, reward.x3_magazine, reward.xS1_magazine, interaction.user.id]);
+            await interaction.client.databaseEditData(`UPDATE users SET credit = credit + ?, units = units + ? WHERE user_id = ?`, [reward.credit, reward.units, interaction.user.id]);
             await interaction.client.databaseEditData(`UPDATE user_cd SET last_bonus_box = ? WHERE user_id = ?`, [bonusBoxCD, interaction.user.id]);
         }
         catch (error) {
