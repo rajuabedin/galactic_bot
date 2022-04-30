@@ -83,7 +83,6 @@ module.exports = {
             let turnCounter = 1;
             let threshold = 0;
             let newAlienChance = 0;
-            let group = false;
 
             let alienHullDamage = 0;
             let alienShieldDamage = 0;
@@ -95,7 +94,7 @@ module.exports = {
             let alienAccuracy = 0;
 
 
-            if (!group) {
+            if (!userInfo.group_id) {
                 const filterRun = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
                 const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
                 collector.on('collect', async i => {
@@ -384,6 +383,35 @@ module.exports = {
 
                 }
             }
+            else{
+                let groupMembers = [userInfo.user_id];
+                let dumpQuery = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, userInfo.user_id]);
+                
+                const filterRun = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
+                const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+                collector.on('collect', async i => {
+                    collector.resetTimer({ time: 120000 });
+                    if (!i.replied){
+                        if (i.customId == "Run") {
+                            run = true;
+                            await i.update({ components: [] });
+                        }
+                        else if (i.customId == "NextAlien" && alien.length > 0) {
+                            next = true;
+                            await i.update({});
+                        }
+                        else if (i.customId == "download") {
+                            let attachment = new MessageAttachment(Buffer.from(player[0].log, 'utf-8'), `Hunt-Log.txt`);
+                            await i.update({ embeds: [], components: [], files: [attachment] });
+                            collector.stop();
+                        }
+                    }
+                });
+
+                collector.on('end', collected => {
+                    interaction.editReply({ components: [] })
+                });
+            }
             player[0].log += `*VICTORY!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                 + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
@@ -559,7 +587,7 @@ async function missionHandler(interaction, aliens, id, boost) {
 
 }
 
-async function infoHandler(interaction, alienSpeed) {
+async function infoHandler(interaction, alienSpeed, mapID) {
     let userInfo = await interaction.client.getUserAccount(interaction.user.id);
     if (userInfo.user_hp == 0) {
         await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)] });
@@ -571,6 +599,14 @@ async function infoHandler(interaction, alienSpeed) {
     }
 
     let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+    if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+        await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
+        userInfo.map_id = userInfo.next_map_id;
+    }
+    if (userInfo.map_id != mapID) {
+        await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`You are not in the same **map**`, "Error!", interaction.user)] });
+        return { canHunt: false };
+    }
 
     userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
     if (userInfo.user_hp > userInfo.max_hp)
@@ -578,8 +614,9 @@ async function infoHandler(interaction, alienSpeed) {
 
     let ship = await interaction.client.databaseSelcetData("SELECT ships_info.emoji_id, user_ships.ship_model, user_ships.durability FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ?", [interaction.user.id]);
     ship = ship[0];
-    let mapIDFrist = ~~userInfo.map_id / 10;
-    let mapIDSecond = ~~((userInfo.map_id % 1.0) * 10);
+    let mapIDFrist = userInfo.map_id / 10;
+    let mapIDSecond = ~~((mapIDFrist % 1.0) * 10);
+    mapIDFrist = ~~mapIDFrist;
 
     let x = (165 - 0.6 * (userInfo.user_speed - alienSpeed))
     let minimumAccuracyAlien = Math.round(0.0015 * x * x);
@@ -894,7 +931,7 @@ async function infoHandler(interaction, alienSpeed) {
 }
 
 async function playerHandler(interaction, aliens, alienSpeed, mapID) {
-    let playerInfo = await infoHandler(interaction, alienSpeed);
+    let playerInfo = await infoHandler(interaction, alienSpeed, mapID);
     if (playerInfo.canHunt)
         return {
             active: true,

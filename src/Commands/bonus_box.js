@@ -31,8 +31,6 @@ module.exports = {
             }
             let box = await interaction.client.databaseSelcetData("SELECT * FROM bonus_box", []);
             let bonusBoxCD = new Date();
-            //bonusBoxCD.setMinutes(bonusBoxCD.getMinutes() + 1);
-            let indexList = [];
             let index = 0;
             let reward = {
                 "x1_magazine": 0,
@@ -42,25 +40,17 @@ module.exports = {
                 "credit": 0,
                 "units": 0
             }
-            let description = {
-                "x1_magazine":  "[x1]  Ammunition :",
-                "x2_magazine":  "[x2]  Ammunition :",
-                "x3_magazine":  "[x3]  Ammunition :",
-                "xS1_magazine": "[xS1] Ammunition :",
-                "credit":       "[C]   Credit     :",
-                "units":        "[U]   Units      :"
-            }
+
             let random = userInfo.user_speed / 100;
-            for (index; index < box.length; index++) {
-                indexList = indexList.concat(Array(box[index].chance).fill(index));
-            }
+            if (indexList.length == 0)
+                randomBox(box);
+
             random = interaction.client.random(Math.round(random * 2), Math.trunc(random * 3));
             let storeRandom = random;
             let message = `\`\`\`yaml\n`;
             let space = " ";
-            
+
             for (random; random > 0; random--) {
-                indexList = indexList.sort(() => Math.random() - 0.5);
                 index = indexList[Math.floor(Math.random() * (100))];
 
                 reward[box[index].column_reward] += box[index].value;
@@ -89,5 +79,31 @@ module.exports = {
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
+    }
+}
+
+const description = {
+    "x1_magazine": "[x1]  Ammunition :",
+    "x2_magazine": "[x2]  Ammunition :",
+    "x3_magazine": "[x3]  Ammunition :",
+    "xS1_magazine": "[xS1] Ammunition :",
+    "credit": "[C]   Credit     :",
+    "units": "[U]   Units      :"
+}
+
+let indexList = [];
+
+function randomBox(box) {
+    for (let index = 0; index < box.length; index++) {
+        indexList = indexList.concat(Array(box[index].chance).fill(index));
+    }
+    indexList.sort(() => Math.random() - 0.5);
+    shuffleArray(indexList);
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
 }
