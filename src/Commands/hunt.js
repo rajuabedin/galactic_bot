@@ -19,7 +19,7 @@ module.exports = {
             });
         };
 
-        try {
+        //try {
             if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
@@ -525,7 +525,7 @@ module.exports = {
                             frontEmoji = `<:aim:902625135050235994>`;
                             log += `*${escapeTurns} turs till escape*`;
                             for (let index in player) {
-                                message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[indec].info.userStats.shield}\n`;
+                                message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`;
                                 frontEmoji = `<:Transparent:902212836770598922>`;
                                 log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`;
                             }
@@ -857,7 +857,7 @@ module.exports = {
             }
             message += " \`\`\`";
             await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, `**VICTORY!**`)], components: [download] });
-        }
+        /*}
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -866,7 +866,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }
+        }*/
     }
 }
 
