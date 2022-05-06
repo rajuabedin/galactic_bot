@@ -19,7 +19,7 @@ module.exports = {
             });
         };
 
-        //try {
+        try {
             if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
@@ -170,14 +170,14 @@ module.exports = {
                             message = `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
 
                             log +=
-                                `*${escapeTurns} turs till escape*`
+                                `*${escapeTurns} turns till escape*`
                                 + `Your Info : \nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}`
                                 + alienInfo
                                 + `\n[Alien Damage: ${alienHullDamage}]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
 
                             message += "\n**Alien Info**:\n<:Transparent:902212836770598922>" + alienMessage;
 
-                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**${escapeTurns} turs till escape**`)] });
+                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**${escapeTurns} turns till escape**`)] });
                             await interaction.client.wait(1500);
                         }
                         if (player[0].info.userStats.hp > 0) {
@@ -523,7 +523,7 @@ module.exports = {
                             }
                             message = `**User Info**:\n**`;
                             frontEmoji = `<:aim:902625135050235994>`;
-                            log += `*${escapeTurns} turs till escape*`;
+                            log += `*${escapeTurns} turns till escape*`;
                             for (let index in player) {
                                 message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`;
                                 frontEmoji = `<:Transparent:902212836770598922>`;
@@ -534,7 +534,7 @@ module.exports = {
 
                             message += "\nAlien Info**:\n<:Transparent:902212836770598922>" + alienMessage;
 
-                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**${escapeTurns} turs till escape**`)] });
+                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**${escapeTurns} turns till escape**`)] });
                             if (player[0].info.userStats.hp <= 0) {
                                 player[0].info.userStats.hp = 0;
                                 await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
@@ -560,7 +560,7 @@ module.exports = {
 
                             message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                                 `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
-                            
+
                             await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE FAILED!**`)], components: [download] });
                         }
                         return;
@@ -857,7 +857,8 @@ module.exports = {
             }
             message += " \`\`\`";
             await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, `**VICTORY!**`)], components: [download] });
-        /*}
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -866,7 +867,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
     }
 }
 
@@ -1413,7 +1414,7 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
 
                 this.cargo.resources = this.cargo.resources.join("; ")
 
-                await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ?, last_hunt = ? WHERE user_id = ?", [new Date(), new Date(), interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ?, WHERE user_id = ?", [new Date(), interaction.user.id]);
 
                 let baseMapID = 0;
                 if (playerInfo.userStats.firm == "Terra") {
