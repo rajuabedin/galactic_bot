@@ -102,18 +102,23 @@ module.exports = {
             collector.on('collect', async i => {
                 collector.resetTimer({ time: 120000 });
                 if (!i.replied)
-                    if (i.customId == "Run") {
-                        run = true;
-                        await i.update({ components: [] });
+                    try {
+                        if (i.customId == "Run") {
+                            run = true;
+                            await i.update({ components: [] });
+                        }
+                        else if (i.customId == "NextAlien" && alien.length > 0) {
+                            next = true;
+                            await i.update({});
+                        }
+                        else if (i.customId == "download") {
+                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                            await i.update({ embeds: [], components: [], files: [attachment] });
+                            collector.stop();
+                        }
                     }
-                    else if (i.customId == "NextAlien" && alien.length > 0) {
-                        next = true;
-                        await i.update({});
-                    }
-                    else if (i.customId == "download") {
-                        let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                        await i.update({ embeds: [], components: [], files: [attachment] });
-                        collector.stop();
+                    catch (error) {
+                        errorLog.error(error.message, { 'command_name': interaction.commandName });
                     }
             });
 
@@ -179,7 +184,7 @@ module.exports = {
                         log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                         await player[0].update(interaction.client.greenEmbed(message, `**ESCAPE SUCCESSFUL!**`));
                         await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE SUCCESSFUL!**`)], components: [download] });
@@ -189,7 +194,7 @@ module.exports = {
                         log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                         await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
                         await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE FAILED!**`)], components: [download] });
@@ -312,7 +317,7 @@ module.exports = {
                     log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                         + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                    message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                    message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                         `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                     await player[0].update(interaction.client.redEmbed(message, `**DEFEAT!**`));
                     await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**DEFEAT!**`)], components: [download] });
@@ -409,58 +414,63 @@ module.exports = {
             collector.on('collect', async i => {
                 collector.resetTimer({ time: 120000 });
                 if (!i.replied) {
-                    if (i.customId == "Swap") {
-                        await i.update({});
-                        if (i.user.username == player[0].username) {
-                            if (inBattle.length == 1)
-                                await interaction.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                            else
-                                swapping = true;
-                        }
-                        else {
-                            await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                        }
-                    }
-                    else if (i.customId == "NextAlien" && alien.length > 0) {
-                        await i.update({});
-                        if (i.user.username == player[0].username) {
-                            next = true;
-                        }
-                        else {
-                            await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                        }
-                    }
-                    else if (i.customId == "Run") {
-                        if (i.user.username == player[0].username) {
-                            run = true;
-                            await i.update({ components: [] });
-                        }
-                        else {
+                    try {
+                        if (i.customId == "Swap") {
                             await i.update({});
-                            await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                            if (i.user.username == player[0].username) {
+                                if (inBattle.length == 1)
+                                    await interaction.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                else
+                                    swapping = true;
+                            }
+                            else {
+                                await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                            }
                         }
-                    }
-                    else if (i.customId == "Join") {
-                        if (inBattle.includes(i.user.id)) {
+                        else if (i.customId == "NextAlien" && alien.length > 0) {
                             await i.update({});
-                            await interaction.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                            if (i.user.username == player[0].username) {
+                                next = true;
+                            }
+                            else {
+                                await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                            }
                         }
-                        else {
-                            numberOfPlayers++;
+                        else if (i.customId == "Run") {
+                            if (i.user.username == player[0].username) {
+                                run = true;
+                                await i.update({ components: [] });
+                            }
+                            else {
+                                await i.update({});
+                                await interaction.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                            }
+                        }
+                        else if (i.customId == "Join") {
+                            if (inBattle.includes(i.user.id)) {
+                                await i.update({});
+                                await interaction.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                            }
+                            else {
+                                numberOfPlayers++;
+                                await i.update({});
+                                inBattle.push(i.user.id)
+                                player.push(await playerHandler(i, aliensName, alien[0].speed, mapId));
+                                if (!player[player.length - 1].active)
+                                    inBattle.pop();
+                            }
+                        }
+                        else if (i.customId == "download") {
+                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                            await i.update({ embeds: [], components: [], files: [attachment] });
+                            collector.stop("Done downloading");
+                        }
+                        else
                             await i.update({});
-                            inBattle.push(i.user.id)
-                            player.push(await playerHandler(i, aliensName, alien[0].speed, mapId));
-                            if (!player[player.length - 1].active)
-                                inBattle.pop();
-                        }
                     }
-                    else if (i.customId == "download") {
-                        let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                        await i.update({ embeds: [], components: [], files: [attachment] });
-                        collector.stop("Done downloading");
+                    catch (error) {
+                        errorLog.error(error.message, { 'command_name': interaction.commandName });
                     }
-                    else
-                        await i.update({});
                 }
             });
 
@@ -536,7 +546,7 @@ module.exports = {
                         log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                         await player[0].update(interaction.client.greenEmbed(message, `**ESCAPE SUCCESSFUL!**`));
                         await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE SUCCESSFUL!**`)], components: [download] });
@@ -546,7 +556,7 @@ module.exports = {
                         log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                         await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
                         await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE FAILED!**`)], components: [download] });
@@ -710,7 +720,7 @@ module.exports = {
                         log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-                        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+                        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
                             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
                         await player[0].update(interaction.client.redEmbed(message, `**DEFEAT!**`));
                         await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**DEFEAT!**`)], components: [download] });
@@ -832,7 +842,7 @@ module.exports = {
         log += `*VICTORY!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
-        message = `**Battle ended after ${turnCounter} turns**\n` + "\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" + "\`\`\`yaml\n" +
+        message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
             `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
         log += `\n---------------------`;
         message += `\n---------------------`;
@@ -1040,7 +1050,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
         userInfo.map_id = userInfo.next_map_id;
     }
     if (userInfo.map_id != mapID) {
-        await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`You are not in the same **map**`, "Error!", interaction.user)] });
+        await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are not in the same **map**`, "Error!", interaction.user)] });
         return { canHunt: false };
     }
 
@@ -1108,7 +1118,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
     if (~~((Date.now() - Date.parse(boost[0].honor_boost)) / 1000) < 0)
         honorBoost = true;
 
-    await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
+    //await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
 
     let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
     huntConfiguration = huntConfiguration[0];
@@ -1167,11 +1177,12 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 laserCounter = userLaserConfig.length - 1;
             },
             ammunition: async function (threshold, turn) {
-                while (!userLaserConfig[laserCounter].magazine || threshold <= userLaserConfig[laserCounter].threshold) {
-                    if (!userLaserConfig[laserCounter].magazine) {
+                while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
+                    if (userLaserConfig[laserCounter].magazine == 0) {
                         this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                         userLaserConfig.unshift(userLaserConfig[laserCounter]);
                         userLaserConfig.splice(laserCounter + 1, 1);
+                        continue;
                     }
                     laserCounter -= 1;
                 }
@@ -1204,22 +1215,24 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     missileCounter = userMissileConfig.length - 1;
                 },
                 ammunition: async function (threshold, turn) {
-                    while (!userLaserConfig[laserCounter].magazine || threshold <= userLaserConfig[laserCounter].threshold) {
-                        if (!userLaserConfig[laserCounter].magazine) {
+                    while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
+                        if (userLaserConfig[laserCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                             userLaserConfig.unshift(userLaserConfig[laserCounter]);
                             userLaserConfig.splice(laserCounter + 1, 1);
+                            continue;
                         }
                         laserCounter -= 1;
                     }
                     userLaserConfig[laserCounter].magazine -= 1;
                     this.laser = userLaserConfig[laserCounter];
                     if (!(turn % 3)) {
-                        while (!userMissileConfig[missileCounter].magazine || threshold <= userMissileConfig[missileCounter].threshold) {
-                            if (!userMissileConfig[missileCounter].magazine) {
+                        while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
+                            if (userMissileConfig[missileCounter].magazine == 0) {
                                 this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
                                 userMissileConfig.unshift(userMissileConfig[missileCounter]);
                                 userMissileConfig.splice(missileCounter + 1, 1);
+                                continue;
                             }
                             missileCounter -= 1;
                         }
@@ -1242,7 +1255,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 }
             }
         }
-        if (huntConfiguration.missile == 0) {
+        else if (huntConfiguration.missile == 0) {
             return {
                 canHunt: true,
                 userStats: userStats,
@@ -1256,22 +1269,24 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     hellstormCounter = userHellstormConfig.length - 1;
                 },
                 ammunition: async function (threshold, turn) {
-                    while (!userLaserConfig[laserCounter].magazine || threshold <= userLaserConfig[laserCounter].threshold) {
-                        if (!userLaserConfig[laserCounter].magazine) {
+                    while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
+                        if (userLaserConfig[laserCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                             userLaserConfig.unshift(userLaserConfig[laserCounter]);
                             userLaserConfig.splice(laserCounter + 1, 1);
+                            continue;
                         }
                         laserCounter -= 1;
                     }
                     userLaserConfig[laserCounter].magazine -= 1;
                     this.laser = userLaserConfig[laserCounter];
                     if (!(turn % 6)) {
-                        while (!userHellstormConfig[hellstormCounter].magazine || threshold <= userHellstormConfig[hellstormCounter].threshold) {
-                            if (!userHellstormConfig[hellstormCounter].magazine) {
+                        while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
+                            if (userHellstormConfig[hellstormCounter].magazine == 0) {
                                 this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
                                 userHellstormConfig.unshift(userHellstormConfig[hellstormCounter]);
                                 userHellstormConfig.splice(hellstormCounter + 1, 1);
+                                continue;
                             }
                             hellstormCounter -= 1;
                         }
@@ -1295,7 +1310,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 }
             }
         }
-        return {
+        else return {
             canHunt: true,
             userStats: userStats,
             boost: { exp: expBoost, honor: honorBoost },
@@ -1309,22 +1324,24 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 hellstormCounter = userHellstormConfig.length - 1;
             },
             ammunition: async function (threshold, turn) {
-                while (!userLaserConfig[laserCounter].magazine || threshold <= userLaserConfig[laserCounter].threshold) {
-                    if (!userLaserConfig[laserCounter].magazine) {
+                while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
+                    if (userLaserConfig[laserCounter].magazine == 0) {
                         this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                         userLaserConfig.unshift(userLaserConfig[laserCounter]);
                         userLaserConfig.splice(laserCounter + 1, 1);
+                        continue;
                     }
                     laserCounter -= 1;
                 }
                 userLaserConfig[laserCounter].magazine -= 1;
                 this.laser = userLaserConfig[laserCounter];
                 if (!(turn % 3)) {
-                    while (!userMissileConfig[missileCounter].magazine || threshold <= userMissileConfig[missileCounter].threshold) {
-                        if (!userMissileConfig[missileCounter].magazine) {
+                    while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
+                        if (userMissileConfig[missileCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
                             userMissileConfig.unshift(userMissileConfig[missileCounter]);
                             userMissileConfig.splice(missileCounter + 1, 1);
+                            continue;
                         }
                         missileCounter -= 1;
                     }
@@ -1334,11 +1351,12 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 else
                     this.missile = { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Reloading" }
                 if (!(turn % 6)) {
-                    while (!userHellstormConfig[hellstormCounter].magazine || threshold <= userHellstormConfig[hellstormCounter].threshold) {
-                        if (!userHellstormConfig[hellstormCounter].magazine) {
+                    while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
+                        if (userHellstormConfig[hellstormCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
                             userHellstormConfig.unshift(userHellstormConfig[hellstormCounter]);
                             userHellstormConfig.splice(hellstormCounter + 1, 1);
+                            continue;
                         }
                         hellstormCounter -= 1;
                     }
@@ -1420,7 +1438,7 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [interaction.user.id]);
                 }
                 else if (playerInfo.userStats.durability == 1) {
-                    await interaction.followUp({ embeds: [interaction.client.RedEmbedImage(`Your ship durability has reached zero and got destroyed!\nYou have lost all your cargo!`, "Ship destroyed!", interaction.user)], ephemeral: true });
+                    await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Your ship durability has reached zero and got destroyed!\nYou have lost all your cargo!`, "Ship destroyed!", interaction.user)], ephemeral: true });
                     if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
                         await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
@@ -1437,6 +1455,9 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
                     else
                         await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = durability - 1 WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
+                }
+                if (playerInfo.messageAmmo != "") {
+                    await interaction.followUp({ embeds: [interaction.client.redEmbedImage("\n\`\`\`diff\n" + playerInfo.messageAmmo + " \`\`\`", "**You run out of:**", interaction.user)], ephemeral: true });
                 }
             }
         }
