@@ -441,178 +441,183 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
-        if (!buyBool) {
-            quantity = 1;
-            if (i.customId == 'left')
-                index--;
-            else if (i.customId == 'right')
-                index++;
-            if (index < 0)
-                index += maxIndex + 1;
-            if (index > maxIndex)
-                index -= maxIndex + 1;
-            if (i.customId == "buy") {
-                if (itemTable == "ammunition")
-                    itemColumn = `${itemName[index]}_magazine`;
-                if (priceCredit[index] > 0)
-                    if (priceCredit[index] > userInfo.credit)
-                        return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, `no_credit`), "ERROR!")], components: [] });
-                    else {
-                        if (itemTable == "user_ships") {
-                            let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
-                            if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
-                                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                                collector.stop("Bought");
-                                let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
-                                itemInfo = itemInfo[0];
-                                let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
-                                await interaction.client.databaseEditData(query)
-                                await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
-                                return;
-                            }
-                            else {
-                                await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
-                                return;
-                            }
-                        }
-                        else if (itemColumn == "extra_model") {
-                            if (itemTable[index][0] == "repair_bot") {
-                                if (userInfo.repair_rate < itemTable[index][1]) {
+        try {
+            if (!buyBool) {
+                quantity = 1;
+                if (i.customId == 'left')
+                    index--;
+                else if (i.customId == 'right')
+                    index++;
+                if (index < 0)
+                    index += maxIndex + 1;
+                if (index > maxIndex)
+                    index -= maxIndex + 1;
+                if (i.customId == "buy") {
+                    if (itemTable == "ammunition")
+                        itemColumn = `${itemName[index]}_magazine`;
+                    if (priceCredit[index] > 0)
+                        if (priceCredit[index] > userInfo.credit)
+                            return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, `no_credit`), "ERROR!")], components: [] });
+                        else {
+                            if (itemTable == "user_ships") {
+                                let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                                if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
-                                    await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?, repair_rate = ? WHERE user_id = ?`, [priceCredit[index], itemTable[index][1], interaction.user.id]);
+                                    let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                    itemInfo = itemInfo[0];
+                                    let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                    await interaction.client.databaseEditData(query)
+                                    await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
-                            else if (itemTable[index][0] == "hellstorm_model") {
-                                let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
-                                currentClipRate = currentClipRate[0].helstorm_missiles_number;
-                                if (currentClipRate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                                    collector.stop("Bought");
-                                    await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ? WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
-                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
-                                    return;
+                            else if (itemColumn == "extra_model") {
+                                if (itemTable[index][0] == "repair_bot") {
+                                    if (userInfo.repair_rate < itemTable[index][1]) {
+                                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                                        collector.stop("Bought");
+                                        await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?, repair_rate = ? WHERE user_id = ?`, [priceCredit[index], itemTable[index][1], interaction.user.id]);
+                                        return;
+                                    }
+                                    else {
+                                        await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
+                                        return;
+                                    }
                                 }
-                                else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
-                                    return;
+                                else if (itemTable[index][0] == "hellstorm_model") {
+                                    let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                    currentClipRate = currentClipRate[0].helstorm_missiles_number;
+                                    if (currentClipRate < itemTable[index][1]) {
+                                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                                        collector.stop("Bought");
+                                        await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ? WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
+                                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
+                                        return;
+                                    }
+                                    else {
+                                        await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
+                                        return;
+                                    }
                                 }
                             }
-                        }
-                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemColumn.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
-                        buyBool = true;
+                            await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemColumn.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                            buyBool = true;
 
-                    }
-                else
-                    if (priceUnits[index] > userInfo.units)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
-                    else {
-                        if (itemTable == "user_ships") {
-                            let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
-                            if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
-                                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                                collector.stop("Bought");
-                                let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
-                                itemInfo = itemInfo[0];
-                                let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
-                                await interaction.client.databaseEditData(query)
-                                await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
-                                return;
-                            }
-                            else {
-                                await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
-                                return;
-                            }
                         }
-                        else if (itemColumn == "extra_model") {
-                            if (itemTable[index][0] == "repair_bot") {
-                                if (userInfo.repair_rate < itemTable[index][1]) {
+                    else
+                        if (priceUnits[index] > userInfo.units)
+                            return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
+                        else {
+                            if (itemTable == "user_ships") {
+                                let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                                if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
-                                    await interaction.client.databaseEditData(`UPDATE users SET units = units - ?, repair_rate = ? WHERE user_id = ?`, [priceUnits[index], itemTable[index][1], interaction.user.id]);
-                                    return;
-                                }
-                                else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
-                                    return;
-                                }
-                            }
-                            else if (itemTable[index][0] == "hellstorm_model") {
-                                let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
-                                currentClipRate = currentClipRate[0].helstorm_missiles_number;
-                                if (currentClipRate < itemTable[index][1]) {
-                                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                                    collector.stop("Bought");
+                                    let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                    itemInfo = itemInfo[0];
+                                    let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                    await interaction.client.databaseEditData(query)
                                     await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
-                                    await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
                                     return;
                                 }
                                 else {
-                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
+                                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_ship'), "ERROR!")], components: [] });
                                     return;
                                 }
                             }
+                            else if (itemColumn == "extra_model") {
+                                if (itemTable[index][0] == "repair_bot") {
+                                    if (userInfo.repair_rate < itemTable[index][1]) {
+                                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                                        collector.stop("Bought");
+                                        await interaction.client.databaseEditData(`UPDATE users SET units = units - ?, repair_rate = ? WHERE user_id = ?`, [priceUnits[index], itemTable[index][1], interaction.user.id]);
+                                        return;
+                                    }
+                                    else {
+                                        await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_robot'), "ERROR!")], components: [] });
+                                        return;
+                                    }
+                                }
+                                else if (itemTable[index][0] == "hellstorm_model") {
+                                    let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                    currentClipRate = currentClipRate[0].helstorm_missiles_number;
+                                    if (currentClipRate < itemTable[index][1]) {
+                                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                                        collector.stop("Bought");
+                                        await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
+                                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET helstorm_missiles_number =  ? WHERE user_id = ?`, [itemTable[index][1], interaction.user.id]);
+                                        return;
+                                    }
+                                    else {
+                                        await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_error_hellstorm'), "ERROR!")], components: [] });
+                                        return;
+                                    }
+                                }
+                            }
+                            await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                            buyBool = true;
                         }
-                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
-                        buyBool = true;
-                    }
-            }
-            else
-                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)] });
-        }
-        else {
-            if (i.customId == "cancelItem") {
-                buyBool = false;
-                await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)], components: [row] });
-            }
-            else if (i.customId == "buyItem") {
-                if (priceCredit[index] > 0)
-                    if (priceCredit[index] * quantity > userInfo.credit)
-                        return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'no_credit'), "ERROR!")], components: [] });
-                    else {
-                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                        if (itemTable == "ammunition")
-                            await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
-                        else
-                            for (i = 0; i < quantity; i++)
-                                await interaction.client.databaseEditData(`INSERT INTO ${itemTable} (user_id, ${itemColumn}) VALUES (?, ?)`, [interaction.user.id, itemName[index]]);
-                        collector.stop("Bought");
-                        await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [quantity * priceCredit[index], interaction.user.id]);
-                        return;
-                    }
+                }
                 else
-                    if (priceUnits[index] * quantity > userInfo.units)
-                        return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
-                    else {
-                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
-                        if (itemTable == "ammunition")
-                            await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
-                        else
-                            for (i = 0; i < quantity; i++)
-                                await interaction.client.databaseEditData(`INSERT INTO ${itemTable} (user_id, ${itemColumn}) VALUES (?, ?)`, [interaction.user.id, itemName[index]]);
-                        collector.stop("Bought");
-                        await interaction.client.databaseEditData(`UPDATE users SET units = units - ?  WHERE user_id = ?`, [quantity * priceUnits[index], interaction.user.id]);
-                        return;
-                    }
+                    await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)] });
             }
             else {
-                let add = parseInt(i.customId);
-                if (Number.isInteger(add))
-                    quantity += add
-                if (quantity < 1) {
-                    quantity -= add;
-                    await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_low_quantity')}**\n**${interaction.client.getWordLanguage(serverSettings.lang, 'quantity_c')}**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
+                if (i.customId == "cancelItem") {
+                    buyBool = false;
+                    await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)], components: [row] });
                 }
-                else if (priceCredit[index] > 0)
-                    await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
-                else
-                    await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                else if (i.customId == "buyItem") {
+                    if (priceCredit[index] > 0)
+                        if (priceCredit[index] * quantity > userInfo.credit)
+                            return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'no_credit'), "ERROR!")], components: [] });
+                        else {
+                            await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                            if (itemTable == "ammunition")
+                                await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
+                            else
+                                for (i = 0; i < quantity; i++)
+                                    await interaction.client.databaseEditData(`INSERT INTO ${itemTable} (user_id, ${itemColumn}) VALUES (?, ?)`, [interaction.user.id, itemName[index]]);
+                            collector.stop("Bought");
+                            await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [quantity * priceCredit[index], interaction.user.id]);
+                            return;
+                        }
+                    else
+                        if (priceUnits[index] * quantity > userInfo.units)
+                            return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
+                        else {
+                            await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
+                            if (itemTable == "ammunition")
+                                await interaction.client.databaseEditData(`UPDATE ammunition SET ${itemColumn} = ${itemColumn} + ?  WHERE user_id = ?`, [quantity, interaction.user.id]);
+                            else
+                                for (i = 0; i < quantity; i++)
+                                    await interaction.client.databaseEditData(`INSERT INTO ${itemTable} (user_id, ${itemColumn}) VALUES (?, ?)`, [interaction.user.id, itemName[index]]);
+                            collector.stop("Bought");
+                            await interaction.client.databaseEditData(`UPDATE users SET units = units - ?  WHERE user_id = ?`, [quantity * priceUnits[index], interaction.user.id]);
+                            return;
+                        }
+                }
+                else {
+                    let add = parseInt(i.customId);
+                    if (Number.isInteger(add))
+                        quantity += add
+                    if (quantity < 1) {
+                        quantity -= add;
+                        await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_low_quantity')}**\n**${interaction.client.getWordLanguage(serverSettings.lang, 'quantity_c')}**: ${quantity}`, "ERROR!")], components: [quantityButtonUp, quantityButtonDown] });
+                    }
+                    else if (priceCredit[index] > 0)
+                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['credit']}${quantity * priceCredit[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                    else
+                        await i.update({ embeds: [interaction.client.blueEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, "shop_currency").format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units)}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_b_quantity')}** ${quantity}\n**${interaction.client.getWordLanguage(serverSettings.lang, 'shop_total_p')}** ${interaction.client.defaultEmojis['units']}${quantity * priceUnits[index]}`, `${interaction.client.getWordLanguage(serverSettings.lang, 'buying_c')} [${itemTable.toUpperCase()} - ${itemName[index]}]`)], components: [quantityButtonUp, quantityButtonDown, buySetting] });
+                }
             }
+        }
+        catch (error) {
+            errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     });
 

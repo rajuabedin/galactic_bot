@@ -60,51 +60,56 @@ module.exports = {
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
 
             collector.on('collect', async i => {
-                selected = true;
-                if (nextMapName == i.values[0]) {
-                    userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
-                    elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / -1000);
-                    elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / 60;
-                    elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
-                    elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
-                    i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, i.values[0]))], components: [] });
-                }
-                else {
-                    mapId = i.values[0].split("-");
-                    if (i.values[0] == "111" || i.values[0] == "222" || i.values[0] == "333" || i.values[0] == "444")
-                        i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
-                    else {
-                        let levelRequirement = 0;
-                        if ((userInfo.firm == "Luna" && mapId[0] == "1") || (userInfo.firm == "Terra" && mapId[0] == "2") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
-                            levelRequirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
-                            levelRequirement = levelRequirement[0].level_requirement;
-                        }
-                        else {
-                            levelRequirement = await interaction.client.databaseSelcetData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
-                            levelRequirement = levelRequirement[0].enemy_level_requirement;
-                        }
-
-                        let timeToReachMapMinutes = 400000 / (userInfo.user_speed * userInfo.user_speed);
-                        let timeToReachMapSeconds = Math.floor((timeToReachMapMinutes % 1.0) * 60);
-                        timeToReachMapMinutes = Math.floor(timeToReachMapMinutes);
-                        let dateToReachMap = new Date();
-                        dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes);
-                        dateToReachMap.setSeconds(dateToReachMap.getSeconds() + timeToReachMapSeconds);
-                        dateToReachMap = dateToReachMap.toJSON().split(".");
-                        dateToReachMap = dateToReachMap[0];
-
-                        if (userInfo.level >= levelRequirement) {
-                            await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
-                            await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
-                            i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
-                        }
-                        else {
-                            i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warpFail').format(levelRequirement), "ERROR!")], components: [] });
-                        }
-
+                try {
+                    selected = true;
+                    if (nextMapName == i.values[0]) {
+                        userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+                        elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / -1000);
+                        elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / 60;
+                        elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
+                        elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
+                        i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, i.values[0]))], components: [] });
                     }
+                    else {
+                        mapId = i.values[0].split("-");
+                        if (i.values[0] == "111" || i.values[0] == "222" || i.values[0] == "333" || i.values[0] == "444")
+                            i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
+                        else {
+                            let levelRequirement = 0;
+                            if ((userInfo.firm == "Luna" && mapId[0] == "1") || (userInfo.firm == "Terra" && mapId[0] == "2") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
+                                levelRequirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                                levelRequirement = levelRequirement[0].level_requirement;
+                            }
+                            else {
+                                levelRequirement = await interaction.client.databaseSelcetData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                                levelRequirement = levelRequirement[0].enemy_level_requirement;
+                            }
+
+                            let timeToReachMapMinutes = 400000 / (userInfo.user_speed * userInfo.user_speed);
+                            let timeToReachMapSeconds = Math.floor((timeToReachMapMinutes % 1.0) * 60);
+                            timeToReachMapMinutes = Math.floor(timeToReachMapMinutes);
+                            let dateToReachMap = new Date();
+                            dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes);
+                            dateToReachMap.setSeconds(dateToReachMap.getSeconds() + timeToReachMapSeconds);
+                            dateToReachMap = dateToReachMap.toJSON().split(".");
+                            dateToReachMap = dateToReachMap[0];
+
+                            if (userInfo.level >= levelRequirement) {
+                                await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
+                                await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
+                                i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
+                            }
+                            else {
+                                i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warpFail').format(levelRequirement), "ERROR!")], components: [] });
+                            }
+
+                        }
+                    }
+                    collector.stop("Selected");
                 }
-                collector.stop("Selected");
+                catch (error) {
+                    errorLog.error(error.message, { 'command_name': interaction.commandName });
+                }
             });
 
             collector.on('end', collected => {
