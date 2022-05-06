@@ -19,17 +19,17 @@ module.exports = {
             });
         };
 
-        //try {
+        try {
         if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
             return;
         }
         let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
         let elapsedTimeFromHunt = ~~((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
-        /*if (elapsedTimeFromHunt < 60) {
+        if (elapsedTimeFromHunt < 60) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))] });
             return;
-        }*/
+        }
         let mapId = userInfo.map_id;
         if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
             await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
@@ -181,7 +181,7 @@ module.exports = {
                         await interaction.client.wait(1500);
                     }
                     if (player[0].info.userStats.hp > 0) {
-                        log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                        log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -191,7 +191,7 @@ module.exports = {
                     }
                     else {
                         player[0].info.userStats.hp = 0;
-                        log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                        log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -314,7 +314,7 @@ module.exports = {
                 }
                 if (player[0].info.userStats.hp <= 0) {
                     player[0].info.userStats.hp = 0;
-                    log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                    log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                         + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                     message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -543,7 +543,7 @@ module.exports = {
                         await interaction.client.wait(1500);
                     }
                     if (player.length > 0) {
-                        log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                        log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -553,7 +553,7 @@ module.exports = {
                     }
                     else {
                         player[0].info.userStats.hp = 0;
-                        log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                        log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -717,7 +717,7 @@ module.exports = {
                 if (player[0].info.userStats.hp <= 0) {
                     if (player.length == 1) {
                         player[0].info.userStats.hp = 0;
-                        log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+                        log += `*DEFEAT!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
                             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
                         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -839,7 +839,7 @@ module.exports = {
 
             }
         }
-        log += `*VICTORY!*\nBattle ended after ${turnCounter} turns\n` + player[0].info.messageAmmo
+        log += `*VICTORY!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
             + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
 
         message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
@@ -856,7 +856,7 @@ module.exports = {
         for (let index in player)
             await player[index].update(interaction.client.greenEmbed(message, `**VICTORY!**`));
         await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, `**VICTORY!**`)], components: [download] });
-        /*}
+        }
         catch (error) {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
@@ -865,7 +865,7 @@ module.exports = {
             }
 
             errorLog.error(error.message, { 'command_name': interaction.commandName });
-        }*/
+        }
     }
 }
 
@@ -1118,7 +1118,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
     if (~~((Date.now() - Date.parse(boost[0].honor_boost)) / 1000) < 0)
         honorBoost = true;
 
-    //await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
+    await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [interaction.user.id]);
 
     let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
     huntConfiguration = huntConfiguration[0];
@@ -1457,7 +1457,7 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID) {
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = durability - 1 WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
                 }
                 if (playerInfo.messageAmmo != "") {
-                    await interaction.followUp({ embeds: [interaction.client.redEmbedImage("\n\`\`\`diff\n" + playerInfo.messageAmmo + " \`\`\`", "**You run out of:**", interaction.user)], ephemeral: true });
+                    await interaction.followUp({ embeds: [interaction.client.redEmbedImage("\n\`\`\`diff\n" + playerInfo.messageAmmo + " \`\`\`", "Restock supplies!", interaction.user)], ephemeral: true });
                 }
             }
         }
