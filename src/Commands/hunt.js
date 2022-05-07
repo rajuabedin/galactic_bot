@@ -447,17 +447,18 @@ module.exports = {
                                 }
                             }
                             else if (i.customId == "Join") {
-                                if (inBattle.includes(i.user.id)) {
-                                    await i.update({});
+                                await i.update({});
+                                if (inBattle.includes(i.user.id)) {                                    
                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                 }
                                 else {
                                     numberOfPlayers++;
-                                    await i.update({});
-                                    inBattle.push(i.user.id)
                                     player.push(await playerHandler(i, aliensName, alien[0].speed, mapId));
-                                    if (!player[player.length - 1].active)
+                                    inBattle.push(i.user.id)
+                                    if (!player[player.length - 1].active) {
                                         inBattle.pop();
+                                        numberOfPlayers--;
+                                    }
                                 }
                             }
                             else if (i.customId == "download") {
