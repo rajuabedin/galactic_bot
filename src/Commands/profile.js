@@ -35,7 +35,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            
+
             let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
@@ -62,6 +62,8 @@ module.exports = {
                 current_map: userMapData.map_name,
                 level: userInfo.level.toString(),
                 race: userInfo.race,
+                credit: userInfo.credit.toString(),
+                units: userInfo.units.toString(),
                 colony: userInfo.firm,
                 joined_on: timeConverter(userInfo.joined_on),
                 aliens_killed: userInfo.aliens_killed,
