@@ -136,15 +136,14 @@ module.exports = {
                         }
                         else {
                             await interaction.reply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo] });
-                            const filterRun = i => i.user.id == selectedOption.id && i.user.id != interaction.user.id && i.message.interaction.id == interaction.id;
+                            const filterRun = i => i.user.id == selectedOption.id && i.message.interaction.id == interaction.id;
                             const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
                             collector.on('collect', async i => {
                                 if (!i.replied)
                                     try {
-                                        if (i.customId == "yes") {
-                                            console.log("here")
+                                        if (i.customId == "yes" && i.user.id != interaction.user.id) {
                                             await interaction.client.databaseEditData(`UPDATE users SET group_id = ? WHERE user_id = ?`, [userInfo.group_id, selectedOption.id]);
-                                            await interaction.client.databaseEditData(`UPDATE group_list SET memmbers = 1 + memmbers WHERE group_id = ?`, [userInfo.group_id]);
+                                            await interaction.client.databaseEditData(`UPDATE group_list SET members = members + 1 WHERE group_id = ?`, [userInfo.group_id]);
                                             let leader = await interaction.client.databaseSelcetData("SELECT group_list.group_id, group_list.leader_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN group_list ON user_ships.user_id = group_list.leader_id AND group_list.group_id = ? WHERE user_ships.equipped = 1", [userInfo.group_id]);
                                             leader = leader[0];
                                             let teamMembers = await interaction.client.databaseSelcetData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
@@ -161,10 +160,12 @@ module.exports = {
                                             await i.update({ content: " ", embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)], components: [] });
                                             collector.stop();
                                         }
-                                        else {
+                                        else if (i.customId == "no" && i.user.id != interaction.user.id) {
                                             await i.update({ content: " ", embeds: [interaction.client.redEmbedImage(`<@${selectedOption.id}> has declined the team invitation!`, "Invitation Failed!", interaction.user)], components: [] });
                                             collector.stop();
                                         }
+                                        else
+                                            await i.update({});
                                     }
                                     catch (error) {
                                         errorLog.error(error.message, { 'command_name': interaction.commandName });
