@@ -1092,7 +1092,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
         cargo: userInfo.cargo,
         maxCargo: userInfo.max_cargo,
         resources: await userInfo.resources.split("; ").map(Number),
-        shipEmoji: ship.emoji_id,
+        shipEmoji: ship.ship_emoji,
         firm: userInfo.firm,
         durability: ship.durability
     };
