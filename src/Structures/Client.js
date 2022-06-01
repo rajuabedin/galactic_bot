@@ -76,7 +76,6 @@ class Client extends Discord.Client {
         (async () => {
             try {
                 console.log('Started refreshing application (/) commands.');
-
                 await rest.put(
                     Routes.applicationGuildCommands(this.clientId, this.guildId),
                     { body: commands },

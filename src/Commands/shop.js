@@ -466,7 +466,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     collector.stop("Bought");
                                     let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
                                     itemInfo = itemInfo[0];
-                                    let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                    let query = `insert into user_ships (ship_emoji, ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (${itemInfo.emoji_id},0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                     await interaction.client.databaseEditData(query)
                                     await interaction.client.databaseEditData(`UPDATE users SET credit = credit - ?  WHERE user_id = ?`, [priceCredit[index], interaction.user.id]);
                                     return;
@@ -520,7 +520,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     collector.stop("Bought");
                                     let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
                                     itemInfo = itemInfo[0];
-                                    let query = `insert into user_ships (ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
+                                    let query = `insert into user_ships (ship_emoji, ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (${itemInfo.emoji_id},0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                     await interaction.client.databaseEditData(query)
                                     await interaction.client.databaseEditData(`UPDATE users SET units = units - ? WHERE user_id = ?`, [priceUnits[index], interaction.user.id]);
                                     return;
