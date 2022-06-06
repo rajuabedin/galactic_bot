@@ -6,7 +6,15 @@ const errorLog = require('../Utility/logger').logger;
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('hunt_configuration')
-        .setDescription('Configure laser, missiles and hellstorm in hunt!'),
+        .setDescription('Configure laser, missiles and hellstorm sequence')
+        .addStringOption(option =>
+            option
+                .setName('option')
+                .setDescription('Select from configuration 1 or 2')
+                .setRequired(true)
+                .addChoice('1 (used in PVE)', 'hunt_configuration')
+                .addChoice('2 (usually used in PVP)', 'pvp_configuration')
+        ),
 
     async execute(interaction, userInfo, serverSettings) {
         String.prototype.format = function () {
@@ -21,8 +29,9 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
+            let selectedOption = interaction.options.getString('option');
             let discarded = false;
-            let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+            let huntConfiguration = await interaction.client.databaseSelcetData(`SELECT * FROM ${selectedOption} WHERE user_id = ?`, [interaction.user.id]);
             let [hp, sh] = await buttonHandler();
             let message = interaction.client.getWordLanguage(serverSettings.lang, 'user_config_desc');
             let storedMessage = "";
@@ -120,16 +129,16 @@ module.exports = {
                                     if (missileHellstorm == 1) {
                                         await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
                                         storedMessage = `**(${selectedAmmo})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
-                                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
+                                        await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
                                     }
                                     else {
                                         await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\t${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
                                         if (isMissile) {
-                                            await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
+                                            await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
                                             storedMessage = `**(${selectedAmmo})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
                                         }
                                         else {
-                                            await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [huntConfiguration[0].helstorm_missiles_number, interaction.user.id]);
+                                            await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [huntConfiguration[0].helstorm_missiles_number, interaction.user.id]);
                                             if (huntConfiguration[0].helstorm_missiles_number == 0)
                                                 storedMessage = `**(${selectedAmmo})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**\n${interaction.client.getWordLanguage(serverSettings.lang, 'user_config_no_hellstorm')}`;
                                             else
@@ -176,12 +185,12 @@ module.exports = {
                                     huntConfiguration[0][selectedAmmo] = mothership - 1;
                                     if (mothership == 1) {
                                         await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
-                                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
+                                        await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [0, interaction.user.id]);
                                         storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
                                     }
                                     else {
                                         await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\t${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
-                                        await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
+                                        await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [1, interaction.user.id]);
                                         storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
                                     }
                                 }
@@ -203,7 +212,7 @@ module.exports = {
                             }
 
                             else if (i.customId == "save") {
-                                await interaction.client.databaseEditData(`UPDATE hunt_configuration SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE ${selectedOption} SET ${selectedAmmo} = ? WHERE user_id = ?`, [ammoValue, interaction.user.id]);
                                 huntConfiguration[0][selectedAmmo] = ammoValue;
                                 if (ammoValue < 0) {
                                     await i.update({ embeds: [interaction.client.blueEmbed(`**(${selectedAmmo})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [hp, sh, row, settingRow] });

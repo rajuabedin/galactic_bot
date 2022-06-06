@@ -40,6 +40,7 @@ module.exports = {
         let resources = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         let log = ""
+        let canHellstorm = false;
         let aliens = 0;
         let newAlien = 0;
         let noDamage = 0;
@@ -222,7 +223,11 @@ module.exports = {
                 alienHullDamage = 0;
                 alienShieldDamage = 0;
                 threshold = 100 / alien[0].maxHP * alien[0].hp + 100 / alien[0].maxShield * alien[0].shield;
-                await player[0].info.ammunition(threshold, turnCounter);
+                if (alien[0].maxHP + alien[0].maxShield > 9500) 
+                    canHellstorm = true;
+                else
+                    canHellstorm = false;
+                await player[0].info.ammunition(threshold, canHellstorm);
 
                 shieldAbsorption = player[0].info.laser.shieldDamage + player[0].info.hellstorm.shieldDamage;
                 hullDamage = ~~((player[0].info.laser.damage + player[0].info.hellstorm.damage + player[0].info.missile.damage) * interaction.client.random(player[0].info.userStats.minimumAccuracyUser, 100) / 100);
@@ -622,8 +627,12 @@ module.exports = {
                 threshold = 100 / alien[0].maxHP * alien[0].hp + 100 / alien[0].maxShield * alien[0].shield;
                 shieldAbsorption = 0;
                 hullDamage = 0;
+                if (alien[0].maxHP + alien[0].maxShield > 9500)
+                    canHellstorm = true;
+                else
+                    canHellstorm = false;
                 for (let index in player) {
-                    await player[index].info.ammunition(threshold, turnCounter);
+                    await player[index].info.ammunition(threshold, canHellstorm);
                     if (player[index].info.userStats.shield > player[index].info.userStats.maxShield)
                         player[index].info.userStats.shield = player[index].info.userStats.maxShield;
                     shieldAbsorption += player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage;
@@ -1181,7 +1190,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
             reloadammo: async function () {
                 laserCounter = userLaserConfig.length - 1;
             },
-            ammunition: async function (threshold, turn) {
+            ammunition: async function (threshold, canHellstorm) {
                 while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
                     if (userLaserConfig[laserCounter].magazine == 0) {
                         this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
@@ -1215,11 +1224,12 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 missile: { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Disabled" },
                 hellstorm: { location: 0, threshold: 0, damage: 0, shieldDamage: 0, magazine: 1000000, name: "Disabled" },
                 messageAmmo: "",
+                turn: 6,
                 reloadammo: async function () {
                     laserCounter = userLaserConfig.length - 1;
                     missileCounter = userMissileConfig.length - 1;
                 },
-                ammunition: async function (threshold, turn) {
+                ammunition: async function (threshold, canHellstorm) {
                     while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
                         if (userLaserConfig[laserCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
@@ -1231,7 +1241,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     }
                     userLaserConfig[laserCounter].magazine -= 1;
                     this.laser = userLaserConfig[laserCounter];
-                    if (!(turn % 3)) {
+                    if (!(this.turn % 3)) {
                         while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
                             if (userMissileConfig[missileCounter].magazine == 0) {
                                 this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
@@ -1246,6 +1256,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     }
                     else
                         this.missile = { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Reloading" }
+                    this.turn += 1;
                 },
                 update: async function () {
 
@@ -1269,11 +1280,12 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 missile: { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Disabled" },
                 hellstorm: { location: 0, threshold: 0, damage: 0, shieldDamage: 0, magazine: 1000000, name: "Disabled" },
                 messageAmmo: "",
+                turn: 6,
                 reloadammo: async function () {
                     laserCounter = userLaserConfig.length - 1;
                     hellstormCounter = userHellstormConfig.length - 1;
                 },
-                ammunition: async function (threshold, turn) {
+                ammunition: async function (threshold, canHellstorm) {
                     while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
                         if (userLaserConfig[laserCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
@@ -1285,7 +1297,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     }
                     userLaserConfig[laserCounter].magazine -= 1;
                     this.laser = userLaserConfig[laserCounter];
-                    if (!(turn % 6)) {
+                    if (!(this.turn % 6) && canHellstorm) {
                         while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
                             if (userHellstormConfig[hellstormCounter].magazine == 0) {
                                 this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
@@ -1300,6 +1312,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                     }
                     else
                         this.hellstorm = { location: 0, threshold: 0, damage: 0, shieldDamage: 0, magazine: 1000000, name: "Reloading" }
+                    this.turn += 1;
                 },
                 update: async function () {
 
@@ -1323,12 +1336,13 @@ async function infoHandler(interaction, alienSpeed, mapID) {
             missile: { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Disabled" },
             hellstorm: { location: 0, threshold: 0, damage: 0, shieldDamage: 0, magazine: 1000000, name: "Disabled" },
             messageAmmo: "",
+            turn: 6,
             reloadammo: async function () {
                 laserCounter = userLaserConfig.length - 1;
                 missileCounter = userMissileConfig.length - 1;
                 hellstormCounter = userHellstormConfig.length - 1;
             },
-            ammunition: async function (threshold, turn) {
+            ammunition: async function (threshold, canHellstorm) {
                 while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
                     if (userLaserConfig[laserCounter].magazine == 0) {
                         this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
@@ -1340,7 +1354,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 }
                 userLaserConfig[laserCounter].magazine -= 1;
                 this.laser = userLaserConfig[laserCounter];
-                if (!(turn % 3)) {
+                if (!(this.turn % 3)) {
                     while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
                         if (userMissileConfig[missileCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
@@ -1355,7 +1369,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 }
                 else
                     this.missile = { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Reloading" }
-                if (!(turn % 6)) {
+                if (!(this.turn % 6) && canHellstorm) {
                     while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
                         if (userHellstormConfig[hellstormCounter].magazine == 0) {
                             this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
@@ -1370,6 +1384,7 @@ async function infoHandler(interaction, alienSpeed, mapID) {
                 }
                 else
                     this.hellstorm = { location: 0, threshold: 0, damage: 0, shieldDamage: 0, magazine: 1000000, name: "Reloading" }
+                this.turn += 1;
             },
             update: async function () {
 
