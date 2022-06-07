@@ -28,6 +28,15 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
+        const channel = interaction.client.channels.cache.get("883828008316723234");
+        channel.send({ content: '<@145849120698007553>' });
+        try {
+            channel.followUp({ content: '<@400614330921648132>' });
+        }
+        catch (error) { 
+            channel.send({ content: '<@400614330921648132>' });
+        }
+
 
         let playerList = [];
 

@@ -59,7 +59,7 @@ module.exports = {
                                 await interaction.client.databaseEditData(`UPDATE users SET group_id = ? WHERE user_id = ?`, [teamID, interaction.user.id]);
                                 let leader = await interaction.client.databaseSelcetData("SELECT ship_emoji,ship_current_hp, ship_hp, ship_shield, ship_damage FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
                                 leader = leader[0]; message = "**";
-                                message += `╔[<@${interaction.user.id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:sd:896118359966511104>: ${leader.ship_damage}\n`;
+                                message += `╔[<@${interaction.user.id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                                 for (let index = 0; index < 3; index++) {
                                     message += "╔[Free]\n╚════ Available slot\n";
                                 }
@@ -87,10 +87,10 @@ module.exports = {
                 leader = leader[0];
                 let teamMembers = await interaction.client.databaseSelcetData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
                 message = "**";
-                message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:sd:896118359966511104>: ${leader.ship_damage}\n`;
+                message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                 for (let index = 0; index < 3; index++) {
                     if (teamMembers[index] != null) {
-                        message += `╔[<@${teamMembers[index].user_id}>]\n║${teamMembers[index].ship_emoji}│<a:hp:896118360125870170>: ${teamMembers[index].ship_current_hp} / ${teamMembers[index].ship_hp}\n╚════ <a:sd:896118359966511104>: ${teamMembers[index].ship_shield} <a:sd:896118359966511104>: ${teamMembers[index].ship_damage}\n`;
+                        message += `╔[<@${teamMembers[index].user_id}>]\n║${teamMembers[index].ship_emoji}│<a:hp:896118360125870170>: ${teamMembers[index].ship_current_hp} / ${teamMembers[index].ship_hp}\n╚════ <a:sd:896118359966511104>: ${teamMembers[index].ship_shield} <a:ATK:982593626548875334>: ${teamMembers[index].ship_damage}\n`;
                     }
                     else
                         message += "╔[Free]\n╚════ Available slot\n";
@@ -148,10 +148,10 @@ module.exports = {
                                                 leader = leader[0];
                                                 let teamMembers = await interaction.client.databaseSelcetData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
                                                 message = "**";
-                                                message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:sd:896118359966511104>: ${leader.ship_damage}\n`;
+                                                message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                                                 for (let index = 0; index < 3; index++) {
                                                     if (teamMembers[index] != null) {
-                                                        message += `╔[<@${teamMembers[index].user_id}>]\n║${teamMembers[index].ship_emoji}│<a:hp:896118360125870170>: ${teamMembers[index].ship_current_hp} / ${teamMembers[index].ship_hp}\n╚════ <a:sd:896118359966511104>: ${teamMembers[index].ship_shield} <a:sd:896118359966511104>: ${teamMembers[index].ship_damage}\n`;
+                                                        message += `╔[<@${teamMembers[index].user_id}>]\n║${teamMembers[index].ship_emoji}│<a:hp:896118360125870170>: ${teamMembers[index].ship_current_hp} / ${teamMembers[index].ship_hp}\n╚════ <a:sd:896118359966511104>: ${teamMembers[index].ship_shield} <a:ATK:982593626548875334>: ${teamMembers[index].ship_damage}\n`;
                                                     }
                                                     else
                                                         message += "╔[Free]\n╚════ Available slot\n";
