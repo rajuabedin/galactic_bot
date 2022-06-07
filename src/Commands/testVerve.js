@@ -29,7 +29,8 @@ module.exports = {
             });
         };
         const channel = interaction.client.channels.cache.get("883828008316723234");
-        channel.send({ content: '<@145849120698007553>' });
+        channel.send({ content: '<@145849120698007553>', embeds: [channel.client.blueEmbed(`5 seconds till the start of the game`, "TEST")]
+});
         try {
             channel.followUp({ content: '<@400614330921648132>' });
         }
