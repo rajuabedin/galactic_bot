@@ -171,6 +171,7 @@ module.exports = {
                             await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO hunt_configuration (user_id) VALUES (?)`, [interaction.user.id]);
+                            await interaction.client.databaseEditData(`INSERT INTO pvp_configuration (user_id) VALUES (?)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO user_ships (user_id, equipped) VALUES (?, 1)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO boost (user_id) VALUES (?)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO user_log (user_id) VALUES (?)`, [interaction.user.id]);

@@ -6,6 +6,7 @@ const { Routes } = require('discord-api-types/v9');
 const Event = require('./Event.js');
 const mysql = require('mysql');
 const fs = require("fs");
+const errorLog = require('../Utility/logger').logger;
 require('dotenv').config();
 
 class Client extends Discord.Client {
@@ -246,7 +247,8 @@ class Client extends Discord.Client {
             const rows = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {
                     if (error) {
-                        reject(error);
+                        errorLog.error(error.message, { 'command_name': "select_query", 'query': query, 'error': error });
+                        resolve([]);
                     } else {
                         resolve(results);
                     }
@@ -268,7 +270,8 @@ class Client extends Discord.Client {
             const rowsCount = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {
                     if (error) {
-                        reject(error);
+                        errorLog.error(error.message, { 'command_name': "edit_query", 'query': query, 'error': error });
+                        resolve([]);
                     } else {
                         resolve(results.affectedRows);
                     }
