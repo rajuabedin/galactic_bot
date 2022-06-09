@@ -27,7 +27,10 @@ function sendMSG(channelID, requestBody) {
  * @returns {Dictionary} - 'code' value is null if successful, otherwise it contains the error code
  */
 function getDMChannel(userID, interaction) {
-    var data = await fetch(`https://discord.com/api/v9/channels/${channelID}/messages`, {
+    const requestBody = {
+        "recipient_id": userID
+    }
+    var data = await fetch(`https://discord.com/api/v9/users/@me/channels`, {
         method: 'POST',
         headers: {
             'Authorization': `Bot ${process.env.TOKEN}`,
