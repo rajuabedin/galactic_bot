@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
 const { MessageActionRow, MessageButton } = require('discord.js');
+const channelMSG = require('../Utility/discord-api-msg').sendMSG;
 
 let ar = [
     [["[     ]", 0], ["[     ]", 0], ["[     ]", 0], ["[     ]", 0], ["[     ]", 0]],
@@ -28,15 +29,13 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        const channel = interaction.client.channels.cache.get("883828008316723234");
-        channel.send({ content: '<@145849120698007553>', embeds: [channel.client.blueEmbed(`5 seconds till the start of the game`, "TEST")]
-});
-        try {
-            channel.followUp({ content: '<@400614330921648132>' });
-        }
-        catch (error) { 
-            channel.send({ content: '<@400614330921648132>' });
-        }
+        
+        let testMessage = await channelMSG("883828008316723234", {
+            "content": "<@400614330921648132>",
+            "embeds": [interaction.client.redEmbed("HI")],
+            "components": [consoleRow1, consoleRow2, consoleRow3]
+        });
+        
 
 
         let playerList = [];

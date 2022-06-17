@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
 const { MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
 const resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "]
-
+const channelMSG = require('../Utility/discord-api-msg').sendMSG;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -46,6 +46,41 @@ module.exports = {
         let newAlien = 0;
         let noDamage = 0;
         let frontEmoji = "";
+
+
+        while (userInfo.pvp_enable) {
+            if (interaction.client.random(0, 100) < 25 && (~~((userInfo.map_id % 1.0) * 10)) > 4) {
+                let enemyPlayer = await interaction.client.databaseSelcetData("SELECT firm, user_id, channel_id, user_hp, max_shield, absorption_rate, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
+                if (typeof enemyPlayer !== 'undefined') {
+                    let player = [await playerHandler(interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId)];
+                    if (!player[0].active)
+                        return;
+                    let channel = await channelMSG(enemyPlayer[0].channel_id, {
+                        "content": `<@${enemyPlayer[0].user_id}>`,
+                        "embeds": [interaction.client.redEmbed("HI")],
+                        "components": [attackRow]
+                    });
+                    //enemyPlayers = [await playerHandler(interaction, ["Enemy"], userInfo.user_speed, mapId)];
+                    
+                    let joinableEnemiesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0 AND user_id <> ?", [enemyPlayer[0].firm, mapId, enemyPlayer[0].channel_id, enemyPlayer[0].user_id]);
+                    joinableEnemiesID = joinableEnemiesID.map(x => x.user_id);
+                    let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, interaction.user.id]);
+                    joinableAlliesID = joinableAlliesID.map(x => x.user_id);
+                    //let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
+                    //joinableAlliesID = joinableAlliesID.map(x => x.user_id);
+
+
+
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, `**VICTORY!**`)], components: [download] });
+                    await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
+                    return;
+                }
+                else
+                    userInfo.pvp_enable = false;
+            }
+            else
+                userInfo.pvp_enable = false;
+        }
         let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
         if (huntConfiguration[0].mothership == 1)
             aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
@@ -68,26 +103,6 @@ module.exports = {
         let player = [await playerHandler(interaction, aliensName, alien[0].speed, mapId)];
         if (!player[0].active)
             return;
-        player[0].info.userStats.currentChannelID
-        while (userInfo.pvp_enable) {
-            if (interaction.client.random(0, 100) < 25 && (~~((userInfo.map_id % 1.0) * 10)) > 4) {
-                let enemyPlayers = await interaction.client.databaseSelcetData("SELECT user_id, channel_id FROM users WHERE firm <> ? AND map_id = ? ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
-                if (typeof enemyPlayers !== 'undefined') {
-                    const channel = interaction.client.channels.cache.get(enemyPlayers[0].channel_id);
-                    enemyPlayers = [await playerHandler(interaction, ["Enemy"], userInfo.user_speed, mapId)];
-                    let joinableEnemiesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [enemyPlayers[0].info.userStats.firm, mapId, enemyPlayers[0].info.userStats.currentChannelID]);
-                    joinableEnemiesID = joinableEnemiesID.map(x => x.user_id);
-                    let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
-                    joinableAlliesID = joinableAlliesID.map(x => x.user_id);
-
-                    return;
-                }
-                else
-                    userInfo.pvp_enable = false;
-            }
-            else
-                userInfo.pvp_enable = false;
-        }
         log = `Engaging Combat with ->|${alien[0].name}|<-`
             + `\nYour Info : \nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}`
             + `\nAlien Info:\nHP: ${alien[0].hp}\tShield: ${alien[0].shield}\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
@@ -940,6 +955,18 @@ const runRow = new MessageActionRow()
             .setCustomId("NextAlien")
             .setLabel("NEXT")
             .setStyle("PRIMARY"),
+);
+    
+const attackRow = new MessageActionRow()
+    .addComponents(
+        new MessageButton()
+            .setCustomId("Atk")
+            .setLabel("ATK")
+            .setStyle("PRIMARY"),
+        new MessageButton()
+            .setCustomId("Run")
+            .setLabel("ESCAPE")
+            .setStyle("DANGER"),        
     );
 
 const teamRunRow = new MessageActionRow()
@@ -1068,7 +1095,7 @@ async function missionHandler(interaction, aliens, id, boost) {
 
 }
 
-async function infoHandler(interaction, alienSpeed, mapID) {
+async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
     let userInfo = await interaction.client.getUserAccount(interaction.user.id);
     if (userInfo.user_hp == 0) {
         await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)] });
@@ -1156,7 +1183,11 @@ async function infoHandler(interaction, alienSpeed, mapID) {
 
     await interaction.client.databaseEditData("UPDATE users SET channel_id = ?, in_hunt = 1 WHERE user_id = ?", [interaction.channelId, interaction.user.id]);
 
-    let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+    let huntConfiguration = 0;
+    if (pvpSetting)
+        huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM pvp_configuration WHERE user_id = ?", [interaction.user.id]);
+    else
+        huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
     huntConfiguration = huntConfiguration[0];
     let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
     ammunition = ammunition[0];
@@ -1427,8 +1458,8 @@ async function infoHandler(interaction, alienSpeed, mapID) {
     }
 }
 
-async function playerHandler(interaction, aliens, alienSpeed, mapID) {
-    let playerInfo = await infoHandler(interaction, alienSpeed, mapID);
+async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting = false) {
+    let playerInfo = await infoHandler(interaction, alienSpeed, mapID, pvpSetting);
     if (playerInfo.canHunt)
         return {
             username: interaction.user.username,

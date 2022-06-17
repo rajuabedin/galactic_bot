@@ -3,10 +3,10 @@ const fetch = require("node-fetch");
 
 /**
  * 
- * @param {Integer} channelID - The channel ID to send the message to
+ * @param {import('discord-api-types').Snowflake} channelID - The channel ID to send the message to
  * @param {Dictionary} requestBody - Request body to send, need to be a dictionary
  */
-function sendMSG(channelID, requestBody) {
+async function sendMSG(channelID, requestBody) {
 
     var data = await fetch(`https://discord.com/api/v9/channels/${channelID}/messages`, {
         method: 'POST',
@@ -18,6 +18,7 @@ function sendMSG(channelID, requestBody) {
     })
         .then(response => response.json())
         .then(data => { return data });
+    return data;
 }
 
 /**
@@ -26,7 +27,7 @@ function sendMSG(channelID, requestBody) {
  * @param {Any} interaction - For db connection
  * @returns {Dictionary} - 'code' value is null if successful, otherwise it contains the error code
  */
-function getDMChannel(userID, interaction) {
+async function getDMChannel(userID, interaction) {
     const requestBody = {
         "recipient_id": userID
     }
@@ -42,7 +43,7 @@ function getDMChannel(userID, interaction) {
             response = response.json();
             if (response.status == 200) {
                 response['code'] = null;
-                await interaction.client.databaseEditData('update users set dm_channel = ? where user_id = ?', [response.id, userID]);
+                interaction.client.databaseEditData('update users set dm_channel = ? where user_id = ?', [response.id, userID]);
             }
             return response.json();
         })
