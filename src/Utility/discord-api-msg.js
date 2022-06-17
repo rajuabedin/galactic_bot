@@ -52,6 +52,27 @@ async function getDMChannel(userID, interaction) {
     return data;
 }
 
+/**
+ * 
+ * @param {import('discord-api-types').Snowflake} channelID 
+ * @param {import('discord-api-types').Snowflake} messageID 
+ * @param {Dictionary} requestBody 
+ * @returns 
+ */
+async function editMessage(channelID, messageID, requestBody) {
+    var data = await fetch(`https://discord.com/api/v9/channels/${channelID}/messages/${messageID}`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bot ${process.env.TOKEN}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+    })
+        .then(response => response.json())
+        .then(data => { return data });
+    return data;
+}
+
 module.exports = {
     sendMSG,
     getDMChannel
