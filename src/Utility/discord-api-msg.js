@@ -73,6 +73,20 @@ async function editMessage(channelID, messageID, requestBody) {
     return data;
 }
 
+async function deleteMessage(channelID, messageID, reason = "Not specified") {
+    var data = await fetch(`https://discord.com/api/v9/channels/${channelID}/messages/${messageID}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bot ${process.env.TOKEN}`,
+            'Content-Type': 'application/json',
+            'X-Audit-Log-Reason': reason
+        }
+    })
+        .then(response => response.json())
+        .then(data => { return data });
+    return data;
+}
+
 module.exports = {
     sendMSG,
     getDMChannel
