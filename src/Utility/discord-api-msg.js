@@ -16,7 +16,13 @@ async function sendMSG(channelID, requestBody) {
         },
         body: JSON.stringify(requestBody)
     })
-        .then(response => response.json())
+        .then(response => {
+            response = response.json();
+            if (response.status == 200) {
+                response['code'] = null;
+            }
+            return response;
+        })
         .then(data => { return data });
     return data;
 }
@@ -45,7 +51,7 @@ async function getDMChannel(userID, interaction) {
                 response['code'] = null;
                 interaction.client.databaseEditData('update users set dm_channel = ? where user_id = ?', [response.id, userID]);
             }
-            return response.json();
+            return response;
         })
         .then(data => { return data });
 
@@ -68,7 +74,13 @@ async function editMessage(channelID, messageID, requestBody) {
         },
         body: JSON.stringify(requestBody)
     })
-        .then(response => response.json())
+        .then(response => {
+            response = response.json();
+            if (response.status == 200) {
+                response['code'] = null;
+            }
+            return response;
+        })
         .then(data => { return data });
     return data;
 }
@@ -82,12 +94,20 @@ async function deleteMessage(channelID, messageID, reason = "Not specified") {
             'X-Audit-Log-Reason': reason
         }
     })
-        .then(response => response.json())
+        .then(response => {
+            response = response.json();
+            if (response.status == 200) {
+                response['code'] = null;
+            }
+            return response;
+        })
         .then(data => { return data });
     return data;
 }
 
 module.exports = {
     sendMSG,
-    getDMChannel
+    getDMChannel,
+    deleteMessage,
+    editMessage
 }
