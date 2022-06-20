@@ -32,10 +32,10 @@ module.exports = {
         
         let testMessage = await channelMSG("883828008316723234", {
             "content": "<@400614330921648132>",
-            "embeds": [interaction.client.redEmbed("HI")],
+            "embeds": [interaction.client.redEmbed("HI", "<@400614330921648132>")],
             "components": [consoleRow1, consoleRow2, consoleRow3]
         });
-        
+        console.log("code" in testMessage);
 
 
         let playerList = [];
