@@ -160,13 +160,13 @@ module.exports = {
                             selectedTutorial++;
                             selectedFirm = i.customId;
                             if (selectedFirm == "Terra") {
-                                await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Terrestrian"]);
+                                await interaction.client.databaseEditData(`INSERT INTO users (username, user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-'), interaction.user.id, i.customId, "Terrestrian"]);
                             }
                             else if (selectedFirm == "Luna") {
-                                await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Lunian"]);
+                                await interaction.client.databaseEditData(`INSERT INTO users (username, user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-'), interaction.user.id, i.customId, "Lunian"]);
                             }
                             else {
-                                await interaction.client.databaseEditData(`INSERT INTO users (user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.id, i.customId, "Martian"]);
+                                await interaction.client.databaseEditData(`INSERT INTO users (username, user_id, firm, race) VALUES (?, ?, ?)`, [interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-'), interaction.user.id, i.customId, "Martian"]);
                             }
                             await interaction.client.databaseEditData(`INSERT INTO user_cd (user_id) VALUES (?)`, [interaction.user.id]);
                             await interaction.client.databaseEditData(`INSERT INTO ammunition (user_id) VALUES (?)`, [interaction.user.id]);

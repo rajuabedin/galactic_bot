@@ -3,6 +3,7 @@ const errorLog = require('../Utility/logger').logger;
 const { MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
 const resourcesName = ["Rhodochrosite ", "Linarite      ", "Dolomite      ", "Rubellite     ", "Prehnite      ", "Diamond       ", "Radtkeite     ", "Dark Matter   ", "Gold          "]
 const channelMSG = require('../Utility/discord-api-msg').sendMSG;
+const channelEditMessage = require('../Utility/discord-api-msg').editMessage;
 const disabledMaps = [11, 21, 31, 12, 22, 32];
 
 module.exports = {
@@ -67,27 +68,38 @@ module.exports = {
         let run = false;
         let next = false;
         let swapping = false;
+        let runEnemy = false;
+        let nextEnemy = false;
+        let swappingEnemy = false;
+        let enemyInteraction = 0;
         let storedAlien = 0;
         let alienAccuracy = 0;
 
         while (userInfo.pvp_enable && !(disabledMaps.includes(mapId))) {
             if (interaction.client.random(0, 100) < 100) {
-                let enemyPlayer = await interaction.client.databaseSelcetData("SELECT firm, user_id, channel_id, user_hp, max_hp, max_shield, user_shield, absorption_rate, user_penetration, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
-                if (typeof enemyPlayer !== 'undefined') {
+                let enemyPlayer = await interaction.client.databaseSelcetData("SELECT username, firm, user_id, channel_id, user_hp, max_hp, max_shield, user_shield, absorption_rate, user_penetration, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
+                if (Object.keys(enemyPlayer).length !== 0) {
+                    let channelIDEnemy = enemyPlayer[0].channel_id;
                     let enemyJoined = false;
                     await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
-                    await interaction.client.databaseEditData("UPDATE user_cd SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
+                    await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
                     await interaction.client.wait(1000);
-                    let enemyShipEmoji = await interaction.client.databaseSelcetData("SELECT ship_emoji FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
+                    let enemyShipEmoji = await interaction.client.databaseSelcetData("SELECT ship_emoji, ship_model FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
+                    let enemyShipModel = enemyShipEmoji[0].ship_model;
                     enemyShipEmoji = enemyShipEmoji[0].ship_emoji;
-                    let player = [await playerHandler(interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId)];
+                    let player = [await playerHandler(interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId, true)];
                     if (!player[0].active)
                         return;
-                    let channel = await channelMSG(enemyPlayer[0].channel_id, {
+
+                    message = `\n**Your Info**:\n**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**`
+                        + `\n**Enemy Info**:\n**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
+
+                    let channel = await channelMSG(channelIDEnemy, {
                         "content": `<@${enemyPlayer[0].user_id}>`,
-                        "embeds": [interaction.client.redEmbed("HI")],
+                        "embeds": [interaction.client.redEmbed(message, `**Danger! Enemy attack!**`)],
                         "components": [attackRow]
                     });
+                    let enemyUsername = enemyPlayer[0].username;
                     let enemyCd = await interaction.client.databaseSelcetData("SELECT last_repair FROM user_cd WHERE user_id = ?", [enemyPlayer[0].user_id]);
                     enemyPlayer[0].user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(enemyCd[0].last_repair)) / 60000)
                     if (enemyPlayer[0].user_hp > enemyPlayer[0].max_hp)
@@ -156,7 +168,7 @@ module.exports = {
                                         }
                                         else {
                                             numberOfPlayers++;
-                                            player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId));
+                                            player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
                                             inBattle.push(i.user.id)
                                             if (!player[player.length - 1].active) {
                                                 inBattle.pop();
@@ -213,15 +225,15 @@ module.exports = {
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping lead operator...**", "")], components: [] });
                                     await interaction.client.wait(1000);
                                     alienMessage = "";
-                                    alienMessage += `**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n<:Transparent:902212836770598922>`;
+                                    alienMessage += `<:Transparent:902212836770598922>**${enemyUsername} [${enemyShipEmoji}]**\n<:aim:902625135050235994>[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n`;
 
                                     message = `**User Info**:\n`;
                                     frontEmoji = `<:aim:902625135050235994>`;
                                     for (let index in player) {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
+                                        message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
                                     }
-                                    message += "\n**Enemy Info**:\n<:aim:902625135050235994>" + alienMessage;
+                                    message += "\n**Enemy Info**:\n" + alienMessage;
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Changed lead operator**`)], components: [teamRunRow] });
                                     await interaction.client.wait(1500);
                                 }
@@ -230,10 +242,11 @@ module.exports = {
                                 }
                             }
                             threshold = 100 / enemyPlayer[0].max_hp * enemyPlayer[0].user_hp + 100 / enemyPlayer[0].max_shield * enemyPlayer[0].user_shield;
-                            await player[0].info.ammunition(threshold, true);
 
+                            shieldAbsorption = 0;
+                            hullDamage = 0;
                             for (let index in player) {
-                                await player[index].info.ammunition(threshold, canHellstorm);
+                                await player[index].info.ammunition(threshold, true);
                                 if (player[index].info.userStats.shield > player[index].info.userStats.maxShield)
                                     player[index].info.userStats.shield = player[index].info.userStats.maxShield;
                                 shieldAbsorption += player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage;
@@ -249,7 +262,7 @@ module.exports = {
                             else if (enemyPlayer[0].user_shield > shieldAbsorption) {
                                 //player[0].info.userStats.shield += shieldAbsorption;
                                 enemyPlayer[0].user_shield -= shieldAbsorption;
-                                shieldDamage = ~~(hullDamage * (enemyPlayer[0].absorption_rate - player[0].info.userStats.penetration));
+                                shieldDamage = ~~(hullDamage * (enemyPlayer[0].absorption_rate / 100 - player[0].info.userStats.penetration));
                                 if (enemyPlayer[0].user_shield < shieldDamage) {
                                     shieldDamage = enemyPlayer[0].user_shield;
                                     enemyPlayer[0].user_shield = 0;
@@ -265,7 +278,6 @@ module.exports = {
                             total = shieldAbsorption;
                             for (let index in player)
                                 total += player[index].info.laser.damage + player[index].info.hellstorm.damage + player[index].info.missile.damage;
-
                             if (enemyPlayer[0].user_hp > hullDamage) {
                                 enemyPlayer[0].user_hp -= hullDamage;
                             }
@@ -291,7 +303,7 @@ module.exports = {
                             alienMessage = "";
                             alienInfo = "\n\nEnemy Info:";
                             alienMessage += `**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n<:Transparent:902212836770598922>`;
-                            alienInfo += `\n@<${enemyPlayer[0].user_id}> HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}`
+                            alienInfo += `\n${enemyUsername} HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}`
 
                             if (shieldAbsorption > 0) {
                                 message = `*Turn* ***${turnCounter}***\n**User Info**:\n**`;
@@ -301,58 +313,58 @@ module.exports = {
                                 for (let index in player) {
                                     playerShieldAbsorption = ~~(shieldAbsorption / totalSHieldAbsorption * (player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage));
                                     if (playerShieldAbsorption) {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                        message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                             + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}<a:Absorb:949004754678341633>${playerShieldAbsorption}\n`
                                             + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
                                         player[index].info.userStats.shield += playerShieldAbsorption;
 
                                         log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                            + alienInfo
-                                            + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                                            + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                             + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                             + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]`
                                             + `\n+ ${playerShieldAbsorption} Shield Absorbed\n`
                                     }
                                     else {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                        message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                             + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                                             + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
 
                                         log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                            + alienInfo
-                                            + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                                            + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                             + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                             + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
                                     }
                                 }
                                 message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
-                                log += `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                log += alienInfo + `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
                             }
                             else {
                                 message = `*Turn* ***${turnCounter}***\n**User Info**:\n**`;
                                 frontEmoji = `<:aim:902625135050235994>`;
                                 log += `*Turn ${turnCounter}*\n`;
                                 for (let index in player) {
-                                    message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                    message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                         + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                                         + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                     frontEmoji = `<:Transparent:902212836770598922>`;
 
                                     log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                        + alienInfo
-                                        + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                                        + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                         + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                         + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
 
                                 }
                                 message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
-                                log += `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                log += alienInfo + `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
                             }
-                            message += "\n**Enemy Info**:\n<:aim:902625135050235994>" + alienMessage;
+                            message += `\n**Enemy Info**:**\n<:Transparent:902212836770598922>${enemyUsername} [${enemyShipModel}]**\n<:aim:902625135050235994>` + alienMessage;
 
                             await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**In Combat with Enemy ship**`)] });
                             await interaction.client.wait(1200);
@@ -405,6 +417,10 @@ module.exports = {
                         return;
                     }
                     else {
+                        let logEnemy = "";
+                        let storedMessage = "";
+                        let storedLog = "";
+                        let messageEnemy = "";
                         let swappingCounter = 0;
                         let playerShieldAbsorption = 0;
                         let totalSHieldAbsorption = 0;
@@ -461,7 +477,7 @@ module.exports = {
                                         }
                                         else {
                                             numberOfPlayers++;
-                                            player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId));
+                                            player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
                                             inBattle.push(i.user.id)
                                             if (!player[player.length - 1].active) {
                                                 inBattle.pop();
@@ -489,14 +505,24 @@ module.exports = {
 
                         const filterRunEnemy = iEnemy => joinableEnemiesID.includes(iEnemy.user.id) && iEnemy.message.interaction.id == interaction.id;
                         const collectorEnemy = interaction.channel.createMessageComponentCollector({ filterRunEnemy, time: 120000 });
-                        collectorEnemy.on('collect', async i => {                            
+                        collectorEnemy.on('collect', async i => {
                             if (!i.replied) {
                                 try {
                                     if (i.user.id != interaction.user.id) {
                                         collector.resetTimer({ time: 120000 });
-                                        if (i.customId == "Atk") { 
-                                            enemyPlayer = [await playerHandler(i, ["Enemy"], userInfo.user_speed, mapId, true)];
+                                        if (i.customId == "Atk") {
+                                            let storedEnemy = enemyPlayer[0];
+                                            enemyPlayer = [await playerHandler(i, ["Enemy"], userInfo.user_speed, mapId, true, true)];
+                                            enemyPlayer[0].info.userStats.user_hp = storedEnemy.user_hp;
+                                            enemyPlayer[0].info.userStats.user_shield = storedEnemy.user_shield;
                                             enemyJoined = true;
+                                            enemyInteraction = i;
+                                            await i.update({ components: [teamRunRow] });
+                                        }
+                                        if (i.customId == "RunAtk") {
+                                            runEnemy = true;
+                                            enemyInteraction = i;
+                                            await i.update({ components: [] });
                                         }
                                         if (i.customId == "Swap") {
                                             await i.update({});
@@ -504,7 +530,7 @@ module.exports = {
                                                 if (inBattle.length == 1)
                                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
                                                 else
-                                                    swapping = true;
+                                                    swappingEnemy = true;
                                             }
                                             else {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
@@ -513,7 +539,7 @@ module.exports = {
                                         else if (i.customId == "NextAlien" && alien.length > 0) {
                                             await i.update({});
                                             if (i.user.username == enemyPlayer[0].username) {
-                                                next = true;
+                                                nextEnemy = true;
                                             }
                                             else {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
@@ -521,7 +547,7 @@ module.exports = {
                                         }
                                         else if (i.customId == "Run") {
                                             if (i.user.username == enemyPlayer[0].username) {
-                                                run = true;
+                                                runEnemy = true;
                                                 await i.update({ components: [] });
                                             }
                                             else {
@@ -536,7 +562,7 @@ module.exports = {
                                             }
                                             else {
                                                 numberOfEnemies++;
-                                                enemyPlayer.push(await playerHandler(i, ["Enemy"], userInfo.user_speed, mapId));
+                                                enemyPlayer.push(await playerHandler(i, ["Enemy"], userInfo.user_speed, mapId, true));
                                                 enemyInBattle.push(i.user.id)
                                                 if (!enemyPlayer[enemyPlayer.length - 1].active) {
                                                     enemyInBattle.pop();
@@ -545,7 +571,7 @@ module.exports = {
                                             }
                                         }
                                         else if (i.customId == "download") {
-                                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                            let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
                                             await i.update({ embeds: [], components: [], files: [attachment] });
                                             collector.stop("Done downloading");
                                         }
@@ -569,6 +595,11 @@ module.exports = {
                             if (run) {
                                 interaction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
                                 log += `*Initializing escape command...*\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                logEnemy += `*Enemy initializing escape command...*\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                await channelEditMessage(channelIDEnemy, channel.id, {
+                                    "embeds": [interaction.client.redEmbed("**Enemy initializing escape command...**", "**Loading**")],
+                                    "components": []
+                                })
                                 await interaction.client.wait(1500);
 
                                 log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
@@ -579,6 +610,18 @@ module.exports = {
                                 for (let index in player)
                                     await player[index].update(interaction.client.greenEmbed(message, `**ESCAPE SUCCESSFUL!**`));
                                 await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE SUCCESSFUL!**`)], components: [download] });
+                                logEnemy += `*ENEMY ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n`;
+                                await channelEditMessage(channelIDEnemy, channel.id, {
+                                    "embeds": [interaction.client.redEmbed("**Enemy has left the hunt!**", "**ESCAPE SUCCESSFUL!**")],
+                                    "components": []
+                                })
+                                await interaction.client.wait(1500);
+                                let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
+                                await channelEditMessage(channelIDEnemy, channel.id, {
+                                    "embeds": [],
+                                    "components": [],
+                                    "files": [attachment]
+                                })
 
                                 await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                                 await interaction.client.databaseEditData("UPDATE users SET user_hp = ?, in_hunt = 0 WHERE user_id = ?", [enemyPlayer[0].user_hp, enemyPlayer[0].user_id]);
@@ -586,7 +629,95 @@ module.exports = {
                                 await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), enemyPlayer[0].user_id]);
                                 return;
                             }
-                            if (swapping) {
+                            else if (runEnemy) { 
+                                interaction.editReply({ embeds: [interaction.client.blueEmbed("**Enemy initializing escape command...**", `**Loading**`)], components: [] });
+                                enemyInteraction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
+                                log += `*Enemy initializing escape command...*\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                logEnemy += `*Initializing escape command...*\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                await interaction.client.wait(1500);
+
+                                let escapeTurns = ~~((462 + player[0].info.userStats.speed) / enemyPlayer[0].user_speed * 3);
+                                while (enemyPlayer[0].user_hp > 0 && escapeTurns > 0) {
+                                    escapeTurns--;
+                                    messageEnemy = "";
+                                    alienInfo = "\n\nEnemy Info:";
+                                    alienHullDamage = 0;
+                                    for (let index in alien) {
+                                        alienHullDamage += alien[index].damage;
+                                        messageEnemy += `<:Transparent:902212836770598922>${enemyUsername} [${enemyShipModel}]\n<:aim:902625135050235994>[${enemyShipEmoji}] <a:hp:896118360125870170>: ${enemyPlayer[0].user_hp}\t<a:sd:896118359966511104>: ${enemyPlayer[0].user_shield}\n `;
+                                        alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
+                                    }
+                                    alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
+                                    if (alienAccuracy > 65) {
+                                        alienHullDamage = ~~(alienHullDamage * alienAccuracy / 100)
+                                        messageEnemy += `**Total received damage: __${alienHullDamage}__**`;
+
+                                        if (player[0].info.userStats.shield > 0) {
+                                            alienShieldDamage = ~~(alienHullDamage * (player[0].info.userStats.absorption - alien[0].penetration));
+                                            if (player[0].info.userStats.shield <= alienShieldDamage) {
+                                                player[0].info.userStats.shield = 0;
+                                                player[0].info.userStats.hp -= alienHullDamage - player[0].info.userStats.shield;
+                                            }
+                                            else {
+                                                player[0].info.userStats.shield -= alienShieldDamage;
+                                                player[0].info.userStats.hp -= alienHullDamage - alienShieldDamage;
+                                            }
+                                        }
+                                        else {
+                                            player[0].info.userStats.shield = 0;
+                                            player[0].info.userStats.hp -= alienHullDamage;
+                                        }
+                                    }
+                                    else {
+                                        alienHullDamage = "MISS";
+                                        messageEnemy += `**Total received damage: __MISS__**`;
+                                    }
+                                    message = `**User Info**:\n**`;
+                                    frontEmoji = `<:aim:902625135050235994>`;
+                                    log += `*${escapeTurns} turns till escape*`;
+                                    for (let index in player) {
+                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`;
+                                        frontEmoji = `<:Transparent:902212836770598922>`;
+                                        log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`;
+                                    }
+                                    log += alienInfo
+                                        + `\n[Alien Damage: ${alienHullDamage}]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+
+                                    message += "\nAlien Info**:\n<:Transparent:902212836770598922>" + alienMessage;
+
+                                    await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**${escapeTurns} turns till escape**`)] });
+                                    if (player[0].info.userStats.hp <= 0) {
+                                        player[0].info.userStats.hp = 0;
+                                        await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
+                                        player.shift();
+                                    }
+                                    await interaction.client.wait(1500);
+                                }
+                                if (player.length > 0) {
+                                    for (let index in player)
+                                        await player[index].update(interaction.client.greenEmbed(message, `**ESCAPE SUCCESSFUL!**`));
+                                    log += `*ESCAPE SUCCESSFUL!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
+                                        + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
+
+                                    message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
+                                        `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
+                                    await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE SUCCESSFUL!**`)], components: [download] });
+                                }
+                                else {
+                                    player[0].info.userStats.hp = 0;
+                                    await player[0].update(interaction.client.redEmbed(message, `**ESCAPE FAILED!**`));
+                                    log += `*ESCAPE FAILED!*\nBattle ended after ${turnCounter} turns\n` /*+ player[0].info.messageAmmo*/
+                                        + `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}`;
+
+                                    message = `**Battle ended after ${turnCounter} turns**\n` + /*"\n\`\`\`diff\n" + player[0].info.messageAmmo + " \`\`\`" +*/ "\`\`\`yaml\n" +
+                                        `Credits       :  ${player[0].reward.credit}\nUnits         :  ${player[0].reward.units}\nEXP           :  ${player[0].reward.exp}\nHonor         :  ${player[0].reward.honor}` + " \`\`\`";
+
+                                    await interaction.editReply({ embeds: [interaction.client.redEmbed(message, `**ESCAPE FAILED!**`)], components: [download] });
+                                }
+                                await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
+                                return;
+                            }
+                            else if (swapping) {
                                 swapping = false
                                 if (swappingCounter > 3) {
                                     swappingCounter = 0;
@@ -595,18 +726,31 @@ module.exports = {
                                     player.push(storedAlien);
                                     //await player[0].info.reloadammo();
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping lead operator...**", "")], components: [] });
+                                    await channelEditMessage(channelIDEnemy, channel.id, {
+                                        "embeds": [interaction.client.redEmbed("**Enemy swapping lead operator...**", "")],
+                                        "components": []
+                                    })
                                     await interaction.client.wait(1000);
                                     alienMessage = "";
-                                    alienMessage += `**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n<:Transparent:902212836770598922>`;
+                                    alienMessage += `<:Transparent:902212836770598922>**${enemyUsername} [${enemyShipEmoji}]**\n<:aim:902625135050235994>[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n`;
 
                                     message = `**User Info**:\n`;
+                                    messageEnemy = `**User Info**:\n`;
                                     frontEmoji = `<:aim:902625135050235994>`;
+                                    storedMessage = "";
                                     for (let index in player) {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
+                                        storedMessage += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
                                     }
-                                    message += "\n**Enemy Info**:\n<:aim:902625135050235994>" + alienMessage;
+                                    message += storedMessage;
+                                    messageEnemy += alienMessage;
+                                    message += "\n**Enemy Info**:\n" + alienMessage;
+                                    messageEnemy += "\n**Enemy Info**:\n" + storedMessage;
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Changed lead operator**`)], components: [teamRunRow] });
+                                    await channelEditMessage(channelIDEnemy, channel.id, {
+                                        "embeds": [interaction.client.redEmbed(messageEnemy, "**Enemy changed lead operator**")],
+                                        "components": [teamRunRow]
+                                    })
                                     await interaction.client.wait(1500);
                                 }
                                 else {
@@ -614,10 +758,11 @@ module.exports = {
                                 }
                             }
                             threshold = 100 / enemyPlayer[0].max_hp * enemyPlayer[0].user_hp + 100 / enemyPlayer[0].max_shield * enemyPlayer[0].user_shield;
-                            await player[0].info.ammunition(threshold, true);
+                            shieldAbsorption = 0;
 
+                            hullDamage = 0;
                             for (let index in player) {
-                                await player[index].info.ammunition(threshold, canHellstorm);
+                                await player[index].info.ammunition(threshold, true);
                                 if (player[index].info.userStats.shield > player[index].info.userStats.maxShield)
                                     player[index].info.userStats.shield = player[index].info.userStats.maxShield;
                                 shieldAbsorption += player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage;
@@ -633,7 +778,7 @@ module.exports = {
                             else if (enemyPlayer[0].user_shield > shieldAbsorption) {
                                 //player[0].info.userStats.shield += shieldAbsorption;
                                 enemyPlayer[0].user_shield -= shieldAbsorption;
-                                shieldDamage = ~~(hullDamage * (enemyPlayer[0].absorption_rate - player[0].info.userStats.penetration));
+                                shieldDamage = ~~(hullDamage * (enemyPlayer[0].absorption_rate / 100 - player[0].info.userStats.penetration));
                                 if (enemyPlayer[0].user_shield < shieldDamage) {
                                     shieldDamage = enemyPlayer[0].user_shield;
                                     enemyPlayer[0].user_shield = 0;
@@ -672,74 +817,86 @@ module.exports = {
                                     });
                             }
 
-                            alienMessage = "";
+                            alienMessage = "**";
                             alienInfo = "\n\nEnemy Info:";
-                            alienMessage += `**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**\n<:Transparent:902212836770598922>`;
-                            alienInfo += `\n@<${enemyPlayer[0].user_id}> HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}`
+                            alienMessage += `<:Transparent:902212836770598922>${enemyUsername} [${enemyShipModel}]\n<:aim:902625135050235994>[${enemyShipEmoji}] <a:hp:896118360125870170>: ${enemyPlayer[0].user_hp}\t<a:sd:896118359966511104>: ${enemyPlayer[0].user_shield}\n `;
+                            messageEnemy = `*Turn* ***${turnCounter}***\n**User Info**:\n` + alienMessage + `<:Transparent:902212836770598922>Total dealt damage: __0__**`;
+                            alienMessage += `<:Transparent:902212836770598922>Total received damage: __0__**`;
+                            alienInfo += `\n${enemyUsername} HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}`
+                            storedMessage = "";
+                            storedLog = "";
+
+                            message = `*Turn* ***${turnCounter}***\n**User Info**:\n**`;
+                            log += `*Turn ${turnCounter}*\nPlayer `;
 
                             if (shieldAbsorption > 0) {
-                                message = `*Turn* ***${turnCounter}***\n**User Info**:\n**`;
                                 frontEmoji = `<:aim:902625135050235994>`;
-                                log += `*Turn ${turnCounter}*\n`;
+                                logEnemy += `*Turn ${turnCounter}*\n`;
 
                                 for (let index in player) {
                                     playerShieldAbsorption = ~~(shieldAbsorption / totalSHieldAbsorption * (player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage));
                                     if (playerShieldAbsorption) {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                        storedMessage += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                             + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}<a:Absorb:949004754678341633>${playerShieldAbsorption}\n`
                                             + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
                                         player[index].info.userStats.shield += playerShieldAbsorption;
 
-                                        log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                            + alienInfo
-                                            + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+                                        storedLog += `${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
+
+                                            + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                             + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                             + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]`
                                             + `\n+ ${playerShieldAbsorption} Shield Absorbed\n`
                                     }
                                     else {
-                                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                        storedMessage += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                             + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                                             + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                         frontEmoji = `<:Transparent:902212836770598922>`;
 
-                                        log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                            + alienInfo
-                                            + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+                                        storedLog += `${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
+
+                                            + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                             + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                             + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
                                     }
                                 }
-                                message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
+                                message += storedMessage + `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
+                                storedMessage += `<:Transparent:902212836770598922>Total received damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
-                                log += `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                logEnemy += `User Info:\n${enemyUsername} HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}\n[Total Damage Dealt: 0]\n\nEnemy info:\n` + storedLog + "\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
+                                log += storedLog + alienInfo + `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
                             }
                             else {
-                                message = `*Turn* ***${turnCounter}***\n**User Info**:\n**`;
                                 frontEmoji = `<:aim:902625135050235994>`;
-                                log += `*Turn ${turnCounter}*\n`;
                                 for (let index in player) {
-                                    message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                                    storedMessage += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                         + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                                         + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                                     frontEmoji = `<:Transparent:902212836770598922>`;
 
-                                    log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                        + alienInfo
-                                        + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+                                    storedLog += `${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
+
+                                        + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                         + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                         + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
 
                                 }
-                                message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
+                                message += storedMessage + `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
+                                storedMessage += `<:Transparent:902212836770598922>Total received damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
-                                log += `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
+                                logEnemy += `User Info:\n${enemyUsername} HP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}\n[Total Damage Dealt: 0]\n\nEnemy info:\n` + storedLog + "\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
+                                log += storedLog + alienInfo + `\n[Enemy Damage: 0]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
                             }
-                            message += "\n**Enemy Info**:\n<:aim:902625135050235994>" + alienMessage;
+                            message += `\n**Enemy Info**:\n` + alienMessage;
+                            messageEnemy += `\n**Enemy Info**:\n**` + storedMessage;
 
                             await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**In Combat with Enemy ship**`)] });
-                            await interaction.client.wait(1200);
+                            await channelEditMessage(channelIDEnemy, channel.id, {
+                                "embeds": [interaction.client.redEmbed(messageEnemy, "**In Combat with Enemy ship**")],
+                            })
+                            await interaction.client.wait(2400);
                             turnCounter++;
 
                             if (hullDamage + shieldDamage + shieldAbsorption <= 0) {
@@ -788,15 +945,17 @@ module.exports = {
                         await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [enemyPlayer[0].user_id]);
                         return;
                     }
-                    //enemyPlayers = [await playerHandler(interaction, ["Enemy"], userInfo.user_speed, mapId)];                    
-                    //let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
-                    //joinableAlliesID = joinableAlliesID.map(x => x.user_id);
+                    /*
+                    enemyPlayers = [await playerHandler(interaction, ["Enemy"], userInfo.user_speed, mapId)];                    
+                    let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
+                    joinableAlliesID = joinableAlliesID.map(x => x.user_id);
 
 
 
                     await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, `**VICTORY!**`)], components: [download] });
                     await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                     return;
+                    */
                 }
                 else
                     userInfo.pvp_enable = false;
@@ -1081,7 +1240,7 @@ module.exports = {
                         `*Turn ${turnCounter}*\n`
                         + `Your Info : \nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}`
                         + alienInfo
-                        + `\n\n[Laser Damage (${player[0].info.laser.name}): ${~~(actualTotal / total * (player[0].info.laser.damage + player[0].info.laser.shieldDamage))}]`
+                        + `\n[Laser Damage (${player[0].info.laser.name}): ${~~(actualTotal / total * (player[0].info.laser.damage + player[0].info.laser.shieldDamage))}]`
                         + `\n[Missile Damage (${player[0].info.missile.name}): ${~~(actualTotal / total * player[0].info.missile.damage)}]`
                         + `\n[Hellstorm Damage (${player[0].info.hellstorm.name}): ${~~(actualTotal / total * (player[0].info.hellstorm.damage + player[0].info.hellstorm.shieldDamage))}]`
                         + `\n+ ${shieldAbsorption} Shield Absorbed`
@@ -1097,7 +1256,7 @@ module.exports = {
                         `*Turn ${turnCounter}*\n`
                         + `Your Info : \nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}`
                         + alienInfo
-                        + `\n\n[Laser Damage (${player[0].info.laser.name}): ${~~(actualTotal / total * (player[0].info.laser.damage + player[0].info.laser.shieldDamage))}]`
+                        + `\n[Laser Damage (${player[0].info.laser.name}): ${~~(actualTotal / total * (player[0].info.laser.damage + player[0].info.laser.shieldDamage))}]`
                         + `\n[Missile Damage (${player[0].info.missile.name}): ${~~(actualTotal / total * player[0].info.missile.damage)}]`
                         + `\n[Hellstorm Damage (${player[0].info.hellstorm.name}): ${~~(actualTotal / total * (player[0].info.hellstorm.damage + player[0].info.hellstorm.shieldDamage))}]`
                         + `\n[Alien Damage: ${alienHullDamage}]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
@@ -1272,7 +1431,7 @@ module.exports = {
                         frontEmoji = `<:aim:902625135050235994>`;
                         log += `*${escapeTurns} turns till escape*`;
                         for (let index in player) {
-                            message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`;
+                            message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`;
                             frontEmoji = `<:Transparent:902212836770598922>`;
                             log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`;
                         }
@@ -1328,7 +1487,7 @@ module.exports = {
                     message = `**User Info**:\n**`;
                     frontEmoji = `<:aim:902625135050235994>`;
                     for (let index in player) {
-                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[0].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[0].info.userStats.shield}\n`;
+                        message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[0].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[0].info.userStats.shield}\n`;
                         frontEmoji = `<:Transparent:902212836770598922>`;
                     }
                     message += "\nAlien Info**:\n<:aim:902625135050235994>" + alienMessage;
@@ -1352,7 +1511,7 @@ module.exports = {
                         message = `**User Info**:\n`;
                         frontEmoji = `<:aim:902625135050235994>`;
                         for (let index in player) {
-                            message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
+                            message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}[${player[index].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
                             frontEmoji = `<:Transparent:902212836770598922>`;
                         }
                         message += "\n**Alien Info**:\n<:aim:902625135050235994>" + alienMessage;
@@ -1496,32 +1655,33 @@ module.exports = {
                     for (let index in player) {
                         playerShieldAbsorption = ~~(shieldAbsorption / totalSHieldAbsorption * (player[index].info.laser.shieldDamage + player[index].info.hellstorm.shieldDamage));
                         if (playerShieldAbsorption) {
-                            message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                            message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                 + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}<a:Absorb:949004754678341633>${playerShieldAbsorption}\n`
                                 + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                             frontEmoji = `<:Transparent:902212836770598922>`;
                             player[index].info.userStats.shield += playerShieldAbsorption;
 
                             log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                + alienInfo
-                                + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                                + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                 + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                 + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]`
                                 + `\n+ ${playerShieldAbsorption} Shield Absorbed\n`
                         }
                         else {
-                            message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                            message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                                 + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                                 + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                             frontEmoji = `<:Transparent:902212836770598922>`;
 
                             log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                                + alienInfo
-                                + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                                + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                                 + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                                 + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
                         }
                     }
+                    log += alienInfo;
                     message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
                     log += `\n[Alien Damage: ${alienHullDamage}]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
@@ -1531,18 +1691,19 @@ module.exports = {
                     frontEmoji = `<:aim:902625135050235994>`;
                     log += `*Turn ${turnCounter}*\n`;
                     for (let index in player) {
-                        message += `<:Transparent:902212836770598922>${player[index].username}\n${frontEmoji}`
+                        message += `<:Transparent:902212836770598922>${player[index].username} [${player[index].info.userStats.shipModel}]\n${frontEmoji}`
                             + `[${player[index].info.userStats.shipEmoji}] <a:hp:896118360125870170>: ${player[index].info.userStats.hp}\t<a:sd:896118359966511104>: ${player[index].info.userStats.shield}\n`
                             + `<:Transparent:902212836770598922>[ L : ${player[index].info.laser.name} | M : ${player[index].info.missile.name} | H : ${player[index].info.hellstorm.name} ]\n`;
                         frontEmoji = `<:Transparent:902212836770598922>`;
 
                         log += `Player ${player[index].username} : \nHP: ${player[index].info.userStats.hp}\tShield: ${player[index].info.userStats.shield}`
-                            + alienInfo
-                            + `\n\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
+
+                            + `\n[Laser Damage (${player[index].info.laser.name}): ${~~(actualTotal / total * (player[index].info.laser.damage + player[index].info.laser.shieldDamage))}]`
                             + `\n[Missile Damage (${player[index].info.missile.name}): ${~~(actualTotal / total * player[index].info.missile.damage)}]`
                             + `\n[Hellstorm Damage (${player[index].info.hellstorm.name}): ${~~(actualTotal / total * (player[index].info.hellstorm.damage + player[index].info.hellstorm.shieldDamage))}]\n`;
 
                     }
+                    log += alienInfo;
                     message += `<:Transparent:902212836770598922>Total dealt damage: [<a:hp:896118360125870170>**:**__${hullDamage}__ <a:sd:896118359966511104>**:**__${shieldDamage}__]**\n`;
 
                     log += `\n[Alien Damage: ${alienHullDamage}]\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
@@ -1670,7 +1831,7 @@ const attackRow = new MessageActionRow()
             .setLabel("ATK")
             .setStyle("PRIMARY"),
         new MessageButton()
-            .setCustomId("Run")
+            .setCustomId("RunAtk")
             .setLabel("ESCAPE")
             .setStyle("DANGER"),
     );
@@ -1801,13 +1962,13 @@ async function missionHandler(interaction, aliens, id, boost) {
 
 }
 
-async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser = false) {
+async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser) {
     let userInfo = await interaction.client.getUserAccount(interaction.user.id);
     if (userInfo.user_hp == 0) {
         await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)] });
         return { canHunt: false };
     }
-    if (userInfo.in_hunt == 1 && !enemyuser) {
+    if (userInfo.in_hunt == 1 && !enemyUser) {
         await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)] });
         return { canHunt: false };
     }
@@ -1822,7 +1983,8 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
         return { canHunt: false };
     }
 
-    userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+    if (!enemyUser)
+        userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
     if (userInfo.user_hp > userInfo.max_hp)
         userInfo.user_hp = userInfo.max_hp;
 
@@ -1857,6 +2019,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
         maxCargo: userInfo.max_cargo,
         resources: await userInfo.resources.split("; ").map(Number),
         shipEmoji: ship.ship_emoji,
+        shipModel: ship.ship_model,
         firm: userInfo.firm,
         durability: ship.durability
     };
@@ -1886,8 +2049,8 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
         expBoost = true;
     if (~~((Date.now() - Date.parse(boost[0].honor_boost)) / 1000) < 0)
         honorBoost = true;
-
-    await interaction.client.databaseEditData("UPDATE users SET channel_id = ?, in_hunt = 1 WHERE user_id = ?", [interaction.channelId, interaction.user.id]);
+    if (!enemyUser)
+        await interaction.client.databaseEditData("UPDATE users SET channel_id = ?, in_hunt = 1 WHERE user_id = ?", [interaction.channelId, interaction.user.id]);
 
     let huntConfiguration = 0;
     if (pvpSetting)
@@ -1899,11 +2062,11 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
     ammunition = ammunition[0];
 
     let userLaserConfig = [
-        { location: 1, threshold: huntConfiguration.x1, damage: userStats.laserDamage, shieldDamage: 0, magazine: ~~(ammunition.x1_magazine / userStats.laserQuantity), name: "x1" },
-        { location: 2, threshold: huntConfiguration.x2, damage: 2 * userStats.laserDamage, shieldDamage: 0, magazine: ~~(ammunition.x2_magazine / userStats.laserQuantity), name: "x2" },
-        { location: 3, threshold: huntConfiguration.x3, damage: 3 * userStats.laserDamage, shieldDamage: 0, magazine: ~~(ammunition.x4_magazine / userStats.laserQuantity), name: "x3" },
-        { location: 4, threshold: huntConfiguration.x4, damage: 4 * userStats.laserDamage, shieldDamage: 0, magazine: ~~(ammunition.x4_magazine / userStats.laserQuantity), name: "x4" },
-        { location: 5, threshold: huntConfiguration.xS1, damage: 0, shieldDamage: 2 * userStats.laserDamage, magazine: ~~(ammunition.xS1_magazine / userStats.laserQuantity), name: "xS1" }
+        { location: 1, threshold: huntConfiguration.x1, damage: userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x1_magazine, name: "x1" },
+        { location: 2, threshold: huntConfiguration.x2, damage: 2 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x2_magazine, name: "x2" },
+        { location: 3, threshold: huntConfiguration.x3, damage: 3 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x4_magazine, name: "x3" },
+        { location: 4, threshold: huntConfiguration.x4, damage: 4 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x4_magazine, name: "x4" },
+        { location: 5, threshold: huntConfiguration.xS1, damage: 0, shieldDamage: 2 * userStats.laserDamage, magazine: ammunition.xS1_magazine, name: "xS1" }
     ];
     let userMissileConfig = [
         { location: 1, threshold: huntConfiguration.m1, damage: 1000, magazine: ammunition.m1_magazine, name: "m1" },
@@ -1912,10 +2075,10 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
         { location: 4, threshold: huntConfiguration.m4, damage: 6000, magazine: ammunition.m4_magazine, name: "m4" }
     ];
     let userHellstormConfig = [
-        { location: 1, threshold: huntConfiguration.h1, damage: 10000, shieldDamage: 0, magazine: ~~(ammunition.h1_magazine / huntConfiguration.helstorm_missiles_number), name: "h1" },
-        { location: 2, threshold: huntConfiguration.h2, damage: 20000, shieldDamage: 0, magazine: ~~(ammunition.h2_magazine / huntConfiguration.helstorm_missiles_number), name: "h2" },
-        { location: 3, threshold: huntConfiguration.hS1, damage: 0, shieldDamage: 12500, magazine: ~~(ammunition.hS1_magazine / huntConfiguration.helstorm_missiles_number), name: "hS1" },
-        { location: 4, threshold: huntConfiguration.hS2, damage: 0, shieldDamage: 25000, magazine: ~~(ammunition.hS2_magazine / huntConfiguration.helstorm_missiles_number), name: "hS2" }
+        { location: 1, threshold: huntConfiguration.h1, damage: 10000, shieldDamage: 0, magazine: ammunition.h1_magazine, name: "h1" },
+        { location: 2, threshold: huntConfiguration.h2, damage: 20000, shieldDamage: 0, magazine: ammunition.h2_magazine, name: "h2" },
+        { location: 3, threshold: huntConfiguration.hS1, damage: 0, shieldDamage: 12500, magazine: ammunition.hS1_magazine, name: "hS1" },
+        { location: 4, threshold: huntConfiguration.hS2, damage: 0, shieldDamage: 25000, magazine: ammunition.hS2_magazine, name: "hS2" }
     ];
 
 
@@ -1950,16 +2113,16 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
                 laserCounter = userLaserConfig.length - 1;
             },
             ammunition: async function (threshold, canHellstorm) {
-                while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
-                    if (userLaserConfig[laserCounter].magazine == 0) {
-                        this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
+                while (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity || threshold <= userLaserConfig[laserCounter].threshold) {
+                    if (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity) {
+                        this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                         userLaserConfig.unshift(userLaserConfig[laserCounter]);
                         userLaserConfig.splice(laserCounter + 1, 1);
                         continue;
                     }
                     laserCounter -= 1;
                 }
-                userLaserConfig[laserCounter].magazine -= 1;
+                userLaserConfig[laserCounter].magazine -= this.userStats.laserQuantity;
                 this.laser = userLaserConfig[laserCounter];
             },
             update: async function () {
@@ -1989,21 +2152,21 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
                     missileCounter = userMissileConfig.length - 1;
                 },
                 ammunition: async function (threshold, canHellstorm) {
-                    while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
-                        if (userLaserConfig[laserCounter].magazine == 0) {
-                            this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
+                    while (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity || threshold <= userLaserConfig[laserCounter].threshold) {
+                        if (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity) {
+                            this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                             userLaserConfig.unshift(userLaserConfig[laserCounter]);
                             userLaserConfig.splice(laserCounter + 1, 1);
                             continue;
                         }
                         laserCounter -= 1;
                     }
-                    userLaserConfig[laserCounter].magazine -= 1;
+                    userLaserConfig[laserCounter].magazine -= this.userStats.laserQuantity;
                     this.laser = userLaserConfig[laserCounter];
                     if (!(this.turn % 3)) {
                         while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
                             if (userMissileConfig[missileCounter].magazine == 0) {
-                                this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
+                                this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
                                 userMissileConfig.unshift(userMissileConfig[missileCounter]);
                                 userMissileConfig.splice(missileCounter + 1, 1);
                                 continue;
@@ -2045,28 +2208,28 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
                     hellstormCounter = userHellstormConfig.length - 1;
                 },
                 ammunition: async function (threshold, canHellstorm) {
-                    while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
-                        if (userLaserConfig[laserCounter].magazine == 0) {
-                            this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
+                    while (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity || threshold <= userLaserConfig[laserCounter].threshold) {
+                        if (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity) {
+                            this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                             userLaserConfig.unshift(userLaserConfig[laserCounter]);
                             userLaserConfig.splice(laserCounter + 1, 1);
                             continue;
                         }
                         laserCounter -= 1;
                     }
-                    userLaserConfig[laserCounter].magazine -= 1;
+                    userLaserConfig[laserCounter].magazine -= this.userStats.laserQuantity;
                     this.laser = userLaserConfig[laserCounter];
                     if (!(this.turn % 6) && canHellstorm) {
-                        while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
-                            if (userHellstormConfig[hellstormCounter].magazine == 0) {
-                                this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
+                        while (userHellstormConfig[hellstormCounter].magazine < 5 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
+                            if (userHellstormConfig[hellstormCounter].magazine < 5) {
+                                this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
                                 userHellstormConfig.unshift(userHellstormConfig[hellstormCounter]);
                                 userHellstormConfig.splice(hellstormCounter + 1, 1);
                                 continue;
                             }
                             hellstormCounter -= 1;
                         }
-                        userHellstormConfig[hellstormCounter].magazine -= 1;
+                        userHellstormConfig[hellstormCounter].magazine -= 5;
                         this.hellstorm = userHellstormConfig[hellstormCounter];
                     }
                     else
@@ -2102,21 +2265,21 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
                 hellstormCounter = userHellstormConfig.length - 1;
             },
             ammunition: async function (threshold, canHellstorm) {
-                while (userLaserConfig[laserCounter].magazine == 0 || threshold <= userLaserConfig[laserCounter].threshold) {
-                    if (userLaserConfig[laserCounter].magazine == 0) {
-                        this.messageAmmo += /*${interaction.user.username}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
+                while (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity || threshold <= userLaserConfig[laserCounter].threshold) {
+                    if (userLaserConfig[laserCounter].magazine < this.userStats.laserQuantity) {
+                        this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Laser (${userLaserConfig[laserCounter].name}) out of AMMO`;
                         userLaserConfig.unshift(userLaserConfig[laserCounter]);
                         userLaserConfig.splice(laserCounter + 1, 1);
                         continue;
                     }
                     laserCounter -= 1;
                 }
-                userLaserConfig[laserCounter].magazine -= 1;
+                userLaserConfig[laserCounter].magazine -= this.userStats.laserQuantity;
                 this.laser = userLaserConfig[laserCounter];
                 if (!(this.turn % 3)) {
                     while (userMissileConfig[missileCounter].magazine == 0 || threshold <= userMissileConfig[missileCounter].threshold) {
                         if (userMissileConfig[missileCounter].magazine == 0) {
-                            this.messageAmmo += /*${interaction.user.username}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
+                            this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Missile (${userMissileConfig[missileCounter].name}) out of AMMO`;
                             userMissileConfig.unshift(userMissileConfig[missileCounter]);
                             userMissileConfig.splice(missileCounter + 1, 1);
                             continue;
@@ -2129,16 +2292,16 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
                 else
                     this.missile = { location: 0, threshold: 0, damage: 0, magazine: 1000000, name: "Reloading" }
                 if (!(this.turn % 6) && canHellstorm) {
-                    while (userHellstormConfig[hellstormCounter].magazine == 0 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
-                        if (userHellstormConfig[hellstormCounter].magazine == 0) {
-                            this.messageAmmo += /*${interaction.user.username}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
+                    while (userHellstormConfig[hellstormCounter].magazine < 5 || threshold <= userHellstormConfig[hellstormCounter].threshold) {
+                        if (userHellstormConfig[hellstormCounter].magazine < 5) {
+                            this.messageAmmo += /*${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}'s */ `\n- Hellstorm (${userHellstormConfig[hellstormCounter].name}) out of AMMO`;
                             userHellstormConfig.unshift(userHellstormConfig[hellstormCounter]);
                             userHellstormConfig.splice(hellstormCounter + 1, 1);
                             continue;
                         }
                         hellstormCounter -= 1;
                     }
-                    userHellstormConfig[hellstormCounter].magazine -= 1;
+                    userHellstormConfig[hellstormCounter].magazine -= 5;
                     this.hellstorm = userHellstormConfig[hellstormCounter];
                 }
                 else
@@ -2164,10 +2327,11 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyuser
     }
 }
 
-async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting = false) {
-    let playerInfo = await infoHandler(interaction, alienSpeed, mapID, pvpSetting);
+async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting = false, enemyUser = false) {
+    let playerInfo = await infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser);
     if (playerInfo.canHunt)
         return {
+            userID: interaction.user.id,
             username: interaction.user.username,
             active: true,
             aliensKilled: 0,
@@ -2212,30 +2376,30 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting 
                     this.reward.units = 0;
                     await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Your ship was destroyed in battle!\nYou lost all your cargo and hunt rewards!`, "Ship destroyed!", interaction.user)], ephemeral: true });
                     if (this.info.userStats.expToLvlUp <= this.mission.reward.exp + this.info.userStats.currentExp) {
-                        await interaction.client.databaseEditData("UPDATE users SET next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.mission.reward.exp - this.info.userStats.expToLvlUp, this.mission.reward.credit, this.mission.reward.units, this.mission.reward.honor, 0, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", 0, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.mission.reward.exp - this.info.userStats.expToLvlUp, this.mission.reward.credit, this.mission.reward.units, this.mission.reward.honor, 0, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", 0, interaction.user.id]);
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
                     }
                     else
-                        await interaction.client.databaseEditData("UPDATE users SET next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.mission.reward.exp, this.mission.reward.credit, this.mission.reward.units, this.mission.reward.honor, 0, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", 0, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.mission.reward.exp, this.mission.reward.credit, this.mission.reward.units, this.mission.reward.honor, 0, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", 0, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [interaction.user.id]);
                 }
                 else if (playerInfo.userStats.durability == 1) {
                     await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Your ship durability has reached zero and got destroyed!\nYou have lost all your cargo!`, "Ship destroyed!", interaction.user)], ephemeral: true });
                     if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
-                        await interaction.client.databaseEditData("UPDATE users next_map_id = 1, SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, next_map_id = 1,exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
                     }
                     else
-                        await interaction.client.databaseEditData("UPDATE users SET next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, baseMapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [interaction.user.id]);
                 }
                 else {
                     if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
-                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
                     }
                     else
-                        await interaction.client.databaseEditData("UPDATE users SET exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = durability - 1 WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
                 }
                 if (playerInfo.messageAmmo != "") {
