@@ -67,7 +67,7 @@ module.exports = {
                 )]
             });
             await interaction.client.databaseEditData(`UPDATE ammunition SET x1_magazine = x1_magazine + ?, x2_magazine = x2_magazine + ?, x3_magazine = x3_magazine + ?, xS1_magazine = xS1_magazine + ? WHERE user_id = ?`, [reward.x1_magazine, reward.x2_magazine, reward.x3_magazine, reward.xS1_magazine, interaction.user.id]);
-            await interaction.client.databaseEditData(`UPDATE users SET username = ?, channel_id = ?, credit = credit + ?, units = units + ? WHERE user_id = ?`, [interaction.user.username, interaction.channelId, reward.credit, reward.units, interaction.user.id]);
+            await interaction.client.databaseEditData(`UPDATE users SET username = ?, guild_id = ?, channel_id = ?, credit = credit + ?, units = units + ? WHERE user_id = ?`, [interaction.user.username, interaction.guildId, interaction.channelId, reward.credit, reward.units, interaction.user.id]);
             await interaction.client.databaseEditData(`UPDATE user_cd SET last_bonus_box = ? WHERE user_id = ?`, [bonusBoxCD, interaction.user.id]);
         }
         catch (error) {

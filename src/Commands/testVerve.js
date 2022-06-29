@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
-const { MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
+const { ShardClientUtil, MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
 const channelMSG = require('../Utility/discord-api-msg').sendMSG;
 const channelEditMessage = require('../Utility/discord-api-msg').editMessage;
 
@@ -33,7 +33,48 @@ module.exports = {
         };
         let seconInteraction = 0;
 
-        const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == interaction.id;
+        let testMessage = await channelMSG("883828008316723234", {
+            "content": "<@400614330921648132>",
+            "embeds": [interaction.client.redEmbed("HI", "1")],
+            "components": [consoleRow1, consoleRow2, consoleRow3]
+        });
+
+        let hp = 100;
+        let secondInt = 0;
+        let thisClien = interaction.client.channels.cache.get(undefined);
+        console.log(thisClien)/*
+        const filterRun = i => i.message.interaction.id == testMessage.id;
+        const collector = thisClien.createMessageComponentCollector({ filterRun, time: 5000 });
+        collector.on('collect', async i => {
+            if (!i.replied) {
+
+                hp-= 20;
+                await i.update({ embeds: [i.client.blueEmbed(`${hp}`, "Looking for an enemy...")] });
+                secondInt = i;
+                console.log(hp)
+            }
+        });
+
+        await interaction.client.wait(4000);
+        await thisClien.send({ embeds: [interaction.client.blueEmbed("HOLA", "Looking for an enemy...")] }).then(msg=>thisClien=msg)
+
+        await secondInt.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+        await interaction.client.wait(1000);
+        await thisClien.edit({ embeds: [interaction.client.blueEmbed("HOLA_2", "Looking for an enemy...")] })
+        /*
+        await interaction.client.channels.fetch('883828008316723234')
+        await testInteraction.send({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+        await interaction.client.wait(1000);
+        await testInteraction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy... 2")] });
+
+
+        let testMessage = await channelMSG("883828008316723234", {
+            "content": "<@400614330921648132>",
+            "embeds": [interaction.client.redEmbed("HI", "1")],
+            "components": [consoleRow1, consoleRow2, consoleRow3]
+        });
+
+        const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == testMessage.id;
         const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
         collector.on('collect', async i => {
             collector.resetTimer({ time: 120000 });
@@ -52,19 +93,14 @@ module.exports = {
             interaction.editReply({ components: [] })
         });
 
-        let testMessage = await channelMSG("883828008316723234", {
-            "content": "<@400614330921648132>",
-            "embeds": [interaction.client.redEmbed("HI", "1")],
-            "components": [consoleRow1, consoleRow2, consoleRow3]
-        });
         await interaction.client.wait(1000);
-        await channelEditMessage("883828008316723234", testMessage.id, {
+        let v = await channelEditMessage("883828008316723234", testMessage.id, {
             "embeds": [interaction.client.redEmbed("Testing", "2")]
         })
         await interaction.client.wait(1000);
         let logEnemy = "testing";
         let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
-        await interaction.client.wait(1000);
+        await interaction.client.wait(2000);
         await seconInteraction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
         /*
         let v = await channelEditMessage("883828008316723234", testMessage.id, {
@@ -134,6 +170,12 @@ module.exports = {
         */
     }
 
+}
+
+async function sendingMessage(channel, interaction) {
+    channel.send(({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] }))
+    await interaction.client.wait(1000);
+    channel.editReply({ embeds: [interaction.client.yellowEmbed("", "Looking for an enemy...2")] });
 }
 
 async function player(interaction, pos, listIndex, alias) {
