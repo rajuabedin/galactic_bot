@@ -40,7 +40,7 @@ module.exports = {
         try {
             const maxChannels = 10;
             if (interaction.options.getSubcommand() === 'info') {
-                var data = await interaction.client.databaseSelcetData(`SELECT * FROM user_daily_log WHERE user_id = '${interaction.user.id}' AND DATE(log_date) = CURDATE()`)
+                var data = await interaction.client.databaseSelectData(`SELECT * FROM user_daily_log WHERE user_id = '${interaction.user.id}' AND DATE(log_date) = CURDATE()`)
                 if (Object.entries(data).length === 0) {
                     await interaction.client.databaseEditData(`insert into user_daily_log (user_id,log) VALUES (${interaction.user.id},'[]')`);
                 }
@@ -48,7 +48,7 @@ module.exports = {
                 await interaction.reply(`Coming soon`)
 
             } else if (interaction.options.getSubcommand() === 'channel') {
-                var serverSettings = await interaction.client.databaseSelcetData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+                var serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
                 var allowedList = JSON.parse(serverSettings[0].allowed_channels);
                 var lockedList = JSON.parse(serverSettings[0].locked_channels);
 

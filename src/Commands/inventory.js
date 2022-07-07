@@ -18,12 +18,12 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        
+
         try {
             let user = userInfo;
-            var user_lasers = await interaction.client.databaseSelcetData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);
-            var user_shields = await interaction.client.databaseSelcetData("SELECT user_shields.shield_model as item_name, user_shields.level, user_shields.equipped, shields_info.sell_price, shields_info.description from user_shields INNER JOIN shields_info on user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? ORDER BY user_shields.shield_model", [interaction.user.id]);
-            var user_engines = await interaction.client.databaseSelcetData("SELECT user_engines.engine_model as item_name, user_engines.level, user_engines.equipped, engines_info.sell_price, engines_info.description from user_engines INNER JOIN engines_info on user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? ORDER BY user_engines.engine_model", [interaction.user.id]);
+            var user_lasers = await interaction.client.databaseSelectData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);
+            var user_shields = await interaction.client.databaseSelectData("SELECT user_shields.shield_model as item_name, user_shields.level, user_shields.equipped, shields_info.sell_price, shields_info.description from user_shields INNER JOIN shields_info on user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? ORDER BY user_shields.shield_model", [interaction.user.id]);
+            var user_engines = await interaction.client.databaseSelectData("SELECT user_engines.engine_model as item_name, user_engines.level, user_engines.equipped, engines_info.sell_price, engines_info.description from user_engines INNER JOIN engines_info on user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? ORDER BY user_engines.engine_model", [interaction.user.id]);
 
             var user_inventory = user_lasers.concat(user_shields).concat(user_engines);
             if (user_inventory == undefined || user_inventory.length == 0) {

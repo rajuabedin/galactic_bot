@@ -213,7 +213,7 @@ class Client extends Discord.Client {
      */
 
     async getUserAccount(user_id) {
-        var result = await this.databaseSelcetData("SELECT * from users WHERE user_id = ?", [user_id]);
+        var result = await this.databaseSelectData("SELECT * from users WHERE user_id = ?", [user_id]);
         return result[0];
     }
 
@@ -242,7 +242,7 @@ class Client extends Discord.Client {
      * @returns 
      */
 
-    async databaseSelcetData(query, args) {
+    async databaseSelectData(query, args) {
         var result = await this.usePooledConnectionAsync(async connection => {
             const rows = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {

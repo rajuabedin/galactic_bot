@@ -37,7 +37,7 @@ module.exports = {
             if (selectedOption == 'all') {
                 let message = "\`\`\`yaml\n";
                 let resources = userInfo.resources.split("; ").map(Number);
-                let price = await interaction.client.databaseSelcetData("SELECT price FROM resources", []);
+                let price = await interaction.client.databaseSelectData("SELECT price FROM resources", []);
                 price = price.map(x => x.price);
                 let credit = 0;
                 let space = " ";
@@ -61,7 +61,7 @@ module.exports = {
                     await interaction.reply({ embeds: [interaction.client.redEmbed("No resources in cargo that can be sold", "ERROR!")] });
             }
             else {
-                let price = await interaction.client.databaseSelcetData("SELECT price FROM resources", []);
+                let price = await interaction.client.databaseSelectData("SELECT price FROM resources", []);
                 price = price.map(x => x.price);
                 let message = "\`\`\`yaml\n";
                 let space = " ";

@@ -32,7 +32,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 userInfo.map_id = userInfo.next_map_id;
@@ -56,7 +56,7 @@ module.exports = {
             if (selectedOption == 'ship') {
                 let currentData = "";
 
-                let shipArray = await interaction.client.databaseSelcetData("SELECt ships_info.*, user_ships.ship_id, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
+                let shipArray = await interaction.client.databaseSelectData("SELECt ships_info.*, user_ships.ship_id, user_ships.ship_current_hp, user_ships.equipped FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ?", [interaction.user.id]);
                 shipList = [""];
                 //console.log(shipArray);
                 shipArray.forEach(ship => {
@@ -75,9 +75,9 @@ module.exports = {
                 shipLenght = shipList.length - 1;
             }
             else if (selectedOption == 'laser') {
-                let rawEquippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
-                let rawUnequippedLaser = await interaction.client.databaseSelcetData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
+                let rawEquippedLaser = await interaction.client.databaseSelectData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 1", [interaction.user.id]);
+                let rawUnequippedLaser = await interaction.client.databaseSelectData("SELECT lasers_info.emoji_id, lasers_info.damage_value, lasers_info.per_increase_by_level, user_lasers.level, user_lasers.laser_model, user_lasers.laser_id FROM user_lasers INNER JOIN lasers_info ON user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? AND equipped = 0", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelectData("SELECT ships_info.laser_quantity FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedLaser) {
                     itemsEquipped.push([rawEquippedLaser[item].damage_value * (1 + rawEquippedLaser[item].per_increase_by_level / 1000 * rawEquippedLaser[item].level), rawEquippedLaser[item].laser_model + `${itemRank[rawEquippedLaser[item].level]}`, rawEquippedLaser[item].laser_id, rawEquippedLaser[item].emoji_id]);
@@ -89,10 +89,10 @@ module.exports = {
                 maxEquipableItem = maxEquipableItem[0].laser_quantity;
             }
             else if (selectedOption == 'shield') {
-                let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
-                let rawUnequippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
-                let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
+                let rawEquippedShield = await interaction.client.databaseSelectData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
+                let rawUnequippedShield = await interaction.client.databaseSelectData("SELECT shields_info.emoji_id, shields_info.absorption_rate, shields_info.shield_value, shields_info.per_increase_by_level, user_shields.level, user_shields.shield_model, user_shields.shield_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 0", [interaction.user.id]);
+                let rawEquippedEngine = await interaction.client.databaseSelectData("SELECT engines_info.emoji_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelectData("SELECT ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE  user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedEngine) {
                     unequipableItems.push([0, 1, 2, rawEquippedEngine[item].emoji_id]);
@@ -107,10 +107,10 @@ module.exports = {
                 maxEquipableItem = maxEquipableItem[0].extra_quantity;
             }
             else {
-                let rawEquippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
-                let rawUnequippedEngine = await interaction.client.databaseSelcetData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 0", [interaction.user.id]);
-                let rawEquippedShield = await interaction.client.databaseSelcetData("SELECT shields_info.emoji_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
-                maxEquipableItem = await interaction.client.databaseSelcetData("SELECT ships_info.ship_base_speed, ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
+                let rawEquippedEngine = await interaction.client.databaseSelectData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 1", [interaction.user.id]);
+                let rawUnequippedEngine = await interaction.client.databaseSelectData("SELECT engines_info.emoji_id, engines_info.speed_value, user_engines.engine_model, user_engines.engine_id FROM user_engines INNER JOIN engines_info ON user_engines.engine_model = engines_info.engine_model WHERE user_engines.user_id = ? AND equipped = 0", [interaction.user.id]);
+                let rawEquippedShield = await interaction.client.databaseSelectData("SELECT shields_info.emoji_id FROM user_shields INNER JOIN shields_info ON user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? AND equipped = 1", [interaction.user.id]);
+                maxEquipableItem = await interaction.client.databaseSelectData("SELECT ships_info.ship_base_speed, ships_info.extra_quantity, user_ships.equipped_extra FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND user_ships.equipped = 1", [interaction.user.id]);
 
                 for (item in rawEquippedShield) {
                     unequipableItems.push([0, 1, 2, rawEquippedShield[item].emoji_id]);

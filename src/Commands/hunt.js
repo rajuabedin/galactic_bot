@@ -24,7 +24,7 @@ module.exports = {
             await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
             return;
         }
-        let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+        let userCd = await interaction.client.databaseSelectData("SELECT last_hunt, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
         let elapsedTimeFromHunt = ~~((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
         if (elapsedTimeFromHunt < 60) {
             await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))] });
@@ -50,7 +50,7 @@ module.exports = {
 
         while (userInfo.pvp_enable) {
             if (interaction.client.random(0, 100) < 25 && (~~((userInfo.map_id % 1.0) * 10)) > 4) {
-                let enemyPlayer = await interaction.client.databaseSelcetData("SELECT firm, user_id, channel_id, user_hp, max_shield, absorption_rate, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
+                let enemyPlayer = await interaction.client.databaseSelectData("SELECT firm, user_id, channel_id, user_hp, max_shield, absorption_rate, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId]);
                 if (typeof enemyPlayer !== 'undefined') {
                     let player = [await playerHandler(interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId)];
                     if (!player[0].active)
@@ -61,12 +61,12 @@ module.exports = {
                         "components": [attackRow]
                     });
                     //enemyPlayers = [await playerHandler(interaction, ["Enemy"], userInfo.user_speed, mapId)];
-                    
-                    let joinableEnemiesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0 AND user_id <> ?", [enemyPlayer[0].firm, mapId, enemyPlayer[0].channel_id, enemyPlayer[0].user_id]);
+
+                    let joinableEnemiesID = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0 AND user_id <> ?", [enemyPlayer[0].firm, mapId, enemyPlayer[0].channel_id, enemyPlayer[0].user_id]);
                     joinableEnemiesID = joinableEnemiesID.map(x => x.user_id);
-                    let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, interaction.user.id]);
+                    let joinableAlliesID = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, interaction.user.id]);
                     joinableAlliesID = joinableAlliesID.map(x => x.user_id);
-                    //let joinableAlliesID = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
+                    //let joinableAlliesID = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE firm = ? AND map_id = ? AND channel_id = ? AND in_hunt = 0", [userInfo.firm, mapId, userInfo.channel_id]);
                     //joinableAlliesID = joinableAlliesID.map(x => x.user_id);
 
 
@@ -81,11 +81,11 @@ module.exports = {
             else
                 userInfo.pvp_enable = false;
         }
-        let huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+        let huntConfiguration = await interaction.client.databaseSelectData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
         if (huntConfiguration[0].mothership == 1)
-            aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
+            aliens = await interaction.client.databaseSelectData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
         else
-            aliens = await interaction.client.databaseSelcetData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
+            aliens = await interaction.client.databaseSelectData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
         if (typeof aliens[0] == 'undefined') {
             await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
             return;
@@ -447,7 +447,7 @@ module.exports = {
             let totalSHieldAbsorption = 0;
             let numberOfPlayers = 1;
             let groupMembers = [];
-            let inBattle = await interaction.client.databaseSelcetData("SELECT user_id FROM users WHERE group_id = ?", [userInfo.group_id]);
+            let inBattle = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE group_id = ?", [userInfo.group_id]);
             groupMembers = inBattle.map(x => x.user_id);
             inBattle = [userInfo.user_id];
 
@@ -955,8 +955,8 @@ const runRow = new MessageActionRow()
             .setCustomId("NextAlien")
             .setLabel("NEXT")
             .setStyle("PRIMARY"),
-);
-    
+    );
+
 const attackRow = new MessageActionRow()
     .addComponents(
         new MessageButton()
@@ -966,7 +966,7 @@ const attackRow = new MessageActionRow()
         new MessageButton()
             .setCustomId("Run")
             .setLabel("ESCAPE")
-            .setStyle("DANGER"),        
+            .setStyle("DANGER"),
     );
 
 const teamRunRow = new MessageActionRow()
@@ -1004,7 +1004,7 @@ async function missionHandler(interaction, aliens, id, boost) {
     let missionTaskLeft = 0;
     let reward = 0;
     let total = 0;
-    let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions INNER JOIN missions ON user_missions.mission_id = missions.mission_id WHERE user_missions.user_id = ? AND user_missions.mission_status = 'active'", [interaction.user.id]);
+    let mission = await interaction.client.databaseSelectData("SELECT * FROM user_missions INNER JOIN missions ON user_missions.mission_id = missions.mission_id WHERE user_missions.user_id = ? AND user_missions.mission_status = 'active'", [interaction.user.id]);
     let initialTotal = 0;
     mission = mission[0];
     if (typeof mission !== 'undefined') {
@@ -1106,7 +1106,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
         return { canHunt: false };
     }
 
-    let userCd = await interaction.client.databaseSelcetData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+    let userCd = await interaction.client.databaseSelectData("SELECT last_hunt, last_repair, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
     if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
         await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
         userInfo.map_id = userInfo.next_map_id;
@@ -1120,7 +1120,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
     if (userInfo.user_hp > userInfo.max_hp)
         userInfo.user_hp = userInfo.max_hp;
 
-    let ship = await interaction.client.databaseSelcetData("SELECT ship_emoji, ship_model, durability FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
+    let ship = await interaction.client.databaseSelectData("SELECT ship_emoji, ship_model, durability FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
     ship = ship[0];
     let mapIDFrist = userInfo.map_id / 10;
     let mapIDSecond = ~~((mapIDFrist % 1.0) * 10);
@@ -1130,7 +1130,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
     let minimumAccuracyAlien = Math.round(0.0015 * x * x);
     let minimumAccuracyUser = 96 - minimumAccuracyAlien;
 
-    let expRequirement = await interaction.client.databaseSelcetData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
+    let expRequirement = await interaction.client.databaseSelectData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
 
     let userStats = {
         currentChannelID: userInfo.channel_id,
@@ -1163,7 +1163,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
         }
     }
 
-    let boost = await interaction.client.databaseSelcetData("SELECT * FROM boost WHERE user_id = ?", [interaction.user.id]);
+    let boost = await interaction.client.databaseSelectData("SELECT * FROM boost WHERE user_id = ?", [interaction.user.id]);
 
     if (~~((Date.now() - Date.parse(boost[0].hp_boost)) / 1000) < 0)
         userStats.hp = ~~(userStats.hp * 1.1);
@@ -1185,11 +1185,11 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting) {
 
     let huntConfiguration = 0;
     if (pvpSetting)
-        huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM pvp_configuration WHERE user_id = ?", [interaction.user.id]);
+        huntConfiguration = await interaction.client.databaseSelectData("SELECT * FROM pvp_configuration WHERE user_id = ?", [interaction.user.id]);
     else
-        huntConfiguration = await interaction.client.databaseSelcetData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
+        huntConfiguration = await interaction.client.databaseSelectData("SELECT * FROM hunt_configuration WHERE user_id = ?", [interaction.user.id]);
     huntConfiguration = huntConfiguration[0];
-    let ammunition = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
+    let ammunition = await interaction.client.databaseSelectData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
     ammunition = ammunition[0];
 
     let userLaserConfig = [

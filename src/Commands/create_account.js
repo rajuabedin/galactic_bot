@@ -40,7 +40,7 @@ module.exports = {
             let items = [];
 
             if (userInfo == undefined) {
-                let firmCheck = await interaction.client.databaseSelcetData("SELECT * FROM firms_list", []);
+                let firmCheck = await interaction.client.databaseSelectData("SELECT * FROM firms_list", []);
                 if (firmCheck[2].users < firmCheck[1].users || firmCheck[2].users < firmCheck[0].users) {
                     boostedFirm = firmCheck[2].firm;
                 }
@@ -91,7 +91,7 @@ module.exports = {
                     row = await buttonHandlerOnOff(0);
                 }
                 else if (selectedTutorial == 4) {
-                    let ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
+                    let ammunitionList = await interaction.client.databaseSelectData(`SELECT * FROM ammunition_info WHERE available = 1`);
                     await ammunitionList.forEach((ammunition) => {
                         message = interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1Currency').format(interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units);
 
@@ -111,7 +111,7 @@ module.exports = {
                 }
                 else if (selectedTutorial == 5) {
                     if (tutorialCounter == selectedTutorial) {
-                        let mission = await interaction.client.databaseSelcetData("SELECT * FROM user_missions WHERE user_missions.user_id = ?", [interaction.user.id]);
+                        let mission = await interaction.client.databaseSelectData("SELECT * FROM user_missions WHERE user_missions.user_id = ?", [interaction.user.id]);
                         if (typeof mission == 'undefined' || mission.length == 0) {
                             await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
                         }
@@ -349,7 +349,7 @@ module.exports = {
                         }
                         else if (selectedTutorial == 4) {
                             if (phaseCounter == 1) {
-                                let ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
+                                let ammunitionList = await interaction.client.databaseSelectData(`SELECT * FROM ammunition_info WHERE available = 1`);
                                 await ammunitionList.forEach((ammunition) => {
 
                                     message = interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1Currency').format(interaction.client.defaultEmojis['credit'], 10000, interaction.client.defaultEmojis['units'], 0);

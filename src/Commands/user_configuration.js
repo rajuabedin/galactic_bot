@@ -31,7 +31,7 @@ module.exports = {
             }
             let selectedOption = interaction.options.getString('option');
             let discarded = false;
-            let huntConfiguration = await interaction.client.databaseSelcetData(`SELECT * FROM ${selectedOption} WHERE user_id = ?`, [interaction.user.id]);
+            let huntConfiguration = await interaction.client.databaseSelectData(`SELECT * FROM ${selectedOption} WHERE user_id = ?`, [interaction.user.id]);
             let [hp, sh] = await buttonHandler();
             let message = interaction.client.getWordLanguage(serverSettings.lang, 'user_config_desc');
             let storedMessage = "";

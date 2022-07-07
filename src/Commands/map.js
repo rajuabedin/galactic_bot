@@ -19,7 +19,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let mapId = 1;
             let map = 0;
             let row = 0;
@@ -31,13 +31,13 @@ module.exports = {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 mapId = userInfo.next_map_id;
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
-                map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
+                map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
                 interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
             }
             else if (userInfo.next_map_id !== 1) {
                 mapId = userInfo.map_id;
-                map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
+                map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 nextMapName = userInfo.next_map_id / 10;
                 nextMapName = `${Math.floor(nextMapName)}-${Math.floor((nextMapName % 1.0) * 10)}`;
                 elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / -60;
@@ -48,7 +48,7 @@ module.exports = {
             }
             else {
                 mapId = userInfo.map_id;
-                map = await interaction.client.databaseSelcetData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
+                map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
                 interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
             }
@@ -63,7 +63,7 @@ module.exports = {
                 try {
                     selected = true;
                     if (nextMapName == i.values[0]) {
-                        userCd = await interaction.client.databaseSelcetData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+                        userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
                         elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / -1000);
                         elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / 60;
                         elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
@@ -77,11 +77,11 @@ module.exports = {
                         else {
                             let levelRequirement = 0;
                             if ((userInfo.firm == "Luna" && mapId[0] == "1") || (userInfo.firm == "Terra" && mapId[0] == "2") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
-                                levelRequirement = await interaction.client.databaseSelcetData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                                levelRequirement = await interaction.client.databaseSelectData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
                                 levelRequirement = levelRequirement[0].level_requirement;
                             }
                             else {
-                                levelRequirement = await interaction.client.databaseSelcetData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
+                                levelRequirement = await interaction.client.databaseSelectData("SELECT enemy_level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
                                 levelRequirement = levelRequirement[0].enemy_level_requirement;
                             }
 

@@ -57,7 +57,7 @@ module.exports = {
                                     await interaction.client.wait(100);
                                 }
                                 await interaction.client.databaseEditData(`UPDATE users SET group_id = ? WHERE user_id = ?`, [teamID, interaction.user.id]);
-                                let leader = await interaction.client.databaseSelcetData("SELECT ship_emoji,ship_current_hp, ship_hp, ship_shield, ship_damage FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
+                                let leader = await interaction.client.databaseSelectData("SELECT ship_emoji,ship_current_hp, ship_hp, ship_shield, ship_damage FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
                                 leader = leader[0]; message = "**";
                                 message += `╔[<@${interaction.user.id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                                 for (let index = 0; index < 3; index++) {
@@ -83,9 +83,9 @@ module.exports = {
                 });
             }
             else if (selectedOption == "info") {
-                let leader = await interaction.client.databaseSelcetData("SELECT group_list.group_id, group_list.leader_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN group_list ON user_ships.user_id = group_list.leader_id AND group_list.group_id = ? WHERE user_ships.equipped = 1", [userInfo.group_id]);
+                let leader = await interaction.client.databaseSelectData("SELECT group_list.group_id, group_list.leader_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN group_list ON user_ships.user_id = group_list.leader_id AND group_list.group_id = ? WHERE user_ships.equipped = 1", [userInfo.group_id]);
                 leader = leader[0];
-                let teamMembers = await interaction.client.databaseSelcetData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
+                let teamMembers = await interaction.client.databaseSelectData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
                 message = "**";
                 message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                 for (let index = 0; index < 3; index++) {
@@ -100,7 +100,7 @@ module.exports = {
 
             }
             else if (selectedOption == "leave") {
-                let team = await interaction.client.databaseSelcetData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
+                let team = await interaction.client.databaseSelectData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
                 team = team[0];
                 if (team.members == 1) {
                     await interaction.client.databaseEditData("UPDATE users SET group_id = 0 WHERE group_id = ?", [team.group_id]);
@@ -123,11 +123,11 @@ module.exports = {
             }
             else {
                 selectedOption = interaction.options.getUser('user');
-                let teamList = await interaction.client.databaseSelcetData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
+                let teamList = await interaction.client.databaseSelectData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
                 if (teamList[0].leader_id == interaction.user.id) {
                     if (teamList[0].members < 5) {
                         if (!selectedOption.bot && !selectedOption.system && selectedOption.id != interaction.user.id) {
-                            let member = await interaction.client.databaseSelcetData("SELECT group_id FROM users WHERE user_id = ?", [selectedOption.id]);
+                            let member = await interaction.client.databaseSelectData("SELECT group_id FROM users WHERE user_id = ?", [selectedOption.id]);
                             if (member[0].group_id == userInfo.group_id) {
                                 await interaction.reply({ embeds: [interaction.client.redEmbedImage("The user is already part of this team", "ERROR!!", interaction.user)] });
                             }
@@ -144,9 +144,9 @@ module.exports = {
                                             if (i.customId == "yes" && i.user.id != interaction.user.id) {
                                                 await interaction.client.databaseEditData(`UPDATE users SET group_id = ? WHERE user_id = ?`, [userInfo.group_id, selectedOption.id]);
                                                 await interaction.client.databaseEditData(`UPDATE group_list SET members = members + 1 WHERE group_id = ?`, [userInfo.group_id]);
-                                                let leader = await interaction.client.databaseSelcetData("SELECT group_list.group_id, group_list.leader_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN group_list ON user_ships.user_id = group_list.leader_id AND group_list.group_id = ? WHERE user_ships.equipped = 1", [userInfo.group_id]);
+                                                let leader = await interaction.client.databaseSelectData("SELECT group_list.group_id, group_list.leader_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN group_list ON user_ships.user_id = group_list.leader_id AND group_list.group_id = ? WHERE user_ships.equipped = 1", [userInfo.group_id]);
                                                 leader = leader[0];
-                                                let teamMembers = await interaction.client.databaseSelcetData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
+                                                let teamMembers = await interaction.client.databaseSelectData("SELECT users.user_id, user_ships.ship_emoji, user_ships.ship_current_hp, user_ships.ship_hp, user_ships.ship_shield, user_ships.ship_damage FROM user_ships INNER JOIN users ON user_ships.user_id = users.user_id AND users.user_id <> ? AND users.group_id = ? WHERE user_ships.equipped = 1", [leader.leader_id, leader.group_id]);
                                                 message = "**";
                                                 message += `╔[<@${leader.leader_id}>] 👑\n║${leader.ship_emoji}│<a:hp:896118360125870170>: ${leader.ship_current_hp} / ${leader.ship_hp}\n╚════ <a:sd:896118359966511104>: ${leader.ship_shield} <a:ATK:982593626548875334>: ${leader.ship_damage}\n`;
                                                 for (let index = 0; index < 3; index++) {

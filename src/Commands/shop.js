@@ -60,9 +60,9 @@ module.exports = {
 
             if (interaction.options.getString('category').toLowerCase() == "ships") {
                 if (searchItem == null) {
-                    shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1`);
+                    shipsList = await interaction.client.databaseSelectData(`SELECT * FROM ships_info WHERE available = 1`);
                 } else {
-                    shipsList = await interaction.client.databaseSelcetData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [searchItem.toUpperCase()]);
+                    shipsList = await interaction.client.databaseSelectData(`SELECT * FROM ships_info WHERE available = 1 and ship_model = ?`, [searchItem.toUpperCase()]);
                 }
 
                 if (shipsList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
@@ -118,9 +118,9 @@ module.exports = {
 
             } else if (interaction.options.getString('category').toLowerCase() == "lasers") {
                 if (searchItem == null) {
-                    lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1`);
+                    lasersList = await interaction.client.databaseSelectData(`SELECT * FROM lasers_info WHERE available = 1`);
                 } else {
-                    lasersList = await interaction.client.databaseSelcetData(`SELECT * FROM lasers_info WHERE available = 1 and laser_model = ?`, [searchItem.toUpperCase()]);
+                    lasersList = await interaction.client.databaseSelectData(`SELECT * FROM lasers_info WHERE available = 1 and laser_model = ?`, [searchItem.toUpperCase()]);
                 }
 
                 if (lasersList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
@@ -171,9 +171,9 @@ module.exports = {
 
             } else if (interaction.options.getString('category').toLowerCase() == "shields") {
                 if (searchItem == null) {
-                    shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1`);
+                    shieldsList = await interaction.client.databaseSelectData(`SELECT * FROM shields_info WHERE available = 1`);
                 } else {
-                    shieldsList = await interaction.client.databaseSelcetData(`SELECT * FROM shields_info WHERE available = 1 and shield_model = ?`, [searchItem.toLowerCase()]);
+                    shieldsList = await interaction.client.databaseSelectData(`SELECT * FROM shields_info WHERE available = 1 and shield_model = ?`, [searchItem.toLowerCase()]);
                 }
 
                 if (shieldsList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
@@ -228,9 +228,9 @@ module.exports = {
                 //itemsPerPage = 3;
                 count = 0;
                 if (searchItem == null) {
-                    enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1`);
+                    enginesList = await interaction.client.databaseSelectData(`SELECT * FROM engines_info WHERE available = 1`);
                 } else {
-                    enginesList = await interaction.client.databaseSelcetData(`SELECT * FROM engines_info WHERE available = 1 and engine_model = ?`, [searchItem.toUpperCase()]);
+                    enginesList = await interaction.client.databaseSelectData(`SELECT * FROM engines_info WHERE available = 1 and engine_model = ?`, [searchItem.toUpperCase()]);
                 }
 
                 if (enginesList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
@@ -281,9 +281,9 @@ module.exports = {
 
             } else if (interaction.options.getString('category').toLowerCase() == "ammunition") {
                 if (searchItem == null) {
-                    ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1`);
+                    ammunitionList = await interaction.client.databaseSelectData(`SELECT * FROM ammunition_info WHERE available = 1`);
                 } else {
-                    ammunitionList = await interaction.client.databaseSelcetData(`SELECT * FROM ammunition_info WHERE available = 1 and ammo_id = ?`, [searchItem.toUpperCase()]);
+                    ammunitionList = await interaction.client.databaseSelectData(`SELECT * FROM ammunition_info WHERE available = 1 and ammo_id = ?`, [searchItem.toUpperCase()]);
                 }
                 count = 0;
                 //itemsPerPage = 4;
@@ -337,9 +337,9 @@ module.exports = {
 
             } else {
                 if (searchItem == null) {
-                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1`);
+                    extrasList = await interaction.client.databaseSelectData(`SELECT * FROM extra_info WHERE available = 1`);
                 } else {
-                    extrasList = await interaction.client.databaseSelcetData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
+                    extrasList = await interaction.client.databaseSelectData(`SELECT * FROM extra_info WHERE available = 1 and extra_model = ?`, [searchItem.toUpperCase()]);
                 }
 
                 if (extrasList.length == 0) return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'itemNotFound').format(searchItem.toUpperCase()), "Error!!")], ephemeral: true });
@@ -460,11 +460,11 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                             return await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, `no_credit`), "ERROR!")], components: [] });
                         else {
                             if (itemTable == "user_ships") {
-                                let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                                let ownedShip = await interaction.client.databaseSelectData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                                 if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
-                                    let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                    let itemInfo = await interaction.client.databaseSelectData('select * from ships_info where ship_model = ?', [itemName[index]])
                                     itemInfo = itemInfo[0];
                                     let query = `insert into user_ships (ship_emoji, ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (${itemInfo.emoji_id},0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                     await interaction.client.databaseEditData(query)
@@ -490,7 +490,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     }
                                 }
                                 else if (itemTable[index][0] == "hellstorm_model") {
-                                    let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                    let currentClipRate = await interaction.client.databaseSelectData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                     currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                     if (currentClipRate < itemTable[index][1]) {
                                         await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
@@ -514,11 +514,11 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                             return await i.update({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'no_unit')}`, "ERROR!")], components: [] });
                         else {
                             if (itemTable == "user_ships") {
-                                let ownedShip = await interaction.client.databaseSelcetData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
+                                let ownedShip = await interaction.client.databaseSelectData('select * from user_ships where ship_model = ? and user_id = ?', [itemName[index], interaction.user.id]);
                                 if (typeof ownedShip == 'undefined' || ownedShip.length == 0) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });
                                     collector.stop("Bought");
-                                    let itemInfo = await interaction.client.databaseSelcetData('select * from ships_info where ship_model = ?', [itemName[index]])
+                                    let itemInfo = await interaction.client.databaseSelectData('select * from ships_info where ship_model = ?', [itemName[index]])
                                     itemInfo = itemInfo[0];
                                     let query = `insert into user_ships (ship_emoji, ship_damage, ship_hp, ship_shield, ship_speed, ship_penetration, ship_absortion_rate, ship_cargo, ship_model, user_id) VAlUES (${itemInfo.emoji_id},0,${itemInfo.ship_hp},0,${itemInfo.ship_base_speed},0,0,${itemInfo.max_cargo},'${itemInfo.ship_model}','${interaction.user.id}')`
                                     await interaction.client.databaseEditData(query)
@@ -544,7 +544,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                                     }
                                 }
                                 else if (itemTable[index][0] == "hellstorm_model") {
-                                    let currentClipRate = await interaction.client.databaseSelcetData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
+                                    let currentClipRate = await interaction.client.databaseSelectData('select * from hunt_configuration where user_id = ?', [interaction.user.id])
                                     currentClipRate = currentClipRate[0].helstorm_missiles_number;
                                     if (currentClipRate < itemTable[index][1]) {
                                         await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'shop_bought'), interaction.client.getWordLanguage(serverSettings.lang, 'bought_c'))], components: [] });

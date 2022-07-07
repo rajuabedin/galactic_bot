@@ -31,9 +31,9 @@ module.exports = {
             var missionListDB = []
             var searchMissionByStatus = interaction.options.getString('status')
             if (searchMissionByStatus !== null) {
-                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_missions.user_id = ? and user_missions.mission_status = ?", [interaction.user.id, searchMissionByStatus.toLowerCase()]);
+                missionListDB = await interaction.client.databaseSelectData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_missions.user_id = ? and user_missions.mission_status = ?", [interaction.user.id, searchMissionByStatus.toLowerCase()]);
             } else {
-                missionListDB = await interaction.client.databaseSelcetData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and id = ? and mission_status = ?", [interaction.user.id, userInfo.missions_id, "active"]);
+                missionListDB = await interaction.client.databaseSelectData("SELECT * from user_missions Inner JOIN missions on user_missions.mission_id= missions.mission_id where user_id = ? and id = ? and mission_status = ?", [interaction.user.id, userInfo.missions_id, "active"]);
             }
             if (missionListDB === undefined || missionListDB.length == 0) {
                 if (searchMissionByStatus !== null) {

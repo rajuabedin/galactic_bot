@@ -20,7 +20,7 @@ module.exports = {
                 return;
             }
 
-            var dailyInfo = await interaction.client.databaseSelcetData(`select * from user_daily where user_id = '${interaction.user.id}'`)
+            var dailyInfo = await interaction.client.databaseSelectData(`select * from user_daily where user_id = '${interaction.user.id}'`)
 
             var today = new Date();
             var diffInDays;

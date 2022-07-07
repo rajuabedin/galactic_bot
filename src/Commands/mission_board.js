@@ -24,7 +24,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            var missionListDB = await interaction.client.databaseSelcetData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
+            var missionListDB = await interaction.client.databaseSelectData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
             if (missionListDB == undefined || missionListDB.length == 0) {
                 return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error'))] });
             } else {
@@ -268,11 +268,11 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
                 index++;
             } else if (i.customId == "get") {
                 if (userInfo.missions_id != null) {
-                    var userMission = await interaction.client.databaseSelcetData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
+                    var userMission = await interaction.client.databaseSelectData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
                     userMission = userMission[0];
 
                     if (typeof userMission !== 'undefined' && userMission.mission_status != "completed") {
-                        var userMissionInfo = await interaction.client.databaseSelcetData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
+                        var userMissionInfo = await interaction.client.databaseSelectData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
                         userMissionInfo = userMissionInfo[0];
                         var mySqlTimeStamp = userMission.mission_started_at;
                         var nowTimeStamp = new Date();

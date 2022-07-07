@@ -22,7 +22,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let ammo = await interaction.client.databaseSelcetData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
+            let ammo = await interaction.client.databaseSelectData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
             ammo = ammo[0];
             let ammoLaser = [ammo.x1_magazine, ammo.x2_magazine, ammo.x3_magazine, ammo.x4_magazine, ammo.xS1_magazine];
             let ammoMissile = [ammo.m1_magazine, ammo.m2_magazine, ammo.m3_magazine, ammo.m4_magazine];

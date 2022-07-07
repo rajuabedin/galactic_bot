@@ -21,7 +21,7 @@ module.exports = {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let ship = await interaction.client.databaseSelcetData("SELECt ships_info.credit, ships_info.units, ships_info.ship_hp FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND equipped = 1", [interaction.user.id]);
+            let ship = await interaction.client.databaseSelectData("SELECt ships_info.credit, ships_info.units, ships_info.ship_hp FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND equipped = 1", [interaction.user.id]);
             let durability = 100 - ship[0].durability;
             let price = 0;
             let unit = ""

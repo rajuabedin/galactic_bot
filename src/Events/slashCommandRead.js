@@ -11,7 +11,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         var initialCommand = "tutorial"
 
         // check if channel is allowed
-        const serverSettings = await interaction.client.databaseSelcetData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+        const serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
         const allowedList = await JSON.parse(serverSettings[0].allowed_channels);
         const lockedList = await JSON.parse(serverSettings[0].locked_channels);
 
@@ -25,14 +25,14 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
 
 
         if (typeof userInfo === 'undefined') {
-            const serverRankLoger = await interaction.client.databaseSelcetData("SELECT * FROM server_rank WHERE user_id = ? and server_id = ? and DATE(`date`) = CURDATE()", [interaction.user.id, interaction.guildId]);
+            const serverRankLoger = await interaction.client.databaseSelectData("SELECT * FROM server_rank WHERE user_id = ? and server_id = ? and DATE(`date`) = CURDATE()", [interaction.user.id, interaction.guildId]);
             if (serverRankLoger.length === 0) {
                 await interaction.client.databaseEditData("insert into server_rank (user_id, server_id) values (?,?)", [interaction.user.id, interaction.guildId]);
             }
         }
 
         // check if user is banned
-        const bannedData = await interaction.client.databaseSelcetData("SELECT * FROM banned_users WHERE user_id = ?", [interaction.user.id]);
+        const bannedData = await interaction.client.databaseSelectData("SELECT * FROM banned_users WHERE user_id = ?", [interaction.user.id]);
         if (bannedData.length !== 0) {
             let embed = new MessageEmbed()
                 .setColor('0xe1143d')
@@ -45,7 +45,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         }
 
         // check if need to show captcha
-        var captchaData = await interaction.client.databaseSelcetData("select * from captcha_counter where user_id = ?", [interaction.user.id]);
+        var captchaData = await interaction.client.databaseSelectData("select * from captcha_counter where user_id = ?", [interaction.user.id]);
         captchaData = captchaData[0]
 
         var captchaReturn = await generateMacroDetector(captchaData, interaction, serverSettings[0]);
