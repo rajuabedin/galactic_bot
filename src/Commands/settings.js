@@ -114,13 +114,12 @@ module.exports = {
             // SELECT * FROM user_daily_log WHERE user_id = '123234' AND DATE(log_date) = CURDATE()
         }
         catch (error) {
+            let errorID = await errorLog.error(error, interaction);
             if (interaction.replied) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
-
-            errorLog.error(error.message, { 'command_name': interaction.commandName });
         }
     }
 }

@@ -1,8 +1,8 @@
 {
     "ping": "Ping",
-    "test": "Tesing something {}",
+    "test": "Testing something {}",
     "description": "Description",
-    "catchError": "Please try again later.",
+    "catchError": "Please try again later.\nError ID: `{}`",
     "enabled_u": "ENABLED",
     "disabled_u": "DISABLED",
     "saved_u": "SAVED",

@@ -1,46 +1,22 @@
 /**
  * Configurations of logger.
  */
-const winston = require('winston');
-const winstonRotator = require('winston-daily-rotate-file');
+class NewLogger {
 
-var transport = new winston.transports.DailyRotateFile({
-    filename: './logs/log-%DATE%.log',
-    datePattern: 'DD-MM-YYYY',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d'
-});
+    async log(exception, interaction) {
+        return await interaction.client.databaseEditDataReturnID('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['log', exception.message, exception.stack, interaction.commandName, interaction.user.id]);
+    }
 
-transport.on('rotate', function (oldFilename, newFilename) {
-    new winston.transports.File({
-        level: 'warn',
-        json: true,
-        timestamp: true,
-        datePattern: 'dd-MM-yyyy',
-    }),
-        new winston.transports.File({
-            level: 'error',
-            json: true,
-            timestamp: true,
-            datePattern: 'dd-MM-yyyy',
-        })
-});
+    async error(exception, interaction) {
+        return await interaction.client.databaseEditDataReturnID('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['error', exception.message, exception.stack, interaction.commandName, interaction.user.id]);
+    }
 
+    async warn(exception, interaction) {
+        return await interaction.client.databaseEditDataReturnID('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['warn', exception.message, exception.stack, interaction.commandName, interaction.user.id]);
+    }
 
-const logConfiguration = {
-    transports: [
-        transport
-    ],
-    format: winston.format.combine(
-        winston.format.timestamp({
-            format: 'DD-MM-YYYY HH:mm:ss'
-        }),
-        winston.format.json()
-    ),
-};
-const logger = winston.createLogger(logConfiguration);
+}
 
 module.exports = {
-    'logger': logger
+    'logger': new NewLogger()
 };
