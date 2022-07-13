@@ -55,12 +55,12 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             command.execute(interaction, userInfo, serverSettings[0]);
         }
     } catch (error) {
+        let errorID = await errorLog.error(error, interaction);
         if (interaction.replied) {
-            await interaction.editReply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
         } else {
-            await interaction.reply({ embeds: [interaction.client.redEmbed("Please try again later.", "Error!!")], ephemeral: true });
+            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
         }
-        errorLog.error(error.message, { 'command_name': interaction.commandName });
     }
 });
 
