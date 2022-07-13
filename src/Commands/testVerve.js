@@ -1,7 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const errorLog = require('../Utility/logger').logger;
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ShardClientUtil, MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
 const channelMSG = require('../Utility/discord-api-msg').sendMSG;
+const channelEditMessage = require('../Utility/discord-api-msg').editMessage;
+
 
 let ar = [
     [["[     ]", 0], ["[     ]", 0], ["[     ]", 0], ["[     ]", 0], ["[     ]", 0]],
@@ -29,14 +31,90 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
-        
+        let seconInteraction = 0;
+
         let testMessage = await channelMSG("883828008316723234", {
             "content": "<@400614330921648132>",
-            "embeds": [interaction.client.redEmbed("HI")],
+            "embeds": [interaction.client.redEmbed("HI", "1")],
             "components": [consoleRow1, consoleRow2, consoleRow3]
         });
-        
 
+        let hp = 100;
+        let secondInt = 0;
+        let thisClien = interaction.client.channels.cache.get(undefined);
+        console.log(thisClien)/*
+        const filterRun = i => i.message.interaction.id == testMessage.id;
+        const collector = thisClien.createMessageComponentCollector({ filterRun, time: 5000 });
+        collector.on('collect', async i => {
+            if (!i.replied) {
+
+                hp-= 20;
+                await i.update({ embeds: [i.client.blueEmbed(`${hp}`, "Looking for an enemy...")] });
+                secondInt = i;
+                console.log(hp)
+            }
+        });
+
+        await interaction.client.wait(4000);
+        await thisClien.send({ embeds: [interaction.client.blueEmbed("HOLA", "Looking for an enemy...")] }).then(msg=>thisClien=msg)
+
+        await secondInt.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+        await interaction.client.wait(1000);
+        await thisClien.edit({ embeds: [interaction.client.blueEmbed("HOLA_2", "Looking for an enemy...")] })
+        /*
+        await interaction.client.channels.fetch('883828008316723234')
+        await testInteraction.send({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+        await interaction.client.wait(1000);
+        await testInteraction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy... 2")] });
+
+
+        let testMessage = await channelMSG("883828008316723234", {
+            "content": "<@400614330921648132>",
+            "embeds": [interaction.client.redEmbed("HI", "1")],
+            "components": [consoleRow1, consoleRow2, consoleRow3]
+        });
+
+        const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == testMessage.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+        collector.on('collect', async i => {
+            collector.resetTimer({ time: 120000 });
+            if (!i.replied) {
+                try {
+                    seconInteraction = i;
+                    await i.update({});
+                }
+                catch (error) {
+                    errorLog.error(error.message, { 'command_name': interaction.commandName });
+                }
+            }
+        });
+
+        collector.on('end', collected => {
+            interaction.editReply({ components: [] })
+        });
+
+        await interaction.client.wait(1000);
+        let v = await channelEditMessage("883828008316723234", testMessage.id, {
+            "embeds": [interaction.client.redEmbed("Testing", "2")]
+        })
+        await interaction.client.wait(1000);
+        let logEnemy = "testing";
+        let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
+        await interaction.client.wait(2000);
+        await seconInteraction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+        /*
+        let v = await channelEditMessage("883828008316723234", testMessage.id, {
+            "embeds": [],
+            "components": [],
+            "attachments": [{
+                "id": 0,
+                "filename": attachment.name,
+                "size": attachment.size,
+                "url": attachment.url,
+                "proxy_url": attachment.proxyURL
+            }]
+        })
+        console.log(v);
 
         let playerList = [];
 
@@ -89,8 +167,15 @@ module.exports = {
             await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, "TEST")] });
             await interaction.client.wait(500);
         }
-
+        */
     }
+
+}
+
+async function sendingMessage(channel, interaction) {
+    channel.send(({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] }))
+    await interaction.client.wait(1000);
+    channel.editReply({ embeds: [interaction.client.yellowEmbed("", "Looking for an enemy...2")] });
 }
 
 async function player(interaction, pos, listIndex, alias) {
@@ -109,7 +194,7 @@ async function player(interaction, pos, listIndex, alias) {
                     movX = parseInt(iPlayer.customId);
                     movY = ~~(movX / 10);
                     movX -= movY * 10;
-                    ar[pos[0]][pos[1]][1] -= 1;   
+                    ar[pos[0]][pos[1]][1] -= 1;
                     ar[pos[0]][pos[1]][0] = storedMessage;
                     pos = [pos[0] + movY - 1, pos[1] + movX - 1];
                     if (pos[0] < 0 || pos[0] > 4 || pos[1] < 0 || pos[1] > 4) {
@@ -129,7 +214,7 @@ async function player(interaction, pos, listIndex, alias) {
                         ar[pos[0]][pos[1]][0] = `[--${alias}--]`;
                         ar[pos[0]][pos[1]][1] += 1;
                         messageError = " ";
-                        
+
                     }
                     await iPlayer.update({ content: messageError, embeds: [] });
                 }

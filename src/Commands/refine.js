@@ -42,7 +42,7 @@ module.exports = {
             else
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'refineFailMessage'), interaction.client.getWordLanguage(serverSettings.lang, 'refineFail'))] });
             resources = resources.join("; ");
-            await interaction.client.databaseEditData("UPDATE users SET resources = ?, cargo = ? WHERE user_id = ?", [resources, cargo, interaction.user.id]);
+            await interaction.client.databaseEditData("UPDATE users SET username = ?, resources = ?, cargo = ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-'), resources, cargo, interaction.user.id]);
         }
         catch (error) {
             let errorID = await errorLog.error(error, interaction);
