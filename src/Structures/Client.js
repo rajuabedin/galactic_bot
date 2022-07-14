@@ -247,7 +247,7 @@ class Client extends Discord.Client {
             const rows = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {
                     if (error) {
-                        errorLog.error(error.message, { 'command_name': "select_query", 'query': query, 'error': error });
+                        connection.query('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['error', error.message, error.stack, "Mysql Query", "Not Defied"]);
                         resolve([]);
                     } else {
                         resolve(results);
@@ -270,7 +270,7 @@ class Client extends Discord.Client {
             const rowsCount = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {
                     if (error) {
-                        errorLog.error(error.message, { 'command_name': "edit_query", 'query': query, 'error': error });
+                        connection.query('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['error', error.message, error.stack, "Mysql Query", "Not Defied"]);
                         resolve([]);
                     } else {
                         resolve(results.affectedRows);
@@ -298,7 +298,8 @@ class Client extends Discord.Client {
             const rowsCount = await new Promise((resolve, reject) => {
                 connection.query(query, args, function (error, results, fields) {
                     if (error) {
-                        reject(error);
+                        connection.query('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['error', error.message, error.stack, "Mysql Query", "Not Defied"]);
+                        resolve(-1);
                     } else {
                         resolve(results.insertId);
                     }

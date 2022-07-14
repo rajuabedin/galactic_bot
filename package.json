@@ -2,7 +2,7 @@
   "name": "galactic_bot",
   "version": "1.0.0",
   "description": "Discord Bot Game based on space",
-  "main": "src/shard.js",
+  "main": "/src/shard.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -91,10 +91,44 @@ function nFormatterNumberToString(num, digits) {
     }
     return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
 }
+
+// current time in day month month year
+function getCurrentTimeDMY() {
+    var d = new Date();
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    var year = d.getFullYear();
+    return day + "/" + month + "/" + year;
+}
+
+// current time in day month month year
+function getCurrentTimeHMSDMY() {
+    var d = new Date();
+    var hour = d.getHours();
+    var minute = d.getMinutes();
+    var second = d.getSeconds();
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    var year = d.getFullYear();
+    return hour + ":" + minute + ":" + second + " " + day + "/" + month + "/" + year;
+}
+
+async function userLog(interaction, userID, msg) {
+    let currentLog = await interaction.client.databaseSelectData('SELECT * FROM user_daily_log WHERE user_id = ? AND DATE(log_date) = CURDATE()', [userID]);
+    if (currentLog.length == 0) {
+        await interaction.client.databaseEditData('INSERT INTO user_daily_log (user_id, log) VALUES (?, ?)', [userID, `{"time":"${getCurrentTimeHMSDMY()}","log":"${msg}"}`]);
+    } else {
+        await interaction.client.databaseEditData(`Update user_daily_log set log = JSON_ARRAY_APPEND(log, '$', JSON_OBJECT("time", ?, "log", ?)) where user_id = ? AND DATE(log_date) = CURDATE()`, [getCurrentTimeHMSDMY(), msg, userID]);
+    }
+}
+
 module.exports = {
     getRandomNumberBetween,
     weightedRandom,
     nFormatterStringToNumber,
     nFormatterNumberToString,
-    isNumeric
+    isNumeric,
+    userLog,
+    getCurrentTimeDMY,
+    getCurrentTimeHMSDMY
 }
