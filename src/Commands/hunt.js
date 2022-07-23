@@ -77,7 +77,7 @@ module.exports = {
                 chancePVP = 50;
 
             while (userInfo.pvp_enable && !(disabledMaps.includes(mapId))) {
-                if (interaction.client.random(0, 100) < 100) {
+                if (interaction.client.random(0, 100) < chancePVP) {
                     let enemyPlayer = await interaction.client.databaseSelectData("SELECT username, firm, user_id, guild_id, channel_id, user_hp, max_hp, max_shield, user_shield, absorption_rate, user_penetration, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND group_id <> ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId, userInfo.group_id]);
                     let secondInteraction;
                     let guildExist;
@@ -1570,8 +1570,6 @@ module.exports = {
                                 }
                                 hullDamage = ~~hullDamage;
                                 enemyHullDamage = ~~enemyHullDamage;
-                                console.log("Accuracy: " + enemyPlayer[0].info.userStats.minimumAccuracyUser);
-                                console.log("1st: " + enemyHullDamage);
 
                                 totalShieldAbsorption = shieldAbsorption;
                                 enemyTotalShieldAbsorption = enemyShieldAbsorption;
@@ -1611,11 +1609,7 @@ module.exports = {
                                         player[0].info.userStats.shield -= enemyShieldDamage;
                                     }
 
-                                    console.log("2nd: " + enemyHullDamage);
-
                                     enemyHullDamage -= enemyShieldDamage;
-
-                                    console.log("3rd: " + enemyHullDamage);
                                 }
 
                                 shieldDamage += shieldAbsorption;
@@ -1670,9 +1664,6 @@ module.exports = {
                                             return num + enemyPlayer[0].cargo.resources[idx];
                                         });
                                 }
-
-                                console.log("4th: " + enemyHullDamage);
-                                console.log("+++++++++++++++++++++++++++++++++++++++");
 
                                 storedMessage = "";
                                 alienMessage = "";
@@ -2977,6 +2968,15 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
     let x = (165 - 0.6 * (userInfo.user_speed - alienSpeed))
     let minimumAccuracyAlien = Math.round(0.0015 * x * x);
     let minimumAccuracyUser = 96 - minimumAccuracyAlien;
+    
+    if (minimumAccuracyUser < 0)
+        minimumAccuracyUser = 0;
+    if (minimumAccuracyAlien < 0)
+        minimumAccuracyAlien = 0;
+    if (minimumAccuracyUser > 100)
+        minimumAccuracyUser = 100;
+    if (minimumAccuracyAlien > 100)
+        minimumAccuracyAlien = 100;
 
     let expRequirement = await interaction.client.databaseSelectData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
 

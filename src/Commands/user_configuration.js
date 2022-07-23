@@ -43,6 +43,7 @@ module.exports = {
             let missileHellstorm = 0;
             let isMissile = false;
             let mothership = 0;
+            let pvpEnable = 0;
 
             const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
@@ -60,6 +61,7 @@ module.exports = {
                             ammoValue = (index) * 20;
                             mothership = 0;
                             missileHellstorm = 0;
+                            pvpEnable = userInfo.pvp_enable;
                             //console.log(index);
                             if (selectedAmmo == "missile" || selectedAmmo == "hellstorm") {
                                 if (selectedAmmo == "missile") {
@@ -95,6 +97,20 @@ module.exports = {
                                 }
                                 else {
                                     mothership = 2;
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, message)], components: [row, activateDeactivate] });
+                                    storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
+                                }
+                            }
+                            else if (selectedAmmo == "pvpEnable") {
+                                message = interaction.client.getWordLanguage(serverSettings.lang, "user_config_pvp");
+                                activateDeactivate = await buttonHandlerOnOff(pvpEnable);
+                                if (pvpEnable) {
+                                    pvpEnable = 1;
+                                    await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
+                                    storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
+                                }
+                                else {
+                                    pvpEnable = 2;
                                     await i.update({ embeds: [interaction.client.greenEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, message)], components: [row, activateDeactivate] });
                                     storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
                                 }
@@ -206,6 +222,36 @@ module.exports = {
                                 }
                                 else {
                                     mothership = 2;
+                                    activateDeactivate = await buttonHandlerOnOff(1);
+                                    await i.update({ embeds: [interaction.client.greenEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, message)], components: [row, activateDeactivate] });
+                                }
+                            }
+                                
+                            else if (pvpEnable > 0) {
+                                if (i.customId == "save2") {
+                                    if (pvpEnable == 1) {
+                                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\t${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
+                                        await interaction.client.databaseEditData("UPDATE users SET pvp_enable = 0 WHERE user_id = ?", [interaction.user.id]);
+                                        storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
+                                    }
+                                    else {
+                                        await i.update({ embeds: [interaction.client.blueEmbed(`**(${message})\t${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'saved_u')}**`)], components: [row, activateDeactivate] });
+                                        await interaction.client.databaseEditData("UPDATE users SET pvp_enable = 1 WHERE user_id = ?", [interaction.user.id]);
+                                        storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`;
+                                    }
+                                }
+                                else if (i.customId == "discard2") {
+                                    discarded = true;
+                                    await i.update({ embeds: [interaction.client.redEmbed(storedMessage, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionEnded')}**`)], components: [] });
+                                    collector.stop("Ended");
+                                }
+                                else if (i.customId == "deactivateButton") {
+                                    pvpEnable = 1;
+                                    activateDeactivate = await buttonHandlerOnOff(0);
+                                    await i.update({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
+                                }
+                                else {
+                                    pvpEnable = 2;
                                     activateDeactivate = await buttonHandlerOnOff(1);
                                     await i.update({ embeds: [interaction.client.greenEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'enabled_u')}**`, message)], components: [row, activateDeactivate] });
                                 }
@@ -416,6 +462,11 @@ const row = new MessageActionRow()
                     value: 'mothership',
                 },
                 {
+                    label: 'pvp_togle',
+                    description: 'Activate/Deactivate pvp',
+                    value: 'pvpEnable',
+                },
+                {
                     label: 'missile',
                     description: 'Activate/Deactivate missiles',
                     value: 'missile',
@@ -424,7 +475,7 @@ const row = new MessageActionRow()
                     label: 'hellstorm',
                     description: 'Activate/Deactivate hellstorm',
                     value: 'hellstorm',
-                },
+                },                
                 {
                     label: 'x2',
                     description: 'Use laser x2 utill... ',
