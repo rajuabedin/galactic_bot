@@ -263,9 +263,7 @@ module.exports = {
                         else
                             await i.update({});
                     }
-                    catch (error) {
-                        errorLog.error(error.message, { 'command_name': interaction.commandName });
-                    }
+                    catch (error) { }
                 }
             });
             collector.on('end', collected => {

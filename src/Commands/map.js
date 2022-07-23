@@ -108,7 +108,7 @@ module.exports = {
                     collector.stop("Selected");
                 }
                 catch (error) {
-                    errorLog.error(error.message, { 'command_name': interaction.commandName });
+                    await errorLog.error(error, interaction);
                 }
             });
 

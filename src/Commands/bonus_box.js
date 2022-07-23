@@ -33,7 +33,8 @@ module.exports = {
             let boost = 1;
             if (elapsedTimeFromBox > 0)
                 boost = 2;
-
+            if (userInfo.map_id == 42)
+                boost += 0.5;
             let box = await interaction.client.databaseSelectData("SELECT * FROM bonus_box", []);
             let bonusBoxCD = new Date();
             let index = 0;

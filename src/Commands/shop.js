@@ -616,7 +616,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
             }
         }
         catch (error) {
-            errorLog.error(error.message, { 'command_name': interaction.commandName });
+            await errorLog.error(error, interaction);
         }
     });
 

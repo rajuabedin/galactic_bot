@@ -84,7 +84,7 @@ module.exports = {
                     await i.update({});
                 }
                 catch (error) {
-                    errorLog.error(error.message, { 'command_name': interaction.commandName });
+                    await errorLog.error(error, interaction);
                 }
             }
         });
@@ -142,7 +142,7 @@ module.exports = {
                     }
                 }
                 catch (error) {
-                    errorLog.error(error.message, { 'command_name': interaction.commandName });
+                    await errorLog.error(error, interaction);
                 }
         });
 
@@ -222,7 +222,7 @@ async function player(interaction, pos, listIndex, alias) {
                     await iPlayer.update({});
             }
             catch (error) {
-                errorLog.error(error.message, { 'command_name': interaction.commandName });
+                await errorLog.error(error, interaction);
             }
     });
 

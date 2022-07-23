@@ -154,6 +154,7 @@
     "missions_cancellation": "Mission Cancellation",
     "missions_cancellation_conf": "Do you really want to stop this mission?",
     "mission_cancelled": "You have successfully cancelled the mission.",
+    "mission_cancelled_not": "You can **not** cancel this mission!.",
     "mission_started": "You have successfully started the mission.",
     "daily_claimed_error": "Daily already claimed. Come back tomorrow.",
     "daily_reward_msg": "```json\nDaily reward: {} Units\nDaily Streak: {}```",

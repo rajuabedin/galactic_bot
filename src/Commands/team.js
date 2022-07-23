@@ -72,9 +72,7 @@ module.exports = {
                                 collector.stop();
                             }
                         }
-                        catch (error) {
-                            errorLog.error(error.message, { 'command_name': interaction.commandName });
-                        }
+                        catch (error) { }
                 });
 
                 collector.on('end', collected => {
@@ -97,7 +95,7 @@ module.exports = {
                 }
                 message += "**";
                 await interaction.reply({ embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)] });
-
+                return;
             }
             else if (selectedOption == "leave") {
                 let team = await interaction.client.databaseSelectData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
@@ -168,7 +166,7 @@ module.exports = {
                                                 await i.update({});
                                         }
                                         catch (error) {
-                                            errorLog.error(error.message, { 'command_name': interaction.commandName });
+                                            await errorLog.error(error, interaction);
                                         }
                                 });
 
@@ -186,7 +184,7 @@ module.exports = {
                 }
                 else
                     await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not the leader of this team!", "ERROR!!", interaction.user)] });
-
+                return;
             }
         } catch (error) {
             let errorID = await errorLog.error(error, interaction);

@@ -117,13 +117,13 @@ module.exports = {
 
                 var reward = "";
 
-                if (mission.mission_reward_credit > 0) reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'credits_c')} - ${mission.mission_reward_credit}`;
+                if (mission.mission_reward_credit > 0) reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'Credits_c')} - ${mission.mission_reward_credit}`;
 
                 if (mission.mission_reward_units > 0) {
                     if (reward != "") {
-                        reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'units_c')} - ${mission.mission_reward_units}`;
+                        reward += ` | ${interaction.client.getWordLanguage(serverSettings.lang, 'Units_c')} - ${mission.mission_reward_units}`;
                     } else {
-                        reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'units_c')} - ${mission.mission_reward_units}`;
+                        reward += `${interaction.client.getWordLanguage(serverSettings.lang, 'Units_c')} - ${mission.mission_reward_units}`;
                     }
                 }
 
@@ -258,6 +258,14 @@ function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatu
                 await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
             }
         } else if (i.customId === "yes") {
+            if (missionsData[index][1] == 0) {
+                if (i.replied) {
+                    await i.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!" )], components: [] })
+                } else {
+                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
+                }
+                return collector.stop();
+            }            
             if (i.replied) {
                 await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
             } else {
