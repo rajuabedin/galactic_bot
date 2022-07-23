@@ -107,9 +107,7 @@ module.exports = {
                     }
                     collector.stop("Selected");
                 }
-                catch (error) {
-                    await errorLog.error(error, interaction);
-                }
+                catch (error) { }
             });
 
             collector.on('end', collected => {

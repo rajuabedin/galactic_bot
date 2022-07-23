@@ -83,9 +83,7 @@ module.exports = {
                     seconInteraction = i;
                     await i.update({});
                 }
-                catch (error) {
-                    await errorLog.error(error, interaction);
-                }
+                catch (error) { }
             }
         });
 
@@ -141,9 +139,7 @@ module.exports = {
                             .then(interaction => playerList.push(player(interaction, spawnPoint.shift(), playersID.indexOf(i.user.id), i.user.username[0])));
                     }
                 }
-                catch (error) {
-                    await errorLog.error(error, interaction);
-                }
+                catch (error) { }
         });
 
         collector.on('end', collected => {

@@ -34,8 +34,7 @@ module.exports = {
                 unit = "credit"
             }
             else {
-                await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
-                await interaction.client.databaseEditData(`UPDATE users SET user_hp = ?, ${unit} = ${unit} - ? WHERE user_id = ?`, [ship[0].ship_hp, price, interaction.user.id]);
+                await interaction.client.databaseEditData(`UPDATE users SET user_hp = ? WHERE user_id = ?`, [ship[0].ship_hp, interaction.user.id]);
                 await interaction.client.databaseEditData("UPDATE user_ships SET ship_hp = ?, durability = 100 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
                 await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repairDone'), interaction.client.getWordLanguage(serverSettings.lang, 'repairSuccesful'))] });
                 return;
@@ -68,9 +67,7 @@ module.exports = {
                         collector.stop("ended");
                     }
                 }
-                catch (error) {
-                    await errorLog.error(error, interaction);
-                }
+                catch (error) { }
             });
 
             collector.on('end', collected => {
