@@ -117,7 +117,7 @@ module.exports = {
                         let logEnemy = `Engaging Combat with Enemy`
                             + `\nYour Info : \nHP: ${enemyPlayer[0].user_hp}\tShield: ${enemyPlayer[0].user_shield}`
                             + `\nEnemy Info:\nHP: ${player[0].info.userStats.hp}\tShield: ${player[0].info.userStats.shield}\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
-                        
+
                         message = `\n**Your Info**:\n**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`
                             + `\n**Enemy Info**:\n**[${enemyShipEmoji}]** <a:hp:896118360125870170>: **${enemyPlayer[0].user_hp}**\t<a:sd:896118359966511104>: **${enemyPlayer[0].user_shield}**`;
                         await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with Enemy**`)], components: [teamRunRow] });
@@ -1983,7 +1983,7 @@ module.exports = {
                                 alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                             }
                             alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
-                            if (alienAccuracy > 65) {
+                            if (alienAccuracy > 50) {
                                 alienHullDamage = ~~(alienHullDamage * alienAccuracy / 100)
                                 alienMessage += `**Total Damage Dealt: __${alienHullDamage}__**`;
 
@@ -2965,18 +2965,19 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
     let mapIDSecond = ~~((mapIDFrist % 1.0) * 10);
     mapIDFrist = ~~mapIDFrist;
 
-    let x = (165 - 0.6 * (userInfo.user_speed - alienSpeed))
-    let minimumAccuracyAlien = Math.round(0.0015 * x * x);
-    let minimumAccuracyUser = 96 - minimumAccuracyAlien;
-    
-    if (minimumAccuracyUser < 0)
-        minimumAccuracyUser = 0;
-    if (minimumAccuracyAlien < 0)
-        minimumAccuracyAlien = 0;
-    if (minimumAccuracyUser > 100)
-        minimumAccuracyUser = 100;
-    if (minimumAccuracyAlien > 100)
-        minimumAccuracyAlien = 100;
+    let x = 0.14 * (userInfo.user_speed - alienSpeed);
+    x = ~~x;
+    let minimumAccuracyAlien = 50 - x;
+    let minimumAccuracyUser = 50 + x;
+
+    if (minimumAccuracyUser < 5)
+        minimumAccuracyUser = 5;
+    if (minimumAccuracyAlien < 5)
+        minimumAccuracyAlien = 5;
+    if (minimumAccuracyUser > 95)
+        minimumAccuracyUser = 95;
+    if (minimumAccuracyAlien > 95)
+        minimumAccuracyAlien = 95;
 
     let expRequirement = await interaction.client.databaseSelectData("SELECT exp_to_lvl_up FROM level WHERE level = ?", [userInfo.level]);
 
