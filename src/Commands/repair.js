@@ -43,7 +43,12 @@ module.exports = {
             await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
 
             if (ship[0].ship_hp == 0)
-                price = ~~(price * 1.2);
+                if (ship[0].units > 0) {
+                    price = ship[0].units * 0.01;
+                    unit = "units"
+                }
+                else
+                    price = ~~(price * 1.2);
 
             const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
