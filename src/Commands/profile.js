@@ -7,7 +7,11 @@ require('dotenv').config();
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('profile')
-        .setDescription('This command is used to check your profile.'),
+        .setDescription('This command is used to check your profile.')
+        .addUserOption(option => option
+            .setName('user')
+            .setDescription('The user you want to check the profile of.')
+            .setRequired(false)),
 
     async execute(interaction, userInfo, serverSettings) {
         String.prototype.format = function () {
@@ -16,6 +20,7 @@ module.exports = {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
+
 
         function timeConverter(UNIX_timestamp) {
             var a = new Date(UNIX_timestamp);
@@ -31,16 +36,30 @@ module.exports = {
         }
 
         try {
+            let secondUser = interaction.options.getUser('user');
+            let user = interaction.user;
+
+            if (secondUser !== null) {
+                user = secondUser;
+                userInfo = await interaction.client.getUserAccount(user.id);
+                console.log(userInfo);
+                if (typeof userInfo === 'undefined') {
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_USER_NF'))], ephemeral: true });
+                }
+            }
+
             if (userInfo.tutorial_counter < 8) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
 
-            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
-            if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
-                await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
-                userInfo.map_id = userInfo.next_map_id;
-                await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [user.id]);
+            if (userCd.length > 0) {
+                if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                    await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [user.id]);
+                    userInfo.map_id = userInfo.next_map_id;
+                    await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, user.id]);
+                }
             }
 
             var userMapData = await interaction.client.databaseSelectData('select * from map where map_id = ?', [userInfo.map_id]);
@@ -48,6 +67,13 @@ module.exports = {
 
             var userLevelData = await interaction.client.databaseSelectData('select * from level where level = ?', [userInfo.level + 1]);
             userLevelData = userLevelData[0];
+
+            var userKillsCount = await interaction.client.databaseSelectData('select * from user_log where user_id = ?', [user.id]);
+            userKillsCount = userKillsCount[0];
+
+            if (typeof userKillsCount === 'undefined') {
+                userKillsCount = { Enemy: 0 };
+            }
 
 
             const requestBody = {
@@ -66,8 +92,8 @@ module.exports = {
                 units: userInfo.units.toString(),
                 colony: userInfo.firm,
                 joined_on: timeConverter(userInfo.joined_on),
-                aliens_killed: userInfo.aliens_killed,
-                enemy_killed: userInfo.enemy_killed,
+                aliens_killed: userInfo.aliens_killed.toString(),
+                enemy_killed: userKillsCount.Enemy.toString(),
             }
 
             var data = await fetch(`https://api.obelisk.club/SpaceAPI/profile`, {
@@ -88,6 +114,7 @@ module.exports = {
             }
 
         } catch (error) {
+            console.error(error);
             let errorID = await errorLog.error(error, interaction);
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });

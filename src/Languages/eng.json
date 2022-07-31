@@ -191,7 +191,7 @@
     "TICTACTOE_DECLINE": "<@{}> Declined the game",
     "ERROR_SAME_USER": "Error! You can not play with yourself!",
     "ERROR_BOT_USER": "Error! You can not play with bots!",
-    "": "",
+    "ERROR_USER_NF": "No account found for this user!",
     "": "",
     "": "",
     "": "",

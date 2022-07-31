@@ -23,6 +23,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, start the tutorial.", "ERROR, USER NOT FOUND!")], ephemeral: true });
         }
 
+        if (userInfo.discord_image !== interaction.user.avatarURL()) {
+            userInfo.discord_image = interaction.user.avatarURL();
+            await interaction.client.databaseEditData('update users set discord_image = ? where user_id = ?', [interaction.user.avatarURL(), interaction.user.id]);
+        }
+
 
         if (typeof userInfo === 'undefined') {
             const serverRankLoger = await interaction.client.databaseSelectData("SELECT * FROM server_rank WHERE user_id = ? and server_id = ? and DATE(`date`) = CURDATE()", [interaction.user.id, interaction.guildId]);
