@@ -5,8 +5,14 @@ const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed, Messag
 const { createCanvas } = require('canvas')
 
 module.exports = new Event("interactionCreate", async (client, interaction) => {
+    String.prototype.format = function () {
+        var i = 0, args = arguments;
+        return this.replace(/{}/g, function () {
+            return typeof args[i] != 'undefined' ? args[i++] : '';
+        });
+    };
     // check if channel is allowed
-    const serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+    let serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
     if (serverSettings.length == 0) {
         await client.databaseEditData(`INSERT INTO server_settings (server_id, allowed_channels, locked_channels, edited_by, last_edit_date) VALUES ('${interaction.guildId}', JSON_ARRAY(), JSON_ARRAY(), JSON_ARRAY(), CURRENT_TIMESTAMP)`)
         serverSettings = {
@@ -15,13 +21,15 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             locked_channels: [],
             lang: "eng",
         }
+    } else {
+        serverSettings = serverSettings[0]
     }
     try {
         if (!interaction.isCommand()) return;
 
-        var initialCommand = "tutorial"
-        const allowedList = await JSON.parse(serverSettings[0].allowed_channels);
-        const lockedList = await JSON.parse(serverSettings[0].locked_channels);
+        var initialCommand = "create_account"
+        const allowedList = await JSON.parse(serverSettings.allowed_channels);
+        const lockedList = await JSON.parse(serverSettings.locked_channels);
 
         if (lockedList.includes(interaction.channelId)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
         if (Object.entries(allowedList).length !== 0 && !allowedList.includes(interaction.channelId)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
@@ -61,11 +69,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         var captchaData = await interaction.client.databaseSelectData("select * from captcha_counter where user_id = ?", [interaction.user.id]);
         captchaData = captchaData[0]
 
-        var captchaReturn = await generateMacroDetector(captchaData, interaction, serverSettings[0]);
+        var captchaReturn = await generateMacroDetector(captchaData, interaction, serverSettings);
 
         if (captchaReturn) {
             const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
-            command.execute(interaction, userInfo, serverSettings[0]);
+            command.execute(interaction, userInfo, serverSettings);
         }
     } catch (error) {
         let errorID = await errorLog.error(error, interaction);
