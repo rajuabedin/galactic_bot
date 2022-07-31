@@ -136,7 +136,7 @@ module.exports = {
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC6_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
                 }
                 else if (selectedTutorial == 7) {
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('8'))], components: [tutorial] });
+                    await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('8'))], components: [tutorial] });
                 }
             }
 

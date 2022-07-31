@@ -11,21 +11,23 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             return typeof args[i] != 'undefined' ? args[i++] : '';
         });
     };
-    // check if channel is allowed
-    let serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
-    if (serverSettings.length == 0) {
-        await client.databaseEditData(`INSERT INTO server_settings (server_id, allowed_channels, locked_channels, edited_by, last_edit_date) VALUES ('${interaction.guildId}', JSON_ARRAY(), JSON_ARRAY(), JSON_ARRAY(), CURRENT_TIMESTAMP)`)
-        serverSettings = {
-            server_id: interaction.guildId,
-            allowed_channels: [],
-            locked_channels: [],
-            lang: "eng",
-        }
-    } else {
-        serverSettings = serverSettings[0]
-    }
+
     try {
         if (!interaction.isCommand()) return;
+
+        // check if channel is allowed
+        let serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+        if (serverSettings.length == 0) {
+            await client.databaseEditData(`INSERT INTO server_settings (server_id, allowed_channels, locked_channels, edited_by, last_edit_date) VALUES ('${interaction.guildId}', JSON_ARRAY(), JSON_ARRAY(), JSON_ARRAY(), CURRENT_TIMESTAMP)`)
+            serverSettings = {
+                server_id: interaction.guildId,
+                allowed_channels: [],
+                locked_channels: [],
+                lang: "eng",
+            }
+        } else {
+            serverSettings = serverSettings[0]
+        }
 
         var initialCommand = "tutorial"
         const allowedList = await JSON.parse(serverSettings.allowed_channels);
@@ -82,9 +84,9 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
     } catch (error) {
         let errorID = await errorLog.error(error, interaction);
         if (interaction.replied) {
-            await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
+            await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID))], ephemeral: true });
         } else {
-            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID), "Error!!")], ephemeral: true });
         }
     }
 });

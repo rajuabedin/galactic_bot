@@ -675,7 +675,7 @@ const buySetting = new MessageActionRow()
     .addComponents(
         new MessageButton()
             .setCustomId('cancelItem')
-            .setLabel('CANCELL')
+            .setLabel('CANCEL')
             .setStyle('DANGER'),
         new MessageButton()
             .setCustomId('buyItem')

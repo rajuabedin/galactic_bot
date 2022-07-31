@@ -2049,7 +2049,7 @@ module.exports = {
                         alien.shift();
                         alien.push(storedAlien);
                         await player[0].info.reloadammo();
-                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target allien...**", "")], components: [] });
+                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target alien...**", "")], components: [] });
                         await interaction.client.wait(1000);
                         alienMessage = "";
                         for (let index in alien) {
@@ -2424,7 +2424,7 @@ module.exports = {
                         alien.shift();
                         alien.push(storedAlien);
                         await player[0].info.reloadammo();
-                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target allien...**", "")], components: [] });
+                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Swapping target alien...**", "")], components: [] });
                         await interaction.client.wait(1000);
                         alienMessage = "";
                         for (let index in alien) {
