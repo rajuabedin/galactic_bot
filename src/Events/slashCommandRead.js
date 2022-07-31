@@ -77,8 +77,6 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
 
         if (captchaReturn) {
             const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
-            console.log(command)
-            console.log(interaction.commandName)
             command.execute(interaction, userInfo, serverSettings);
         }
     } catch (error) {

@@ -53,8 +53,8 @@ module.exports = {
                 space = space.repeat(6 - credit.toString().length);
                 message += `---------------------\nTotal Credit  :${space}${credit}`;
                 message += "\n\`\`\`";
-                resources = `0; 0; 0; 0; 0; 0; 0; 0; ${resources[8]}`
-                await interaction.client.databaseEditData("UPDATE users SET resources = ?, credit = credit + ?, cargo = ? WHERE user_id = ?", [resources, credit, resources[8], interaction.user.id]);
+                let resources2 = `0; 0; 0; 0; 0; 0; 0; 0; ${resources[8]}`
+                await interaction.client.databaseEditData("UPDATE users SET resources = ?, credit = credit + ?, cargo = ? WHERE user_id = ?", [resources2, credit, resources[8], interaction.user.id]);
                 if (sold)
                     await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Resources sold")] });
                 else
