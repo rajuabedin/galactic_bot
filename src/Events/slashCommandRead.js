@@ -27,7 +27,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
     try {
         if (!interaction.isCommand()) return;
 
-        var initialCommand = "create_account"
+        var initialCommand = "tutorial"
         const allowedList = await JSON.parse(serverSettings.allowed_channels);
         const lockedList = await JSON.parse(serverSettings.locked_channels);
 
@@ -39,9 +39,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
             return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, start the tutorial.", "ERROR, USER NOT FOUND!")], ephemeral: true });
         }
 
-        if (userInfo.discord_image !== interaction.user.avatarURL()) {
-            userInfo.discord_image = interaction.user.avatarURL();
-            await interaction.client.databaseEditData('update users set discord_image = ? where user_id = ?', [interaction.user.avatarURL(), interaction.user.id]);
+        if (interaction.commandName !== initialCommand) {
+            if (userInfo.discord_image !== interaction.user.avatarURL()) {
+                userInfo.discord_image = interaction.user.avatarURL();
+                await interaction.client.databaseEditData('update users set discord_image = ? where user_id = ?', [interaction.user.avatarURL(), interaction.user.id]);
+            }
         }
 
 
@@ -73,6 +75,8 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
 
         if (captchaReturn) {
             const command = client.commands.find(cmd => cmd.data.name == interaction.commandName);
+            console.log(command)
+            console.log(interaction.commandName)
             command.execute(interaction, userInfo, serverSettings);
         }
     } catch (error) {
