@@ -44,7 +44,6 @@ module.exports = {
                 if (Object.entries(data).length === 0) {
                     await interaction.client.databaseEditData(`insert into user_daily_log (user_id,log) VALUES (${interaction.user.id},'[]')`);
                 }
-                console.log(data)
                 await interaction.reply(`Coming soon`)
 
             } else if (interaction.options.getSubcommand() === 'channel') {

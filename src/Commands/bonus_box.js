@@ -21,7 +21,7 @@ module.exports = {
                 return;
             }
 
-            let userCd = await interaction.client.databaseSelectData("SELECT last_bonus_box, bonus_box FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT last_bonus_box FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].last_bonus_box)) / 1000);
             if (elapsedTimeFromBox < 60) {
                 await interaction.reply({
@@ -31,8 +31,8 @@ module.exports = {
             }
             elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].bonus_box)) / 1000);
             let boost = 1;
-            if (elapsedTimeFromBox > 0)
-                boost = 2;
+            //if (elapsedTimeFromBox > 0)
+            //    boost = 2;
             if (userInfo.map_id == 42)
                 boost += 0.5;
             let box = await interaction.client.databaseSelectData("SELECT * FROM bonus_box", []);

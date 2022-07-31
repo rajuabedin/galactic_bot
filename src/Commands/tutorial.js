@@ -143,7 +143,6 @@ module.exports = {
             let ended = false;
 
             const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
-            console.log(interaction)
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 });
 
             collector.on('collect', async i => {

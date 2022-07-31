@@ -45,11 +45,11 @@ module.exports = {
                 if (dailyInfo.streak > 0)
                     reward = reward * dailyInfo.streak
                 if (reward > 500) reward = 500;
-                await interaction.client.databaseEditData(`update users set username = ${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}, units = units + ${reward} where user_id = '${interaction.user.id}'`)
+                await interaction.client.databaseEditData(`update users set username = '${interaction.user.username}', units = units + ${reward} where user_id = '${interaction.user.id}'`)
                 await interaction.client.databaseEditData(`update user_daily set streak = streak + 1, next_date = '${today.toJSON().slice(0, 10)}' where user_id = '${interaction.user.id}'`)
                 return await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, "daily_reward_msg").format(reward, (dailyInfo.streak - 1)), interaction.client.getWordLanguage(serverSettings.lang, 'daily_reward'))], components: [] })
             } else if (diffInDays > 2) {
-                await interaction.client.databaseEditData(`update users set username = ${interaction.user.username.replace(/[^a-zA-Z0-9]/g,'-')}, units = units + ${reward} where user_id = '${interaction.user.id}'`)
+                await interaction.client.databaseEditData(`update users set username = '${interaction.user.username}', units = units + ${reward} where user_id = '${interaction.user.id}'`)
                 await interaction.client.databaseEditData(`update user_daily set streak = 1, next_date = '${today.toJSON().slice(0, 10)}' where user_id = '${interaction.user.id}'`)
                 return await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, "daily_reward_msg").format(reward, 0), interaction.client.getWordLanguage(serverSettings.lang, 'daily_reward'))], components: [] })
             } else {
