@@ -49,7 +49,7 @@ module.exports = {
 
             var userShieldData = await interaction.client.databaseSelectData('select * from user_shields where user_id = ? and equipped = 1', [interaction.user.id]);
             if (userShieldData[0] !== undefined) {
-                userShieldData = userShieldData[0].lenght;
+                userShieldData = userShieldData[0].length;
             } else {
                 userShieldData = 0
             }
@@ -57,7 +57,7 @@ module.exports = {
 
             var userEngineData = await interaction.client.databaseSelectData('select * from user_engines where user_id = ? and equipped = 1', [interaction.user.id]);
             if (userEngineData[0] !== undefined) {
-                userEngineData = userEngineData[0].lenght;
+                userEngineData = userEngineData[0].length;
             } else {
                 userEngineData = 0
             }

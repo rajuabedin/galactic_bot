@@ -21,7 +21,7 @@ module.exports = {
                 return;
             }
 
-            let userCd = await interaction.client.databaseSelectData("SELECT last_bonus_box FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT last_bonus_box, bonus_box FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].last_bonus_box)) / 1000);
             if (elapsedTimeFromBox < 60) {
                 await interaction.reply({
@@ -29,6 +29,12 @@ module.exports = {
                 });
                 return;
             }
+            elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].bonus_box)) / 1000);
+            let boost = 1;
+            if (elapsedTimeFromBox > 0)
+                boost = 2;
+            if (userInfo.map_id == 42)
+                boost += 0.5;
             let box = await interaction.client.databaseSelectData("SELECT * FROM bonus_box", []);
             let bonusBoxCD = new Date();
             let index = 0;
@@ -53,19 +59,27 @@ module.exports = {
             for (random; random > 0; random--) {
                 index = indexList[Math.floor(Math.random() * (100))];
 
-                reward[box[index].column_reward] += box[index].value;
+                reward[box[index].column_reward] += box[index].value * boost;
             }
             for (const [key, value] of Object.entries(reward)) {
                 if (value > 0)
                     message += `\n-${description[key]}${space.repeat(6 - value.toString().length)}${value}`;
             }
             message += " \`\`\`";
-            await interaction.reply({
-                embeds: [interaction.client.greenEmbed(
-                    message,
-                    `Opening [ ${storeRandom} ] bonus boxes:`
-                )]
-            });
+            if (boost == 2)
+                await interaction.reply({
+                    embeds: [interaction.client.greenEmbed(
+                        "**" + message + "**",
+                        `Opening [ ${storeRandom} ] bonus boxes:`
+                    )]
+                });
+            else
+                await interaction.reply({
+                    embeds: [interaction.client.greenEmbed(
+                        message,
+                        `Opening [ ${storeRandom} ] bonus boxes:`
+                    )]
+                });
             await interaction.client.databaseEditData(`UPDATE ammunition SET x1_magazine = x1_magazine + ?, x2_magazine = x2_magazine + ?, x3_magazine = x3_magazine + ?, xS1_magazine = xS1_magazine + ? WHERE user_id = ?`, [reward.x1_magazine, reward.x2_magazine, reward.x3_magazine, reward.xS1_magazine, interaction.user.id]);
             await interaction.client.databaseEditData(`UPDATE users SET username = ?, guild_id = ?, channel_id = ?, credit = credit + ?, units = units + ? WHERE user_id = ?`, [interaction.user.username, interaction.guildId, interaction.channelId, reward.credit, reward.units, interaction.user.id]);
             await interaction.client.databaseEditData(`UPDATE user_cd SET last_bonus_box = ? WHERE user_id = ?`, [bonusBoxCD, interaction.user.id]);

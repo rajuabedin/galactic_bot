@@ -329,7 +329,7 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
             }
         }
         catch (error) {
-            errorLog.error(error.message, { 'command_name': interaction.commandName });
+            await errorLog.error(error, interaction);
         }
 
     });

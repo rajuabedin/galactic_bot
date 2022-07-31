@@ -43,7 +43,7 @@ module.exports = {
                 return;
             }
             let baseSpeed = 0;
-            let displayEquippedItemlenght = 0;
+            let displayEquippedItemlength = 0;
             let maxEquipableItem = 0;
             let itemsToEquip = [];
             let itemsEquipped = [];
@@ -85,7 +85,7 @@ module.exports = {
                 for (item in rawUnequippedLaser) {
                     itemsToEquip.push([rawUnequippedLaser[item].damage_value * (1 + rawUnequippedLaser[item].per_increase_by_level / 1000 * rawUnequippedLaser[item].level), rawUnequippedLaser[item].laser_model + `${itemRank[rawUnequippedLaser[item].level]}`, rawUnequippedLaser[item].laser_id, rawUnequippedLaser[item].emoji_id]);
                 }
-                displayEquippedItemlenght = itemsEquipped.length;
+                displayEquippedItemlength = itemsEquipped.length;
                 maxEquipableItem = maxEquipableItem[0].laser_quantity;
             }
             else if (selectedOption == 'shield') {
@@ -103,7 +103,7 @@ module.exports = {
                 for (item in rawUnequippedShield) {
                     itemsToEquip.push([rawUnequippedShield[item].shield_value * (1 + rawUnequippedShield[item].per_increase_by_level / 1000 * rawUnequippedShield[item].level), rawUnequippedShield[item].shield_model + `${itemRank[rawUnequippedShield[item].level]}`, rawUnequippedShield[item].shield_id, rawUnequippedShield[item].emoji_id, rawUnequippedShield[item].absorption_rate]);
                 }
-                displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
+                displayEquippedItemlength = maxEquipableItem[0].equipped_extra;
                 maxEquipableItem = maxEquipableItem[0].extra_quantity;
             }
             else {
@@ -121,7 +121,7 @@ module.exports = {
                 for (item in rawUnequippedEngine) {
                     itemsToEquip.push([rawUnequippedEngine[item].speed_value, "  " + rawUnequippedEngine[item].engine_model + "  ", rawUnequippedEngine[item].engine_id, rawUnequippedEngine[item].emoji_id]);
                 }
-                displayEquippedItemlenght = maxEquipableItem[0].equipped_extra;
+                displayEquippedItemlength = maxEquipableItem[0].equipped_extra;
                 baseSpeed = maxEquipableItem[0].ship_base_speed;
                 maxEquipableItem = maxEquipableItem[0].extra_quantity;
             }
@@ -131,7 +131,7 @@ module.exports = {
 
             let [row, row1, row2, row3, message] = [0, 0, 0, 0, 0];
             let shipRow = await shipButton("SECONDARY");
-            if (displayEquippedItemlenght == maxEquipableItem)
+            if (displayEquippedItemlength == maxEquipableItem)
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
             else
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
@@ -166,7 +166,7 @@ module.exports = {
                                 }
                                 totalDamage = Math.floor(totalDamage)
                                 await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [totalDamage, interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlenght, interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlength, interaction.user.id]);
                                 //Send data to database
                             }
                             else if (selectedOption == 'shield') {
@@ -181,7 +181,7 @@ module.exports = {
                                 if (absortionRate > 0)
                                     absortionRate = Math.floor(absortionRate / totalShield);
                                 //totalShield = Math.floor(totalShield)
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [totalShield, absortionRate, displayEquippedItemlenght, interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [totalShield, absortionRate, displayEquippedItemlength, interaction.user.id]);
                                 await interaction.client.databaseEditData(`UPDATE users SET max_shield = ?, user_shield = ?, absorption_rate = ? WHERE user_id = ?`, [totalShield, totalShield, absortionRate, interaction.user.id]);
                             }
                             else {
@@ -190,7 +190,7 @@ module.exports = {
                                     baseSpeed += itemsEquipped[engine][0];
                                     await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 1 WHERE engine_id = ?`, [itemsEquipped[engine][2]]);
                                 }
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [baseSpeed, displayEquippedItemlenght, interaction.user.id]);
+                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [baseSpeed, displayEquippedItemlength, interaction.user.id]);
                                 await interaction.client.databaseEditData(`UPDATE users SET user_speed = ? WHERE user_id = ?`, [baseSpeed, interaction.user.id]);
                             }
                             collector.stop("Saved");
@@ -238,9 +238,9 @@ module.exports = {
                         }
                         else if (i.component.style == "PRIMARY") {
                             equippedItemLength++;
-                            displayEquippedItemlenght++;
+                            displayEquippedItemlength++;
                             itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
-                            if (displayEquippedItemlenght == maxEquipableItem)
+                            if (displayEquippedItemlength == maxEquipableItem)
                                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
                             else
                                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
@@ -248,7 +248,7 @@ module.exports = {
                         }
                         else if (i.component.style == "SUCCESS") {
                             equippedItemLength--;
-                            displayEquippedItemlenght--;
+                            displayEquippedItemlength--;
                             itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
                             [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
                             await i.update({ content: message, components: [row, row1, row2, row3, row4] });
@@ -259,9 +259,7 @@ module.exports = {
                             await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                         }
                     }
-                    catch (error) {
-                        errorLog.error(error.message, { 'command_name': interaction.commandName });
-                    }
+                    catch (error) { }
                 }
             });
 
