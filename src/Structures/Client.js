@@ -22,7 +22,6 @@ class Client extends Discord.Client {
         this.clientId = '881243621293170738';
         this.guildId = "898556800838828104";
         this.languages = {};
-        this.wait = require('util').promisify(setTimeout);
         this.random = (min, max) => ~~(Math.random() * (max - min)) + min;
 
         this.messagesToDM = []
@@ -89,6 +88,10 @@ class Client extends Discord.Client {
         })();
 
         this.login(token)
+    }
+
+    wait(ms) {
+        await new Promise(r => setTimeout(r, ms));
     }
 
     getApp(guildId) {
