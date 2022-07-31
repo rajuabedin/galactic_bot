@@ -25,7 +25,7 @@ module.exports = {
             let elapsedTimeFromBox = Math.floor((Date.now() - Date.parse(userCd[0].last_bonus_box)) / 1000);
             if (elapsedTimeFromBox < 60) {
                 await interaction.reply({
-                    embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'boxCD').format(60 - elapsedTimeFromBox), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))]
+                    embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'boxCD').format(60 - elapsedTimeFromBox), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))], ephemeral: true
                 });
                 return;
             }

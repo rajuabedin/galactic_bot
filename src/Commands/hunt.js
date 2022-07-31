@@ -7,7 +7,7 @@ const disabledMaps = [11, 21, 31, 12, 22, 32];
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('hunt')
-        .setDescription('Hunt Allien!'),
+        .setDescription('Hunt Alien!'),
 
     async execute(interaction, userInfo, serverSettings) {
 
@@ -27,7 +27,7 @@ module.exports = {
             let userCd = await interaction.client.databaseSelectData("SELECT last_hunt, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromHunt = ~~((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))] });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))], ephemeral: true });
                 return;
             }
             let mapId = userInfo.map_id;
@@ -2905,7 +2905,7 @@ async function missionHandler(interaction, aliens, id, boost) {
                     else
                         messageReward += `Credits       :  ${reward.credit}\nUnits         :  ${reward.units}\nEXP           :  ${reward.exp}\nHonor         :  ${reward.honor}` + " \`\`\`";
 
-                    await interaction.followUp({ embeds: [interaction.client.yellowEmbedImage(messageReward, "Mission Completed!", interaction.user)] });
+                    await interaction.followUp({ embeds: [interaction.client.yellowEmbedImage(messageReward, interaction.client.getWordLanguage(serverSettings.lang, "mission_completed"), interaction.user)], ephemeral: true });
                     return true;
                 }
             }
