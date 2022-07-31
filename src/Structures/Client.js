@@ -296,10 +296,15 @@ class Client extends Discord.Client {
     async databaseEditDataReturnID(query, args) {
         var result = await this.usePooledConnectionAsync(async connection => {
             const rowsCount = await new Promise((resolve, reject) => {
-                connection.query(query, args, function (error, results, fields) {
+                connection.query(query, args, async function (error, results, fields) {
                     if (error) {
-                        connection.query('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['error', error.message, error.stack, "Mysql Query", "Not Defied"]);
-                        resolve(-1);
+                        let errorID = await new Promise((resolve, reject) => {
+                            connection.query('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)',
+                                ['error', error.message, error.stack, "Mysql Query", "Not Defied"], function (error, results, fields) {
+                                    resolve(results.insertId);
+                                });
+                        });
+                        resolve(errorID);
                     } else {
                         resolve(results.insertId);
                     }

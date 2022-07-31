@@ -81,9 +81,9 @@ module.exports = {
                 hp: userInfo.user_hp,
                 max_hp: userInfo.max_hp,
                 shield_value: userInfo.user_shield,
-                max_shield: userInfo.max_shield
+                max_shield: userInfo.max_shield,
+                boost: "coming-soon"
             }
-
 
             var data = await fetch(`https://api.obelisk.club/SpaceAPI/stats`, {
                 method: 'POST',
@@ -98,7 +98,8 @@ module.exports = {
             if (data.success == true) {
                 await interaction.reply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                let errorID = await errorLog.custom(data, interaction);
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
                 errorLog.error(data.Error, { 'command_name': interaction.commandName });
             }
 

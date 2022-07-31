@@ -67,6 +67,15 @@ class NewLogger {
         }
     }
 
+    async custom(message, interaction) {
+        try {
+            console.log(message);
+            return await interaction.client.databaseEditDataReturnID('insert into bot_log (exceptionType, exceptionMessage, fullException, commandName, userID) values (?,?,?,?,?)', ['custom', message.error, message.error, interaction.commandName, interaction.user.id]);
+        } catch (error) {
+            loggerBase.error(message, interaction.user.id);
+        }
+    }
+
 }
 
 module.exports = {

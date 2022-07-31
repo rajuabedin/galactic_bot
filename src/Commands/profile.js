@@ -109,12 +109,12 @@ module.exports = {
             if (data.success == true) {
                 await interaction.reply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError'), "Error!!")], ephemeral: true });
+                let errorID = await errorLog.custom(data, interaction);
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
                 errorLog.error(data.Error, { 'command_name': interaction.commandName });
             }
 
         } catch (error) {
-            console.error(error);
             let errorID = await errorLog.error(error, interaction);
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
