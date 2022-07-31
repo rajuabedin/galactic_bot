@@ -5,22 +5,21 @@ const { MessageActionRow, MessageButton, MessageSelectMenu, MessageEmbed, Messag
 const { createCanvas } = require('canvas')
 
 module.exports = new Event("interactionCreate", async (client, interaction) => {
+    // check if channel is allowed
+    const serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
+    if (serverSettings.length == 0) {
+        await client.databaseEditData(`INSERT INTO server_settings (server_id, allowed_channels, locked_channels, edited_by, last_edit_date) VALUES ('${interaction.guildId}', JSON_ARRAY(), JSON_ARRAY(), JSON_ARRAY(), CURRENT_TIMESTAMP)`)
+        serverSettings = {
+            server_id: interaction.guildId,
+            allowed_channels: [],
+            locked_channels: [],
+            lang: "eng",
+        }
+    }
     try {
         if (!interaction.isCommand()) return;
 
         var initialCommand = "tutorial"
-
-        // check if channel is allowed
-        const serverSettings = await interaction.client.databaseSelectData(`select * from server_settings where server_id = '${interaction.guildId}'`)
-        if (serverSettings.length == 0) {
-            await client.databaseEditData(`INSERT INTO server_settings (server_id, allowed_channels, locked_channels, edited_by, last_edit_date) VALUES ('${interaction.guildId}', JSON_ARRAY(), JSON_ARRAY(), JSON_ARRAY(), CURRENT_TIMESTAMP)`)
-            serverSettings = {
-                server_id: interaction.guildId,
-                allowed_channels: [],
-                locked_channels: [],
-                lang: "eng",
-            }
-        }
         const allowedList = await JSON.parse(serverSettings[0].allowed_channels);
         const lockedList = await JSON.parse(serverSettings[0].locked_channels);
 
