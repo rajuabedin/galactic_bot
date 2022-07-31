@@ -90,7 +90,7 @@ class Client extends Discord.Client {
         this.login(token)
     }
 
-    wait(ms) {
+    async wait(ms) {
         await new Promise(r => setTimeout(r, ms));
     }
 
