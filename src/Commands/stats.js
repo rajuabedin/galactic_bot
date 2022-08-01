@@ -39,10 +39,12 @@ module.exports = {
             if (userInfo.in_hunt != 1) {
                 let userCd = await interaction.client.databaseSelectData("SELECT last_repair FROM user_cd WHERE user_id = ?", [interaction.user.id]);
                 userInfo.user_hp = Math.trunc(userInfo.user_hp + userInfo.repair_rate * (Date.now() - Date.parse(userCd[0].last_repair)) / 60000)
+                if (userInfo.user_hp > userInfo.max_hp)
+                    userInfo.user_hp = userInfo.max_hp;
+                await interaction.client.databaseEditData("UPDATE users SET user_hp = ? WHERE user_id = ?", [userInfo.user_hp, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ? WHERE equipped = 1 AND user_id = ?", [userInfo.user_hp, interaction.user.id]);
             }
-            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-            if (userInfo.user_hp > userInfo.max_hp)
-                userInfo.user_hp = userInfo.max_hp;
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);            
 
             var userShipData = await interaction.client.databaseSelectData('select ships_info.ship_model, ships_info.laser_quantity, ships_info.extra_quantity, ships_info.max_cargo from user_ships join ships_info on user_ships.ship_model = ships_info.ship_model where user_ships.user_id = ? and user_ships.equipped = 1', [interaction.user.id]);
             userShipData = userShipData[0];
