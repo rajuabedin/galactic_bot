@@ -39,7 +39,7 @@ module.exports = {
                 mapId = userInfo.map_id;
                 map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 nextMapName = userInfo.next_map_id / 10;
-                nextMapName = `${Math.floor(nextMapName)}-${Math.floor((nextMapName % 1.0) * 10)}`;
+                nextMapName = `${~~(nextMapName)}-${~~((nextMapName - ~~(nextMapName)) * 10)}`;
                 elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / -60;
                 elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
                 elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
