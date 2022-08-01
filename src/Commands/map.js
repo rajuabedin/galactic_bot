@@ -38,8 +38,8 @@ module.exports = {
             else if (userInfo.next_map_id !== 1) {
                 mapId = userInfo.map_id;
                 map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
-                nextMapName = userInfo.next_map_id / 10;
-                nextMapName = `${~~(nextMapName)}-${~~((nextMapName - ~~(nextMapName)) * 10)}`;
+                nextMapName = (userInfo.next_map_id).toString();
+                nextMapName = nextMapName[0] + "-" + nextMapName[1];
                 elapsedTimeFromWarpMinutes = elapsedTimeFromWarp / -60;
                 elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
                 elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
