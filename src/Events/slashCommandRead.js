@@ -61,11 +61,11 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         if (bannedData.length !== 0) {
             let embed = new MessageEmbed()
                 .setColor('0xe1143d')
-                .setAuthor("You are banned!", interaction.client.user.avatarURL())
+                .setAuthor({ name: "You are banned!", imageUrl: interaction.client.user.avatarURL() })
                 .setThumbnail(interaction.user.avatarURL())
                 .setDescription(`You were banned by <@!${bannedData[0].banned_by}>.\n**Reason**: \`\`\`\n${bannedData[0].reason}\`\`\``)
                 .setTimestamp(bannedData[0].ban_time)
-                .setFooter("Banned since ");
+                .setFooter({ text: "Banned since " });
             return await interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -165,7 +165,7 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
 
         var textToEmbed = new MessageEmbed()
             .setColor('0x009dff')
-            .setAuthor("Captcha", interaction.user.avatarURL())
+            .setAuthor({ name: "Captcha", iconURL: interaction.user.avatarURL() })
             .setImage('attachment://Never_gonna_give_you_up_Never_gonna_let_you_down_Never_gonna_run_around_and_desert_you_Never_gonna_make_you_cry_Never_gonna_say_goodbye_Never_gonna_tell_a_lie_and_hurt_you.png')
             .setDescription(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_MSG"))
 
@@ -194,10 +194,10 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
                     const webhookClient = new WebhookClient({ id: process.env.webhookId, token: process.env.webhookToken });
 
                     const embed = new MessageEmbed()
-                        .setAuthor(`${interaction.client.user.username} banned ${interaction.user.username}`, interaction.client.user.avatarURL())
+                        .setAuthor({ name: `${interaction.client.user.username} banned ${interaction.user.username}`, iconURL: interaction.client.user.avatarURL() })
                         .addField("User ID:", `\`${interaction.user.id}\``)
                         .addField("Reason:", `\`Selected wrong captcha text\``)
-                        .setFooter("Ban Time")
+                        .setFooter({ text: "Ban Time" })
                         .setTimestamp()
                         .setColor('#0xed4245')
                         .setThumbnail(interaction.user.avatarURL());

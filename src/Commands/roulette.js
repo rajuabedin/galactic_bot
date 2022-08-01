@@ -77,7 +77,7 @@ module.exports = {
 
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setAuthor(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_TITLE').format(interaction.user.username), interaction.user.avatarURL())
+                    .setAuthor({ name: interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_TITLE').format(interaction.user.username), iconURL: interaction.user.avatarURL() })
                     .setThumbnail('https://obelisk.club/npc/casino-roulette.gif')
                     .setDescription(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_DESCRIPTION_C').format(bet, colour))
 
@@ -111,7 +111,7 @@ module.exports = {
                 }
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setAuthor(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_TITLE').format(interaction.user.username), interaction.user.avatarURL())
+                    .setAuthor({ name: interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_TITLE').format(interaction.user.username), iconURL: interaction.user.avatarURL() })
                     .setThumbnail('https://obelisk.club/npc/casino-roulette.gif')
                     .setDescription(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_DESCRIPTION_N').format(bet, selectedNumber))
 

@@ -121,18 +121,18 @@ class Client extends Discord.Client {
     bluePagesEmbed(text, tittle = "", user, footer) {
         return new Discord.MessageEmbed()
             .setColor('0x009dff')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setDescription(text)
-            .setFooter(footer)
+            .setFooter({ text: footer })
     }
 
     bluePagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
         return new Discord.MessageEmbed()
             .setColor('0x009dff')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setDescription(text)
             .setThumbnail(imageUrl)
-            .setFooter(footer)
+            .setFooter({ text: footer })
     }
 
     blueEmbed(text, tittle = "") {
@@ -146,7 +146,7 @@ class Client extends Discord.Client {
     blueEmbedImage(text, tittle = "", user) {
         return new Discord.MessageEmbed()
             .setColor('0x009dff')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setURL('https://obelisk.club/')
             .setDescription(text)
     }
@@ -162,7 +162,7 @@ class Client extends Discord.Client {
     greenEmbedImage(text, tittle = "", user) {
         return new Discord.MessageEmbed()
             .setColor('0x14e188')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setURL('https://obelisk.club/')
             .setDescription(text)
     }
@@ -178,7 +178,7 @@ class Client extends Discord.Client {
     redEmbedImage(text, tittle = "", user) {
         return new Discord.MessageEmbed()
             .setColor('0xe1143d')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setURL('https://obelisk.club/')
             .setDescription(text)
     }
@@ -194,7 +194,7 @@ class Client extends Discord.Client {
     yellowEmbedImage(text, tittle = "", user) {
         return new Discord.MessageEmbed()
             .setColor('0xffff00')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setURL('https://obelisk.club/')
             .setDescription(text)
     }
@@ -202,10 +202,10 @@ class Client extends Discord.Client {
     yellowPagesImageEmbed(text, tittle = "", user, footer, imageUrl) {
         return new Discord.MessageEmbed()
             .setColor('0xffff00')
-            .setAuthor(tittle, user.avatarURL())
+            .setAuthor({ name: tittle, iconURL: user.avatarURL() })
             .setDescription(text)
             .setThumbnail(imageUrl)
-            .setFooter(footer)
+            .setFooter({ text: footer })
     }
 
 

@@ -94,7 +94,7 @@ module.exports = {
                         let enemyShipEmoji = await interaction.client.databaseSelectData("SELECT ship_emoji, ship_model FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
                         let enemyShipModel = enemyShipEmoji[0].ship_model;
                         enemyShipEmoji = enemyShipEmoji[0].ship_emoji;
-                        let player = [await playerHandler(interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId, true)];
+                        let player = [await playerHandler(serverSettings, interaction, ["Enemy"], enemyPlayer[0].user_speed, mapId, true)];
                         if (!player[0].active)
                             return;
 
@@ -177,7 +177,7 @@ module.exports = {
                                             }
                                             else {
                                                 numberOfPlayers++;
-                                                player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
+                                                player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
                                                 inBattle.push(i.user.id)
                                                 if (!player[player.length - 1].active) {
                                                     inBattle.pop();
@@ -505,7 +505,7 @@ module.exports = {
                                                 }
                                                 else {
                                                     numberOfPlayers++;
-                                                    player.push(await playerHandler(i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
+                                                    player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
                                                     inBattle.push(i.user.id)
                                                     if (!player[player.length - 1].active) {
                                                         inBattle.pop();
@@ -545,7 +545,7 @@ module.exports = {
                                             collectorEnemy.resetTimer({ time: 120000 });
                                             if (iEnemy.customId == "Atk" && !enemyJoined) {
                                                 let storedEnemy = enemyPlayer[0];
-                                                enemyPlayer = [await playerHandler(iEnemy, ["Enemy"], userInfo.user_speed, mapId, true, true)];
+                                                enemyPlayer = [await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true, true)];
                                                 enemyPlayer[0].info.userStats.user_hp = storedEnemy.user_hp;
                                                 enemyPlayer[0].info.userStats.user_shield = storedEnemy.user_shield;
                                                 enemyJoined = true;
@@ -593,7 +593,7 @@ module.exports = {
                                                 }
                                                 else {
                                                     numberOfEnemies++;
-                                                    enemyPlayer.push(await playerHandler(iEnemy, ["Enemy"], userInfo.user_speed, mapId, true));
+                                                    enemyPlayer.push(await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true));
                                                     enemyInBattle.push(iEnemy.user.id)
                                                     if (!enemyPlayer[enemyPlayer.length - 1].active) {
                                                         enemyInBattle.pop();
@@ -1922,7 +1922,7 @@ module.exports = {
 
             await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
             await interaction.client.wait(1000);
-            let player = [await playerHandler(interaction, aliensName, alien[0].speed, mapId)];
+            let player = [await playerHandler(serverSettings, interaction, aliensName, alien[0].speed, mapId)];
             if (!player[0].active)
                 return;
             log = `Engaging Combat with ->|${alien[0].name}|<-`
@@ -2302,7 +2302,7 @@ module.exports = {
                                 }
                                 else {
                                     numberOfPlayers++;
-                                    player.push(await playerHandler(i, aliensName, alien[0].speed, mapId));
+                                    player.push(await playerHandler(serverSettings, i, aliensName, alien[0].speed, mapId));
                                     inBattle.push(i.user.id)
                                     if (!player[player.length - 1].active) {
                                         inBattle.pop();
@@ -2836,7 +2836,7 @@ const download = new MessageActionRow()
             .setStyle('SUCCESS'),
     );
 
-async function missionHandler(interaction, aliens, id, boost) {
+async function missionHandler(interaction, aliens, id, boost, serverSettings) {
     let killedAliens = aliens.reduce((acc, curr) => (acc[curr] = 0, acc), {});
     let missionTask = 0;
     let missionTaskLeft = 0;
@@ -3313,7 +3313,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
     }
 }
 
-async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting = false, enemyUser = false) {
+async function playerHandler(serverSettings, interaction, aliens, alienSpeed, mapID, pvpSetting = false, enemyUser = false) {
     let playerInfo = await infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser);
     if (playerInfo.canHunt)
         return {
@@ -3321,7 +3321,7 @@ async function playerHandler(interaction, aliens, alienSpeed, mapID, pvpSetting 
             username: interaction.user.username,
             active: true,
             aliensKilled: 0,
-            mission: await missionHandler(interaction, aliens, mapID, playerInfo.boost),
+            mission: await missionHandler(interaction, aliens, mapID, playerInfo.boost, serverSettings),
             info: playerInfo,
             emojiMessage: `**[${playerInfo.userStats.shipEmiji}]** <a:hp:896118360125870170>: **${playerInfo.userStats.hp}**\t<a:sd:896118359966511104>: **${playerInfo.userStats.shield}**\n`,
             reward: { credit: 0, units: 0, exp: 0, honor: 0 },
