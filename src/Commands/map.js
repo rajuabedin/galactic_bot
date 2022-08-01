@@ -76,7 +76,7 @@ module.exports = {
                             i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
                         else {
                             let levelRequirement = 0;
-                            if ((userInfo.firm == "Luna" && mapId[0] == "1") || (userInfo.firm == "Terra" && mapId[0] == "2") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
+                            if ((userInfo.firm == "Luna" && mapId[0] == "2") || (userInfo.firm == "Terra" && mapId[0] == "1") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
                                 levelRequirement = await interaction.client.databaseSelectData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
                                 levelRequirement = levelRequirement[0].level_requirement;
                             }
