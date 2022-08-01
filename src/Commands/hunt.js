@@ -81,12 +81,12 @@ module.exports = {
                     let enemyPlayer = await interaction.client.databaseSelectData("SELECT username, firm, user_id, guild_id, channel_id, user_hp, max_hp, max_shield, user_shield, absorption_rate, user_penetration, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND group_id <> ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId, userInfo.group_id]);
                     let secondInteraction;
                     let guildExist;
-                    if (enemyPlayer != undefined || enemyPlayer.length > 0) {
+                    if (typeof enemyPlayer != `undefined` || enemyPlayer.length > 0) {
                         secondInteraction = interaction.client.channels.cache.get(enemyPlayer[0].channel_id)
                         guildExist = interaction.client.guilds.cache.get(enemyPlayer[0].guild_id)
                     }
 
-                    if (guildExist != undefined) {
+                    if (typeof guildExist != `undefined`) {
                         let enemyJoined = false;
                         await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
                         await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
@@ -102,7 +102,7 @@ module.exports = {
                             + `\n**Enemy Info**:\n**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`;
 
                         let enemyUsername = enemyPlayer[0].username;
-                        if (secondInteraction != undefined) {
+                        if (typeof secondInteraction != `undefined`) {
                             await secondInteraction.send({ content: `<@${enemyPlayer[0].user_id}>`, embeds: [interaction.client.redEmbed(message, `**Danger! Enemy attack!**`)], components: [attackRow] }).then(msg => secondInteraction = msg)
                         }
                         let enemyCd = await interaction.client.databaseSelectData("SELECT last_repair FROM user_cd WHERE user_id = ?", [enemyPlayer[0].user_id]);
@@ -124,7 +124,7 @@ module.exports = {
                         await interaction.client.wait(1500);
 
 
-                        if (secondInteraction == undefined) {
+                        if (typeof secondInteraction == `undefined`) {
                             let inBattle = [userInfo.user_id];
                             let groupMembers = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, interaction.user.id]);
                             groupMembers = groupMembers.map(x => x.user_id);
