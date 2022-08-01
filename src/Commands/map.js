@@ -91,8 +91,8 @@ module.exports = {
                             let dateToReachMap = new Date();
                             dateToReachMap.setMinutes(dateToReachMap.getMinutes() + timeToReachMapMinutes);
                             dateToReachMap.setSeconds(dateToReachMap.getSeconds() + timeToReachMapSeconds);
-                            dateToReachMap = dateToReachMap.toJSON().split(".");
-                            dateToReachMap = dateToReachMap[0];
+                            //dateToReachMap = dateToReachMap.toJSON().split(".");
+                            //dateToReachMap = dateToReachMap[0];
 
                             if (userInfo.level >= levelRequirement) {
                                 await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
