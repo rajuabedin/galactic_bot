@@ -35,7 +35,7 @@ module.exports = {
             }
             else {
                 await interaction.client.databaseEditData(`UPDATE users SET user_hp = ? WHERE user_id = ?`, [ship[0].ship_hp, interaction.user.id]);
-                await interaction.client.databaseEditData("UPDATE user_ships SET ship_hp = ?, durability = 100 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
+                await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = 100 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
                 await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repairDone'), interaction.client.getWordLanguage(serverSettings.lang, 'repairSuccesful'))] });
                 return;
             }
@@ -59,7 +59,7 @@ module.exports = {
                     if (i.customId == 'yes') {
                         if (userInfo.credit >= 1000) {
                             await interaction.client.databaseEditData(`UPDATE users SET user_hp = ?, ${unit} = ${unit} - ? WHERE user_id = ?`, [ship[0].ship_hp, price, interaction.user.id]);
-                            await interaction.client.databaseEditData("UPDATE user_ships SET ship_hp = ?, durability = 1 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
+                            await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = 100 WHERE equipped = 1 AND user_id = ?", [ship[0].ship_hp, interaction.user.id]);
                             await i.update({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repairDone'), interaction.client.getWordLanguage(serverSettings.lang, 'repairSuccesful'))], components: [] });
                             collector.stop("repaired");
                         } else {

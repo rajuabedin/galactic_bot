@@ -54,7 +54,7 @@ module.exports = {
                                 while (!uniqueID) {
                                     teamID = new Date().getTime();
                                     uniqueID = await interaction.client.databaseEditData(`INSERT INTO group_list (group_id, leader_id) VALUES (?, ?)`, [teamID, interaction.user.id]);
-                                    await interaction.client.wait(100);
+                                    await interaction.client.wait(200);
                                 }
                                 await interaction.client.databaseEditData(`UPDATE users SET group_id = ? WHERE user_id = ?`, [teamID, interaction.user.id]);
                                 let leader = await interaction.client.databaseSelectData("SELECT ship_emoji,ship_current_hp, ship_hp, ship_shield, ship_damage FROM user_ships WHERE user_id = ? AND equipped = 1", [interaction.user.id]);
