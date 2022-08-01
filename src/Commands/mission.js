@@ -39,7 +39,7 @@ module.exports = {
                 if (searchMissionByStatus !== null) {
                     return await interaction.reply({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'mission_error_status_s')} [${searchMissionByStatus.toUpperCase()}](https://obelisk.club/)!`)] });
                 } else {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'missions_error')}`)] });
+                    return await interaction.reply({ embeds: [interaction.client.redEmbed(`${interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_nf_active')}`)] });
                 }
             }
             var missionList = [];
@@ -260,12 +260,12 @@ function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatu
         } else if (i.customId === "yes") {
             if (missionsData[index][1] == 0) {
                 if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!" )], components: [] })
+                    await i.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
                 } else {
                     await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
                 }
                 return collector.stop();
-            }            
+            }
             if (i.replied) {
                 await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
             } else {

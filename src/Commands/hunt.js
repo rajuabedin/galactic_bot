@@ -295,7 +295,7 @@ module.exports = {
                                     hullDamage = enemyPlayer[0].user_hp;
                                     enemyPlayer[0].user_hp = 0;
                                     for (let index in player) {
-                                        await player[index].mission.isCompleted("Enemy")
+                                        await player[index].mission.isCompleted("Enemy", serverSettings)
 
                                         player[index].reward.exp += 1000;
                                         player[index].reward.honor += 500;
@@ -704,7 +704,7 @@ module.exports = {
                                             hullDamage = enemyPlayer[0].user_hp;
                                             enemyPlayer[0].user_hp = 0;
                                             for (let index in player) {
-                                                await player[index].mission.isCompleted("Enemy")
+                                                await player[index].mission.isCompleted("Enemy", serverSettings)
 
                                                 player[index].reward.exp += 1000;
                                                 player[index].reward.honor += 500;
@@ -947,7 +947,7 @@ module.exports = {
                                     hullDamage = enemyPlayer[0].user_hp;
                                     enemyPlayer[0].user_hp = 0;
                                     for (let index in player) {
-                                        await player[index].mission.isCompleted("Enemy")
+                                        await player[index].mission.isCompleted("Enemy", serverSettings)
 
                                         player[index].reward.exp += 1000;
                                         player[index].reward.honor += 500;
@@ -1113,7 +1113,7 @@ module.exports = {
                                             hullDamage = player[0].info.userStats.shield;
                                             player[0].info.userStats.shield = 0;
                                             for (let index in enemyPlayer) {
-                                                await enemyPlayer[index].mission.isCompleted("Enemy")
+                                                await enemyPlayer[index].mission.isCompleted("Enemy", serverSettings)
 
                                                 enemyPlayer[index].reward.exp += 1000;
                                                 enemyPlayer[index].reward.honor += 500;
@@ -1318,7 +1318,7 @@ module.exports = {
                                             hullDamage = enemyPlayer[0].info.userStats.hp;
                                             enemyPlayer[0].info.userStats.hp = 0;
                                             for (let index in player) {
-                                                await player[index].mission.isCompleted("Enemy")
+                                                await player[index].mission.isCompleted("Enemy", serverSettings)
 
                                                 player[index].reward.exp += 1000;
                                                 player[index].reward.honor += 500;
@@ -1626,7 +1626,7 @@ module.exports = {
                                     hullDamage = enemyPlayer[0].info.userStats.hp;
                                     enemyPlayer[0].info.userStats.hp = 0;
                                     for (let index in player) {
-                                        await player[index].mission.isCompleted("Enemy")
+                                        await player[index].mission.isCompleted("Enemy", serverSettings)
 
                                         player[index].reward.exp += 1000;
                                         player[index].reward.honor += 500;
@@ -1649,7 +1649,7 @@ module.exports = {
                                     enemyHullDamage = player[0].info.userStats.hp;
                                     player[0].info.userStats.hp = 0;
                                     for (let index in enemyPlayer) {
-                                        await enemyPlayer[index].mission.isCompleted("Enemy")
+                                        await enemyPlayer[index].mission.isCompleted("Enemy", serverSettings)
 
                                         enemyPlayer[index].reward.exp += 1000;
                                         enemyPlayer[index].reward.honor += 500;
@@ -1908,7 +1908,7 @@ module.exports = {
                 aliens = await interaction.client.databaseSelectData("SELECT * FROM aliens WHERE map_id = ?", [mapId]);
             else
                 aliens = await interaction.client.databaseSelectData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
-            if (typeof aliens[0] == 'undefined') {
+            if (typeof aliens == 'undefined') {
                 await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
                 return;
             }
@@ -2107,7 +2107,7 @@ module.exports = {
                         hullDamage = alien[0].hp;
                         alien[0].hp = 0;
                         alien[0].damage = 0;
-                        await player[0].mission.isCompleted(alien[0].name)
+                        await player[0].mission.isCompleted(alien[0].name, serverSettings)
 
                         player[0].reward.exp += alien[0].exp;
                         player[0].reward.honor += alien[0].honor;
@@ -2520,7 +2520,7 @@ module.exports = {
                         alien[0].damage = 0;
                         for (let index in player) {
                             player[index].aliensKilled += 1;
-                            await player[index].mission.isCompleted(alien[0].name)
+                            await player[index].mission.isCompleted(alien[0].name, serverSettings)
 
                             player[index].reward.exp += alien[0].exp / numberOfPlayers;
                             player[index].reward.honor += alien[0].honor / numberOfPlayers;
@@ -2743,6 +2743,11 @@ async function getAlien(aliens, addition = 0) {
         indexList = indexList.concat(Array(aliens[index].encounter_chance).fill(index));
     indexList = indexList.sort(() => Math.random() - 0.5);
     index = indexList[~~(Math.random() * (100 + addition * 40))];
+    // temp
+    if (index > aliens.length - 1) {
+        index = 0;
+    }
+    await errorLog.custom1({ error: JSON.stringify(aliens[index]) + " - " + aliens[index].alien_name + " - " + JSON.stringify(aliens) });
     return {
         name: aliens[index].alien_name,
         damage: aliens[index].damage,
@@ -2879,7 +2884,7 @@ async function missionHandler(interaction, aliens, id, boost, serverSettings) {
     return {
         active: mission,
         reward: { credit: 0, units: 0, exp: 0, honor: 0 },
-        isCompleted: async function (alien) {
+        isCompleted: async function (alien, serverSettings) {
             killedAliens[alien]++;
             if (mission) {
                 let index = missionTask.indexOf(alien);

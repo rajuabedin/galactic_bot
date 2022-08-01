@@ -42,7 +42,6 @@ module.exports = {
             if (secondUser !== null) {
                 user = secondUser;
                 userInfo = await interaction.client.getUserAccount(user.id);
-                console.log(userInfo);
                 if (typeof userInfo === 'undefined') {
                     return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_USER_NF'))], ephemeral: true });
                 }
@@ -77,12 +76,12 @@ module.exports = {
 
 
             const requestBody = {
-                user_id: interaction.user.id,
-                pfp_image: interaction.user.avatarURL(),
+                user_id: user.id,
+                pfp_image: user.avatarURL(),
                 current_exp: userInfo.exp.toString(),
                 required_exp: userLevelData.exp_to_lvl_up.toString(),
-                username: interaction.user.username,
-                discord_username: interaction.user.username + "#" + interaction.user.discriminator,
+                username: user.username,
+                discord_username: user.username + "#" + user.discriminator,
                 achievement_title: userInfo.selected_title,
                 clan_tag: userInfo.clan_tag,
                 current_map: userMapData.map_name,
@@ -107,7 +106,7 @@ module.exports = {
                 .then(response => response.json())
                 .then(data => { return data });
             if (data.success == true) {
-                await interaction.reply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
+                await interaction.reply(`https://obelisk.club/user_files/${user.id}/${data.filename}`)
             } else {
                 let errorID = await errorLog.custom(data, interaction);
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });

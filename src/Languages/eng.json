@@ -138,6 +138,7 @@
     "shop_low_quantity": "Quantity can not be less than 1!",
     "mission_error_status_s": "Unable to find any missions with status",
     "missions_error": "Unable to find any mission(s)!",
+    "missions_error_nf_active": "Unable to find any active mission(s)!",
     "missions_error_nf": "Mission not found!",
     "missions_error_exp": "Mission expired!",
     "missions_error_active": "Active Mission Found",

@@ -443,14 +443,18 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
         try {
             if (!buyBool) {
                 quantity = 1;
-                if (i.customId == 'left')
+                if (i.customId == 'left') {
                     index--;
-                else if (i.customId == 'right')
+                }
+                else if (i.customId == 'right') {
                     index++;
-                if (index < 0)
+                }
+                if (index < 0) {
                     index += maxIndex + 1;
-                if (index > maxIndex)
+                }
+                if (index > maxIndex) {
                     index -= maxIndex + 1;
+                }
                 if (i.customId == "buy") {
                     if (itemTable == "ammunition")
                         itemColumn = `${itemName[index]}_magazine`;
@@ -562,8 +566,9 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                             buyBool = true;
                         }
                 }
-                else
+                else {
                     await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], `SHOP <${category}>`, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`)] });
+                }
             }
             else {
                 if (i.customId == "cancelItem") {

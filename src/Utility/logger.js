@@ -75,6 +75,10 @@ class NewLogger {
         }
     }
 
+    async custom1(message) {
+        loggerBase.error(message.error);
+    }
+
 }
 
 module.exports = {
