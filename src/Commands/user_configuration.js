@@ -497,11 +497,6 @@ const row = new MessageActionRow()
                     value: 'xS1',
                 },
                 {
-                    label: 'm1',
-                    description: 'Use missile m1 utill... ',
-                    value: 'm1',
-                },
-                {
                     label: 'm2',
                     description: 'Use missile m2 utill... ',
                     value: 'm2',
@@ -515,11 +510,6 @@ const row = new MessageActionRow()
                     label: 'm4',
                     description: 'Use missile m4 utill... ',
                     value: 'm4',
-                },
-                {
-                    label: 'h1',
-                    description: 'Use hellstorm h1 utill... ',
-                    value: 'h1',
                 },
                 {
                     label: 'h2',
