@@ -38,6 +38,10 @@ module.exports = {
         };
 
         try {
+            if (!interaction.member.permissions.has(permission)) {
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noPermission').format('Manage Channels'))] });
+                return;
+            }
             const maxChannels = 10;
             if (interaction.options.getSubcommand() === 'info') {
                 var data = await interaction.client.databaseSelectData(`SELECT * FROM user_daily_log WHERE user_id = '${interaction.user.id}' AND DATE(log_date) = CURDATE()`)

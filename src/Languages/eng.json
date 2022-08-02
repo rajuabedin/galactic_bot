@@ -153,7 +153,7 @@
     "mission_o_status": "Mission Objective Status",
     "mission_o": "Mission Objective",
     "mission_start": "Mission Start",
-    "mission_start_conf": "Do you really want to accepted this mission?",
+    "mission_start_conf": "Do you really want to accept this mission?",
     "missions_cancellation": "Mission Cancellation",
     "missions_cancellation_conf": "Do you really want to stop this mission?",
     "mission_cancelled": "You have successfully cancelled the mission.",
@@ -195,5 +195,6 @@
     "TICTACTOE_DECLINE": "<@{}> Declined the game",
     "ERROR_SAME_USER": "Error! You can not play with yourself!",
     "ERROR_BOT_USER": "Error! You can not play with bots!",
-    "ERROR_USER_NF": "No account found for this user!"
+    "ERROR_USER_NF": "No account found for this user!",
+    "noPermission": "You do not have permission to use this command!\nYou require to have `{}` permissions."
 }

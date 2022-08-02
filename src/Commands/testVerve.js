@@ -24,6 +24,10 @@ module.exports = {
 
     async execute(interaction, userInfo, serverSettings) {
 
+        if (interaction.user.id != 833953239706763284) {
+            return;
+        }
+
         // REQUIRE IN EVERY FILE
         String.prototype.format = function () {
             var i = 0, args = arguments;
