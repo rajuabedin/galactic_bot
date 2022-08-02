@@ -45,7 +45,7 @@ module.exports = {
                     return;
                 }
             }
-            price *= Math.ceil(durability / 25);
+            price = Math.ceil(price * (durability / 25));
             let msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo], fetchReply: true });
 
             if (ship[0].ship_hp == 0) {
