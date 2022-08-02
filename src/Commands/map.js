@@ -34,7 +34,7 @@ module.exports = {
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
                 map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                msg = interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
+                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
             }
             else if (userInfo.next_map_id !== 1) {
                 mapId = userInfo.map_id;
@@ -45,13 +45,13 @@ module.exports = {
                 elapsedTimeFromWarpSeconds = Math.floor((elapsedTimeFromWarpMinutes % 1.0) * 60);
                 elapsedTimeFromWarpMinutes = Math.floor(elapsedTimeFromWarpMinutes);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                msg = interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap_2').format(map[0].map_name, elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, nextMapName,), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
+                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap_2').format(map[0].map_name, elapsedTimeFromWarpMinutes, elapsedTimeFromWarpSeconds, nextMapName,), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
             }
             else {
                 mapId = userInfo.map_id;
                 map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
-                msg = interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
+                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
             }
 
             let selected = false;
