@@ -135,71 +135,69 @@ module.exports = {
 
                             const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
-                                collector.resetTimer({ time: 120000 });
-                                if (!i.replied) {
-                                    try {
-                                        if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                                            if (i.customId == "Swap" && !swapping && player.length > 0) {
+                                try {
+                                    if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
+                                        collector.resetTimer({ time: 120000 });
+                                        if (i.customId == "Swap" && !swapping && player.length > 0) {
+                                            await i.update({});
+                                            if (i.user.username == player[0].username) {
+                                                if (inBattle.length == 1)
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                                else
+                                                    swapping = true;
+                                            }
+                                            else {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
+                                            await i.update({});
+                                            if (i.user.username == player[0].username) {
+                                                next = true;
+                                            }
+                                            else {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "Run" && !run) {
+                                            if (i.user.username == player[0].username) {
+                                                run = true;
+                                                await i.update({ components: [] });
+                                            }
+                                            else {
                                                 await i.update({});
-                                                if (i.user.username == player[0].username) {
-                                                    if (inBattle.length == 1)
-                                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                                    else
-                                                        swapping = true;
-                                                }
-                                                else {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "Join") {
+                                            await i.update({});
+                                            if (inBattle.includes(i.user.id)) {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                            }
+                                            else {
+                                                numberOfPlayers++;
+                                                player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
+                                                inBattle.push(i.user.id)
+                                                if (!player[player.length - 1].active) {
+                                                    inBattle.pop();
+                                                    numberOfPlayers--;
                                                 }
                                             }
-                                            else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                                await i.update({});
-                                                if (i.user.username == player[0].username) {
-                                                    next = true;
-                                                }
-                                                else {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (i.customId == "Run" && !run) {
-                                                if (i.user.username == player[0].username) {
-                                                    run = true;
-                                                    await i.update({ components: [] });
-                                                }
-                                                else {
-                                                    await i.update({});
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (i.customId == "Join") {
-                                                await i.update({});
-                                                if (inBattle.includes(i.user.id)) {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                                }
-                                                else {
-                                                    numberOfPlayers++;
-                                                    player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
-                                                    inBattle.push(i.user.id)
-                                                    if (!player[player.length - 1].active) {
-                                                        inBattle.pop();
-                                                        numberOfPlayers--;
-                                                    }
-                                                }
-                                            }
-                                            else if (i.customId == "download") {
-                                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                                await i.update({ embeds: [], components: [], files: [attachment] });
-                                                collector.stop("Done downloading");
-                                            }
-                                            else
-                                                await i.update({});
-
+                                        }
+                                        else if (i.customId == "download") {
+                                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                            await i.update({ embeds: [], components: [], files: [attachment] });
+                                            collector.stop("Done downloading");
                                         }
                                         else
                                             await i.update({});
-                                    }
-                                    catch (error) {
 
                                     }
+                                    else
+                                        await i.update({});
+                                }
+                                catch (error) {
+
                                 }
                             });
 
@@ -466,71 +464,70 @@ module.exports = {
 
                             const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
-                                collector.resetTimer({ time: 120000 });
-                                if (!i.replied) {
-                                    try {
-                                        if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                                            if (i.customId == "Swap" && !swapping && player.length > 0) {
+                                try {
+                                    if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
+                                        collector.resetTimer({ time: 120000 });
+                                        if (i.customId == "Swap" && !swapping && player.length > 0) {
+                                            await i.update({});
+                                            if (i.user.username == player[0].username) {
+                                                if (inBattle.length == 1)
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                                else
+                                                    swapping = true;
+                                            }
+                                            else {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
+                                            await i.update({});
+                                            if (i.user.username == player[0].username) {
+                                                next = true;
+                                            }
+                                            else {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "Run" && !run) {
+                                            if (i.user.username == player[0].username) {
+                                                run = true;
+                                                await i.update({ components: [] });
+                                            }
+                                            else {
                                                 await i.update({});
-                                                if (i.user.username == player[0].username) {
-                                                    if (inBattle.length == 1)
-                                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                                    else
-                                                        swapping = true;
-                                                }
-                                                else {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (i.customId == "Join") {
+                                            await i.update({});
+                                            if (inBattle.includes(i.user.id)) {
+                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                            }
+                                            else {
+                                                numberOfPlayers++;
+                                                player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
+                                                inBattle.push(i.user.id)
+                                                if (!player[player.length - 1].active) {
+                                                    inBattle.pop();
+                                                    numberOfPlayers--;
                                                 }
                                             }
-                                            else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                                await i.update({});
-                                                if (i.user.username == player[0].username) {
-                                                    next = true;
-                                                }
-                                                else {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (i.customId == "Run" && !run) {
-                                                if (i.user.username == player[0].username) {
-                                                    run = true;
-                                                    await i.update({ components: [] });
-                                                }
-                                                else {
-                                                    await i.update({});
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (i.customId == "Join") {
-                                                await i.update({});
-                                                if (inBattle.includes(i.user.id)) {
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                                }
-                                                else {
-                                                    numberOfPlayers++;
-                                                    player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
-                                                    inBattle.push(i.user.id)
-                                                    if (!player[player.length - 1].active) {
-                                                        inBattle.pop();
-                                                        numberOfPlayers--;
-                                                    }
-                                                }
-                                            }
-                                            else if (i.customId == "download") {
-                                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                                await i.update({ embeds: [], components: [], files: [attachment] });
-                                                collector.stop("Done downloading");
-                                            }
-                                            else
-                                                await i.update({});
+                                        }
+                                        else if (i.customId == "download") {
+                                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                            await i.update({ embeds: [], components: [], files: [attachment] });
+                                            collector.stop("Done downloading");
                                         }
                                         else
                                             await i.update({});
                                     }
-                                    catch (error) {
-
-                                    }
+                                    else
+                                        await i.update({});
                                 }
+                                catch (error) {
+
+                                }
+
                             });
 
                             collector.on('end', collected => {
@@ -541,84 +538,83 @@ module.exports = {
 
                             const collectorEnemy = msg.createMessageComponentCollector({ time: 120000 });
                             collectorEnemy.on('collect', async iEnemy => {
-                                if (!iEnemy.replied) {
-                                    try {
-                                        if (joinableEnemiesID.includes(iEnemy.user.id) || iEnemy.user.id == savedID) {
-                                            collectorEnemy.resetTimer({ time: 120000 });
-                                            if (iEnemy.customId == "Atk" && !enemyJoined) {
-                                                let storedEnemy = enemyPlayer[0];
-                                                enemyPlayer = [await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true, true)];
-                                                enemyPlayer[0].info.userStats.user_hp = storedEnemy.user_hp;
-                                                enemyPlayer[0].info.userStats.user_shield = storedEnemy.user_shield;
-                                                enemyJoined = true;
-                                                await iEnemy.update();
+                                try {
+                                    if (joinableEnemiesID.includes(iEnemy.user.id) || iEnemy.user.id == savedID) {
+                                        collectorEnemy.resetTimer({ time: 120000 });
+                                        if (iEnemy.customId == "Atk" && !enemyJoined) {
+                                            let storedEnemy = enemyPlayer[0];
+                                            enemyPlayer = [await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true, true)];
+                                            enemyPlayer[0].info.userStats.user_hp = storedEnemy.user_hp;
+                                            enemyPlayer[0].info.userStats.user_shield = storedEnemy.user_shield;
+                                            enemyJoined = true;
+                                            await iEnemy.update();
+                                        }
+                                        if (iEnemy.customId == "RunAtk") {
+                                            runEnemy = true;
+                                            await iEnemy.update();
+                                        }
+                                        if (iEnemy.customId == "SwapEnemy" && !swappingEnemy && enemyPlayer.length > 0) {
+                                            await iEnemy.update({});
+                                            if (iEnemy.user.username == enemyPlayer[0].username) {
+                                                if (inBattle.length == 1)
+                                                    await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                                else
+                                                    swappingEnemy = true;
                                             }
-                                            if (iEnemy.customId == "RunAtk") {
+                                            else {
+                                                await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (iEnemy.customId == "NextAlienEnemy" && player.length > 0 && !nextEnemy) {
+                                            await iEnemy.update({});
+                                            if (iEnemy.user.username == enemyPlayer[0].username) {
+                                                nextEnemy = true;
+                                            }
+                                            else {
+                                                await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (iEnemy.customId == "RunEnemy" && !runEnemy) {
+                                            if (iEnemy.user.username == enemyPlayer[0].username) {
                                                 runEnemy = true;
-                                                await iEnemy.update();
+                                                await iEnemy.update({ components: [] });
                                             }
-                                            if (iEnemy.customId == "SwapEnemy" && !swappingEnemy && enemyPlayer.length > 0) {
+                                            else {
                                                 await iEnemy.update({});
-                                                if (iEnemy.user.username == enemyPlayer[0].username) {
-                                                    if (inBattle.length == 1)
-                                                        await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                                    else
-                                                        swappingEnemy = true;
-                                                }
-                                                else {
-                                                    await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                                await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                            }
+                                        }
+                                        else if (iEnemy.customId == "JoinEnemy") {
+                                            await iEnemy.update({});
+                                            if (enemyInBattle.includes(iEnemy.user.id)) {
+                                                await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                            }
+                                            else {
+                                                numberOfEnemies++;
+                                                enemyPlayer.push(await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true));
+                                                enemyInBattle.push(iEnemy.user.id)
+                                                if (!enemyPlayer[enemyPlayer.length - 1].active) {
+                                                    enemyInBattle.pop();
+                                                    numberOfEnemies--;
                                                 }
                                             }
-                                            else if (iEnemy.customId == "NextAlienEnemy" && player.length > 0 && !nextEnemy) {
-                                                await iEnemy.update({});
-                                                if (iEnemy.user.username == enemyPlayer[0].username) {
-                                                    nextEnemy = true;
-                                                }
-                                                else {
-                                                    await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (iEnemy.customId == "RunEnemy" && !runEnemy) {
-                                                if (iEnemy.user.username == enemyPlayer[0].username) {
-                                                    runEnemy = true;
-                                                    await iEnemy.update({ components: [] });
-                                                }
-                                                else {
-                                                    await iEnemy.update({});
-                                                    await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                                }
-                                            }
-                                            else if (iEnemy.customId == "JoinEnemy") {
-                                                await iEnemy.update({});
-                                                if (enemyInBattle.includes(iEnemy.user.id)) {
-                                                    await iEnemy.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                                }
-                                                else {
-                                                    numberOfEnemies++;
-                                                    enemyPlayer.push(await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true));
-                                                    enemyInBattle.push(iEnemy.user.id)
-                                                    if (!enemyPlayer[enemyPlayer.length - 1].active) {
-                                                        enemyInBattle.pop();
-                                                        numberOfEnemies--;
-                                                    }
-                                                }
-                                            }
-                                            else if (iEnemy.customId == "download") {
-                                                let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
-                                                await iEnemy.update({ embeds: [], components: [], files: [attachment] });
-                                                collectorEnemy.stop("Done downloading");
-                                            }
-                                            else
-                                                await iEnemy.update({});
-
+                                        }
+                                        else if (iEnemy.customId == "download") {
+                                            let attachment = new MessageAttachment(Buffer.from(logEnemy, 'utf-8'), `Hunt-Log.txt`);
+                                            await iEnemy.update({ embeds: [], components: [], files: [attachment] });
+                                            collectorEnemy.stop("Done downloading");
                                         }
                                         else
-                                            await i.update({});
-                                    }
-                                    catch (error) {
+                                            await iEnemy.update({});
 
                                     }
+                                    else
+                                        await i.update({});
                                 }
+                                catch (error) {
+
+                                }
+
                             });
 
                             collectorEnemy.on('end', collected => {
@@ -1940,30 +1936,29 @@ module.exports = {
                 await interaction.client.wait(1500);
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
-                    collector.resetTimer({ time: 120000 });
-                    if (!i.replied)
-                        try {
-                            if (i.user.id == interaction.user.id) {
-                                if (i.customId == "Run") {
-                                    run = true;
-                                    await i.update({ components: [] });
-                                }
-                                else if (i.customId == "NextAlien" && alien.length > 0) {
-                                    next = true;
-                                    await i.update({});
-                                }
-                                else if (i.customId == "download") {
-                                    let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                    await i.update({ embeds: [], components: [], files: [attachment] });
-                                    collector.stop();
-                                }
+                    try {
+                        if (i.user.id == interaction.user.id) {
+                            collector.resetTimer({ time: 120000 });
+                            if (i.customId == "Run") {
+                                run = true;
+                                await i.update({ components: [] });
                             }
-                            else
+                            else if (i.customId == "NextAlien" && alien.length > 0) {
+                                next = true;
                                 await i.update({});
+                            }
+                            else if (i.customId == "download") {
+                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                await i.update({ embeds: [], components: [], files: [attachment] });
+                                collector.stop();
+                            }
                         }
-                        catch (error) {
+                        else
+                            await i.update({});
+                    }
+                    catch (error) {
 
-                        }
+                    }
                 });
 
                 collector.on('end', collected => {
@@ -2265,71 +2260,70 @@ module.exports = {
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
-                    collector.resetTimer({ time: 120000 });
-                    if (!i.replied) {
-                        try {
-                            if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                                if (i.customId == "Swap") {
+                    try {
+                        if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
+                            collector.resetTimer({ time: 120000 });
+                            if (i.customId == "Swap") {
+                                await i.update({});
+                                if (i.user.username == player[0].username && !swapping && player.length > 0) {
+                                    if (inBattle.length == 1)
+                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                    else
+                                        swapping = true;
+                                }
+                                else {
+                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                }
+                            }
+                            else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
+                                await i.update({});
+                                if (i.user.username == player[0].username) {
+                                    next = true;
+                                }
+                                else {
+                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                }
+                            }
+                            else if (i.customId == "Run" && !run) {
+                                if (i.user.username == player[0].username) {
+                                    run = true;
+                                    await i.update({ components: [] });
+                                }
+                                else {
                                     await i.update({});
-                                    if (i.user.username == player[0].username && !swapping && player.length > 0) {
-                                        if (inBattle.length == 1)
-                                            await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                        else
-                                            swapping = true;
-                                    }
-                                    else {
-                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                }
+                            }
+                            else if (i.customId == "Join") {
+                                await i.update({});
+                                if (inBattle.includes(i.user.id)) {
+                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                }
+                                else {
+                                    numberOfPlayers++;
+                                    player.push(await playerHandler(serverSettings, i, aliensName, alien[0].speed, mapId));
+                                    inBattle.push(i.user.id)
+                                    if (!player[player.length - 1].active) {
+                                        inBattle.pop();
+                                        numberOfPlayers--;
                                     }
                                 }
-                                else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
-                                    await i.update({});
-                                    if (i.user.username == player[0].username) {
-                                        next = true;
-                                    }
-                                    else {
-                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                    }
-                                }
-                                else if (i.customId == "Run" && !run) {
-                                    if (i.user.username == player[0].username) {
-                                        run = true;
-                                        await i.update({ components: [] });
-                                    }
-                                    else {
-                                        await i.update({});
-                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                    }
-                                }
-                                else if (i.customId == "Join") {
-                                    await i.update({});
-                                    if (inBattle.includes(i.user.id)) {
-                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                    }
-                                    else {
-                                        numberOfPlayers++;
-                                        player.push(await playerHandler(serverSettings, i, aliensName, alien[0].speed, mapId));
-                                        inBattle.push(i.user.id)
-                                        if (!player[player.length - 1].active) {
-                                            inBattle.pop();
-                                            numberOfPlayers--;
-                                        }
-                                    }
-                                }
-                                else if (i.customId == "download") {
-                                    let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                    await i.update({ embeds: [], components: [], files: [attachment] });
-                                    collector.stop("Done downloading");
-                                }
-                                else
-                                    await i.update({});
+                            }
+                            else if (i.customId == "download") {
+                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                await i.update({ embeds: [], components: [], files: [attachment] });
+                                collector.stop("Done downloading");
                             }
                             else
                                 await i.update({});
                         }
-                        catch (error) {
-
-                        }
+                        else
+                            await i.update({});
                     }
+                    catch (error) {
+
+                    }
+
                 });
 
                 collector.on('end', collected => {
