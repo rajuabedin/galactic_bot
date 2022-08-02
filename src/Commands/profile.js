@@ -64,7 +64,7 @@ module.exports = {
             var userMapData = await interaction.client.databaseSelectData('select * from map where map_id = ?', [userInfo.map_id]);
             userMapData = userMapData[0];
 
-            var userLevelData = await interaction.client.databaseSelectData('select * from level where level = ?', [userInfo.level + 1]);
+            var userLevelData = await interaction.client.databaseSelectData('select * from level where level = ?', [userInfo.level]);
             userLevelData = userLevelData[0];
 
             var userKillsCount = await interaction.client.databaseSelectData('select * from user_log where user_id = ?', [user.id]);

@@ -16,7 +16,7 @@ module.exports = {
             subcommand
                 .setName('invite')
                 .setDescription('Add a user to the team')
-                .addUserOption(option => option.setName('user').setDescription('The user')))
+                .addUserOption(option => option.setName('user').setDescription('The user').setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('leave')
@@ -100,16 +100,9 @@ module.exports = {
             else if (selectedOption == "leave") {
                 let team = await interaction.client.databaseSelectData("SELECT * FROM group_list WHERE group_id = ?", [userInfo.group_id]);
                 team = team[0];
-                if (team.members == 1) {
-                    await interaction.client.databaseEditData("UPDATE users SET group_id = 0 WHERE group_id = ?", [team.group_id]);
+                if (team.leader_id == userInfo.user_id) {
                     await interaction.client.databaseEditData("DELETE FROM group_list WHERE group_id = ?", [team.group_id]);
-                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("Team has been disbanded!", "Team disbanded", interaction.user)] });
-                    return;
-                }
-                else if (team.leader_id == userInfo.user_id) {
-                    await interaction.client.databaseEditData("UPDATE users SET group_id = 0 WHERE group_id = ?", [team.group_id]);
-                    await interaction.client.databaseEditData("DELETE FROM group_list WHERE group_id = ?", [team.group_id]);
-                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("The leader has disbanded the team!", "Team disbanded", interaction.user)] });
+                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("The team has been disbanded!", "Team disbanded", interaction.user)] });
                     return;
                 }
                 else {
