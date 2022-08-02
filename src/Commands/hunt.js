@@ -88,7 +88,7 @@ module.exports = {
 
                     if (typeof guildExist != `undefined`) {
                         let enemyJoined = false;
-                        await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+                        let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
                         await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
                         await interaction.client.wait(1000);
                         let enemyShipEmoji = await interaction.client.databaseSelectData("SELECT ship_emoji, ship_model FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
@@ -133,62 +133,66 @@ module.exports = {
                             let totalSHieldAbsorption = 0;
                             let numberOfPlayers = 1;
 
-                            const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == interaction.id;
-                            const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+                            const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
                                 collector.resetTimer({ time: 120000 });
                                 if (!i.replied) {
                                     try {
-                                        if (i.customId == "Swap" && !swapping && player.length > 0) {
-                                            await i.update({});
-                                            if (i.user.username == player[0].username) {
-                                                if (inBattle.length == 1)
-                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                                else
-                                                    swapping = true;
-                                            }
-                                            else {
-                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                            }
-                                        }
-                                        else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                            await i.update({});
-                                            if (i.user.username == player[0].username) {
-                                                next = true;
-                                            }
-                                            else {
-                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                            }
-                                        }
-                                        else if (i.customId == "Run" && !run) {
-                                            if (i.user.username == player[0].username) {
-                                                run = true;
-                                                await i.update({ components: [] });
-                                            }
-                                            else {
+                                        if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
+                                            if (i.customId == "Swap" && !swapping && player.length > 0) {
                                                 await i.update({});
-                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                            }
-                                        }
-                                        else if (i.customId == "Join") {
-                                            await i.update({});
-                                            if (inBattle.includes(i.user.id)) {
-                                                await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                            }
-                                            else {
-                                                numberOfPlayers++;
-                                                player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
-                                                inBattle.push(i.user.id)
-                                                if (!player[player.length - 1].active) {
-                                                    inBattle.pop();
-                                                    numberOfPlayers--;
+                                                if (i.user.username == player[0].username) {
+                                                    if (inBattle.length == 1)
+                                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                                    else
+                                                        swapping = true;
+                                                }
+                                                else {
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                                 }
                                             }
-                                        }
-                                        else if (i.customId == "download") {
-                                            let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                            await i.update({ embeds: [], components: [], files: [attachment] });
-                                            collector.stop("Done downloading");
+                                            else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
+                                                await i.update({});
+                                                if (i.user.username == player[0].username) {
+                                                    next = true;
+                                                }
+                                                else {
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                                }
+                                            }
+                                            else if (i.customId == "Run" && !run) {
+                                                if (i.user.username == player[0].username) {
+                                                    run = true;
+                                                    await i.update({ components: [] });
+                                                }
+                                                else {
+                                                    await i.update({});
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                                }
+                                            }
+                                            else if (i.customId == "Join") {
+                                                await i.update({});
+                                                if (inBattle.includes(i.user.id)) {
+                                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                                }
+                                                else {
+                                                    numberOfPlayers++;
+                                                    player.push(await playerHandler(serverSettings, i, ["Enemy"], enemyPlayer[0].user_speed, mapId, true));
+                                                    inBattle.push(i.user.id)
+                                                    if (!player[player.length - 1].active) {
+                                                        inBattle.pop();
+                                                        numberOfPlayers--;
+                                                    }
+                                                }
+                                            }
+                                            else if (i.customId == "download") {
+                                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                                await i.update({ embeds: [], components: [], files: [attachment] });
+                                                collector.stop("Done downloading");
+                                            }
+                                            else
+                                                await i.update({});
+
                                         }
                                         else
                                             await i.update({});
@@ -460,8 +464,7 @@ module.exports = {
                             let groupMembers = await interaction.client.databaseSelectData("SELECT user_id FROM users WHERE group_id = ? AND user_id <> ?", [userInfo.group_id, interaction.user.id]);
                             groupMembers = groupMembers.map(x => x.user_id);
 
-                            const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == interaction.id;
-                            const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+                            const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
                                 collector.resetTimer({ time: 120000 });
                                 if (!i.replied) {
@@ -536,8 +539,7 @@ module.exports = {
 
                             let savedID = enemyPlayer[0].user_id
 
-                            const filterRunEnemy = iEnemy => (joinableEnemiesID.includes(iEnemy.user.id) || iEnemy.user.id == savedID) && iEnemy.message.interaction.id == secondInteraction.id;
-                            const collectorEnemy = secondInteraction.createMessageComponentCollector({ filterRunEnemy, time: 120000 });
+                            const collectorEnemy = msg.createMessageComponentCollector({ time: 120000 });
                             collectorEnemy.on('collect', async iEnemy => {
                                 if (!iEnemy.replied) {
                                     try {
@@ -1920,7 +1922,7 @@ module.exports = {
             }
 
 
-            await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
+            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
             await interaction.client.wait(1000);
             let player = [await playerHandler(serverSettings, interaction, aliensName, alien[0].speed, mapId)];
             if (!player[0].active)
@@ -1933,28 +1935,31 @@ module.exports = {
                 + `\n**Alien Info**:\n**[${alien[0].emoji}]** <a:hp:896118360125870170>: **${alien[0].hp}**\t<a:sd:896118359966511104>: **${alien[0].shield}**`;
 
 
-            if (!userInfo.group_id) {
+            if (userInfo.group_id != "0") {
                 await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ->|${alien[0].name}|<-**`)], components: [runRow] });
                 await interaction.client.wait(1500);
-                const filterRun = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
-                const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+                const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
                     collector.resetTimer({ time: 120000 });
                     if (!i.replied)
                         try {
-                            if (i.customId == "Run") {
-                                run = true;
-                                await i.update({ components: [] });
+                            if (i.user.id == interaction.user.id) {
+                                if (i.customId == "Run") {
+                                    run = true;
+                                    await i.update({ components: [] });
+                                }
+                                else if (i.customId == "NextAlien" && alien.length > 0) {
+                                    next = true;
+                                    await i.update({});
+                                }
+                                else if (i.customId == "download") {
+                                    let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                    await i.update({ embeds: [], components: [], files: [attachment] });
+                                    collector.stop();
+                                }
                             }
-                            else if (i.customId == "NextAlien" && alien.length > 0) {
-                                next = true;
+                            else
                                 await i.update({});
-                            }
-                            else if (i.customId == "download") {
-                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                await i.update({ embeds: [], components: [], files: [attachment] });
-                                collector.stop();
-                            }
                         }
                         catch (error) {
 
@@ -2258,62 +2263,65 @@ module.exports = {
                 groupMembers = inBattle.map(x => x.user_id);
                 inBattle = [userInfo.user_id];
 
-                const filterRun = i => groupMembers.includes(i.user.id) && i.message.interaction.id == interaction.id;
-                const collector = interaction.channel.createMessageComponentCollector({ filterRun, time: 120000 });
+                const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
                     collector.resetTimer({ time: 120000 });
                     if (!i.replied) {
                         try {
-                            if (i.customId == "Swap") {
-                                await i.update({});
-                                if (i.user.username == player[0].username && !swapping && player.length > 0) {
-                                    if (inBattle.length == 1)
-                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
-                                    else
-                                        swapping = true;
-                                }
-                                else {
-                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                }
-                            }
-                            else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
-                                await i.update({});
-                                if (i.user.username == player[0].username) {
-                                    next = true;
-                                }
-                                else {
-                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                }
-                            }
-                            else if (i.customId == "Run" && !run) {
-                                if (i.user.username == player[0].username) {
-                                    run = true;
-                                    await i.update({ components: [] });
-                                }
-                                else {
+                            if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
+                                if (i.customId == "Swap") {
                                     await i.update({});
-                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
-                                }
-                            }
-                            else if (i.customId == "Join") {
-                                await i.update({});
-                                if (inBattle.includes(i.user.id)) {
-                                    await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
-                                }
-                                else {
-                                    numberOfPlayers++;
-                                    player.push(await playerHandler(serverSettings, i, aliensName, alien[0].speed, mapId));
-                                    inBattle.push(i.user.id)
-                                    if (!player[player.length - 1].active) {
-                                        inBattle.pop();
-                                        numberOfPlayers--;
+                                    if (i.user.username == player[0].username && !swapping && player.length > 0) {
+                                        if (inBattle.length == 1)
+                                            await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
+                                        else
+                                            swapping = true;
+                                    }
+                                    else {
+                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                     }
                                 }
-                            }
-                            else if (i.customId == "download") {
-                                let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                await i.update({ embeds: [], components: [], files: [attachment] });
-                                collector.stop("Done downloading");
+                                else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
+                                    await i.update({});
+                                    if (i.user.username == player[0].username) {
+                                        next = true;
+                                    }
+                                    else {
+                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                    }
+                                }
+                                else if (i.customId == "Run" && !run) {
+                                    if (i.user.username == player[0].username) {
+                                        run = true;
+                                        await i.update({ components: [] });
+                                    }
+                                    else {
+                                        await i.update({});
+                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
+                                    }
+                                }
+                                else if (i.customId == "Join") {
+                                    await i.update({});
+                                    if (inBattle.includes(i.user.id)) {
+                                        await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
+                                    }
+                                    else {
+                                        numberOfPlayers++;
+                                        player.push(await playerHandler(serverSettings, i, aliensName, alien[0].speed, mapId));
+                                        inBattle.push(i.user.id)
+                                        if (!player[player.length - 1].active) {
+                                            inBattle.pop();
+                                            numberOfPlayers--;
+                                        }
+                                    }
+                                }
+                                else if (i.customId == "download") {
+                                    let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
+                                    await i.update({ embeds: [], components: [], files: [attachment] });
+                                    collector.stop("Done downloading");
+                                }
+                                else
+                                    await i.update({});
                             }
                             else
                                 await i.update({});
@@ -3119,7 +3127,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
                 });
 
                 await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ? WHERE user_id = ?",
-                    [ammunition.x1_magazine - userLaserConfig[1].magazine * userStats.laserQuantity, ammunition.x2_magazine - userLaserConfig[2].magazine * userStats.laserQuantity, ammunition.x3_magazine - userLaserConfig[3].magazine * userStats.laserQuantity, ammunition.x4_magazine - userLaserConfig[4].magazine * userStats.laserQuantity, ammunition.xS1_magazine - userLaserConfig[5].magazine * userStats.laserQuantity, interaction.user.id]);
+                    [ammunition.x1_magazine - userLaserConfig[1].magazine, ammunition.x2_magazine - userLaserConfig[2].magazine, ammunition.x3_magazine - userLaserConfig[3].magazine, ammunition.x4_magazine - userLaserConfig[4].magazine, ammunition.xS1_magazine - userLaserConfig[5].magazine, interaction.user.id]);
             }
         }
     }
@@ -3176,7 +3184,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
                         return a.location - b.location;
                     });
                     await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ? WHERE user_id = ?",
-                        [ammunition.x1_magazine - userLaserConfig[1].magazine * userStats.laserQuantity, ammunition.x2_magazine - userLaserConfig[2].magazine * userStats.laserQuantity, ammunition.x3_magazine - userLaserConfig[3].magazine * userStats.laserQuantity, ammunition.x4_magazine - userLaserConfig[4].magazine * userStats.laserQuantity, ammunition.xS1_magazine - userLaserConfig[5].magazine * userStats.laserQuantity, ammunition.m1_magazine - userMissileConfig[1].magazine, ammunition.m2_magazine - userMissileConfig[2].magazine, ammunition.m3_magazine - userMissileConfig[3].magazine, ammunition.m4_magazine - userMissileConfig[4].magazine, interaction.user.id]);
+                        [ammunition.x1_magazine - userLaserConfig[1].magazine, ammunition.x2_magazine - userLaserConfig[2].magazine, ammunition.x3_magazine - userLaserConfig[3].magazine, ammunition.x4_magazine - userLaserConfig[4].magazine, ammunition.xS1_magazine - userLaserConfig[5].magazine, ammunition.m1_magazine - userMissileConfig[1].magazine, ammunition.m2_magazine - userMissileConfig[2].magazine, ammunition.m3_magazine - userMissileConfig[3].magazine, ammunition.m4_magazine - userMissileConfig[4].magazine, interaction.user.id]);
                 }
             }
         }
@@ -3235,7 +3243,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
                     });
 
                     await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
-                        [ammunition.x1_magazine - userLaserConfig[1].magazine * userStats.laserQuantity, ammunition.x2_magazine - userLaserConfig[2].magazine * userStats.laserQuantity, ammunition.x3_magazine - userLaserConfig[3].magazine * userStats.laserQuantity, ammunition.x4_magazine - userLaserConfig[4].magazine * userStats.laserQuantity, ammunition.xS1_magazine - userLaserConfig[5].magazine * userStats.laserQuantity, ammunition.h1_magazine - userHellstormConfig[1].magazine, ammunition.h2_magazine - userHellstormConfig[2].magazine, ammunition.hS1_magazine - userHellstormConfig[3].magazine, ammunition.hS2_magazine - userHellstormConfig[4].magazine, interaction.user.id]);
+                        [ammunition.x1_magazine - userLaserConfig[1].magazine, ammunition.x2_magazine - userLaserConfig[2].magazine, ammunition.x3_magazine - userLaserConfig[3].magazine, ammunition.x4_magazine - userLaserConfig[4].magazine, ammunition.xS1_magazine - userLaserConfig[5].magazine, ammunition.h1_magazine - userHellstormConfig[1].magazine, ammunition.h2_magazine - userHellstormConfig[2].magazine, ammunition.hS1_magazine - userHellstormConfig[3].magazine, ammunition.hS2_magazine - userHellstormConfig[4].magazine, interaction.user.id]);
                 }
             }
         }
@@ -3312,7 +3320,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
                 });
 
                 await interaction.client.databaseEditData("UPDATE ammunition SET x1_magazine = x1_magazine - ?, x2_magazine = x2_magazine - ?, x3_magazine = x3_magazine - ?, x4_magazine = x4_magazine - ?, xS1_magazine = xS1_magazine - ?, m1_magazine = m1_magazine - ?, m2_magazine = m2_magazine - ?, m3_magazine = m3_magazine - ?, m4_magazine = m4_magazine - ?, h1_magazine = h1_magazine - ?, h2_magazine = h2_magazine - ?, hS1_magazine = hS1_magazine - ?, hS2_magazine = hS2_magazine - ? WHERE user_id = ?",
-                    [ammunition.x1_magazine - userLaserConfig[1].magazine * userStats.laserQuantity, ammunition.x2_magazine - userLaserConfig[2].magazine * userStats.laserQuantity, ammunition.x3_magazine - userLaserConfig[3].magazine * userStats.laserQuantity, ammunition.x4_magazine - userLaserConfig[4].magazine * userStats.laserQuantity, ammunition.xS1_magazine - userLaserConfig[5].magazine * userStats.laserQuantity, ammunition.m1_magazine - userMissileConfig[1].magazine, ammunition.m2_magazine - userMissileConfig[2].magazine, ammunition.m3_magazine - userMissileConfig[3].magazine, ammunition.m4_magazine - userMissileConfig[4].magazine, ammunition.h1_magazine - userHellstormConfig[1].magazine, ammunition.h2_magazine - userHellstormConfig[2].magazine, ammunition.hS1_magazine - userHellstormConfig[3].magazine, ammunition.hS2_magazine - userHellstormConfig[4].magazine, interaction.user.id]);
+                    [ammunition.x1_magazine - userLaserConfig[1].magazine, ammunition.x2_magazine - userLaserConfig[2].magazine, ammunition.x3_magazine - userLaserConfig[3].magazine, ammunition.x4_magazine - userLaserConfig[4].magazine, ammunition.xS1_magazine - userLaserConfig[5].magazine, ammunition.m1_magazine - userMissileConfig[1].magazine, ammunition.m2_magazine - userMissileConfig[2].magazine, ammunition.m3_magazine - userMissileConfig[3].magazine, ammunition.m4_magazine - userMissileConfig[4].magazine, ammunition.h1_magazine - userHellstormConfig[1].magazine, ammunition.h2_magazine - userHellstormConfig[2].magazine, ammunition.hS1_magazine - userHellstormConfig[3].magazine, ammunition.hS2_magazine - userHellstormConfig[4].magazine, interaction.user.id]);
             }
         }
     }

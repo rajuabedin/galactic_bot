@@ -179,18 +179,19 @@ module.exports = {
 
 
             }
+            let msg = 0;
             if (searchMissionByStatus === null) {
                 if (missionExpired === false && missionListDB.length > 0) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row] });
                 } else {
-                    await interaction.reply({ embeds: [embed], components: [] });
+                    msg = await interaction.reply({ embeds: [embed], components: [] });
                 }
 
             } else {
-                await interaction.reply({ embeds: [embed], components: [rowLeftRight] });
+                msg = await interaction.reply({ embeds: [embed], components: [rowLeftRight] });
             }
 
-            buttonHandler(interaction, missionList, userInfo, searchMissionByStatus, serverSettings);
+            buttonHandler(interaction, missionList, userInfo, searchMissionByStatus, serverSettings, msg);
         } catch (error) {
             let errorID = await errorLog.error(error, interaction);
             if (interaction.replied) {
@@ -237,60 +238,63 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatus, serverSettings) {
+function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatus, serverSettings, msg) {
     let maxIndex = missionsData.length - 1;
     let index = 0;
 
-    const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
-
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+    
+    const collector = msg.createMessageComponentCollector({ time: 15000 });
 
     collector.on('collect', async i => {
-        collector.resetTimer({ time: 15000 });
-        if (i.customId === 'left') {
-            index--;
-        } else if (i.customId === 'right') {
-            index++;
-        } else if (i.customId === "cancel") {
-            if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
-            } else {
-                await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
-            }
-        } else if (i.customId === "yes") {
-            if (missionsData[index][1] == 0) {
+        if (i.user.id === interaction.user.id) {
+            collector.resetTimer({ time: 15000 });
+            if (i.customId === 'left') {
+                index--;
+            } else if (i.customId === 'right') {
+                index++;
+            } else if (i.customId === "cancel") {
                 if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
+                    await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
                 } else {
-                    await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
+                    await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_cancellation'))], components: [rowYesNo] });
                 }
+            } else if (i.customId === "yes") {
+                if (missionsData[index][1] == 0) {
+                    if (i.replied) {
+                        await i.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
+                    } else {
+                        await i.update({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled_not'), "ERROR!!!")], components: [] })
+                    }
+                    return collector.stop();
+                }
+                if (i.replied) {
+                    await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
+                } else {
+                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
+                }
+                await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ? `, ["cancelled", interaction.user.id, userInfo.missions_id])
                 return collector.stop();
-            }
-            if (i.replied) {
-                await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
             } else {
-                await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_cancelled'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
+                interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'stopped_c'))], components: [] })
             }
-            await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ? `, ["cancelled", interaction.user.id, userInfo.missions_id])
-            return collector.stop();
-        } else {
-            interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'stopped_c'))], components: [] })
-        }
 
-        if (["left", "right"].includes(i.customId)) {
-            if (index < 0) {
-                index += maxIndex + 1;
+            if (["left", "right"].includes(i.customId)) {
+                if (index < 0) {
+                    index += maxIndex + 1;
+                }
+                if (index > maxIndex) {
+                    index -= maxIndex + 1;
+                }
+                if (searchMissionByStatus === null) {
+                    await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
+                } else {
+                    await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `${interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u')} < ${searchMissionByStatus.toUpperCase()}> `, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
+                }
             }
-            if (index > maxIndex) {
-                index -= maxIndex + 1;
-            }
-            if (searchMissionByStatus === null) {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
-            } else {
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], `${interaction.client.getWordLanguage(serverSettings.lang, 'mission_list_u')} < ${searchMissionByStatus.toUpperCase()}> `, interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1} `, "https://i.imgur.com/RBt8b5B.gif")] });
-            }
-        }
 
+        }
+        else
+            await i.update({});
     });
 
     collector.on('end', collected => {

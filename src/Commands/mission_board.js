@@ -199,11 +199,12 @@ module.exports = {
                 } else {
                     embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
                 }
+                let msg = 0;
                 if (missionList.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
-                    buttonHandler(interaction, missionList, userInfo, serverSettings);
+                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    buttonHandler(interaction, missionList, userInfo, serverSettings, msg);
                 } else {
-                    await interaction.reply({ embeds: [embed] });
+                    msg = await interaction.reply({ embeds: [embed] });
                 }
 
 
@@ -248,85 +249,88 @@ const rowYesNo = new MessageActionRow()
             .setStyle('DANGER'),
     );
 
-function buttonHandler(interaction, missionsData, userInfo, serverSettings) {
+function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg) {
     let maxIndex = missionsData.length - 1;
     let index = 0;
     let selectedMissionID = -1;
     var hasActiveMission = false;
     var activeMissionID = 0;
 
-    const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+    const collector = msg.createMessageComponentCollector({ time: 15000 });
 
     collector.on('collect', async i => {
         collector.resetTimer({ time: 15000 });
         try {
-            if (i.customId == 'left') {
-                index--;
-            } else if (i.customId == 'right') {
-                index++;
-            } else if (i.customId == "get") {
-                if (userInfo.missions_id != null) {
-                    var userMission = await interaction.client.databaseSelectData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
-                    userMission = userMission[0];
+            if (i.user.id == interaction.user.id) {
+                if (i.customId == 'left') {
+                    index--;
+                } else if (i.customId == 'right') {
+                    index++;
+                } else if (i.customId == "get") {
+                    if (userInfo.missions_id != null) {
+                        var userMission = await interaction.client.databaseSelectData("SELECT * from user_missions where user_id = ? and id = ?", [interaction.user.id, userInfo.missions_id]);
+                        userMission = userMission[0];
 
-                    if (typeof userMission !== 'undefined' && userMission.mission_status != "completed") {
-                        var userMissionInfo = await interaction.client.databaseSelectData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
-                        userMissionInfo = userMissionInfo[0];
-                        var mySqlTimeStamp = userMission.mission_started_at;
-                        var nowTimeStamp = new Date();
-                        var resolutionTime = ((((nowTimeStamp - mySqlTimeStamp) / 1000) / 60) / 60);
-                        if (userMissionInfo.mission_limit > resolutionTime) {
-                            hasActiveMission = true;
-                            activeMissionID = userInfo.missions_id;
-                        } else {
-                            await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
+                        if (typeof userMission !== 'undefined' && userMission.mission_status != "completed") {
+                            var userMissionInfo = await interaction.client.databaseSelectData("SELECT * from missions where mission_id = ?", [userMission.mission_id]);
+                            userMissionInfo = userMissionInfo[0];
+                            var mySqlTimeStamp = userMission.mission_started_at;
+                            var nowTimeStamp = new Date();
+                            var resolutionTime = ((((nowTimeStamp - mySqlTimeStamp) / 1000) / 60) / 60);
+                            if (userMissionInfo.mission_limit > resolutionTime) {
+                                hasActiveMission = true;
+                                activeMissionID = userInfo.missions_id;
+                            } else {
+                                await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["expired", interaction.user.id, userInfo.missions_id])
+                            }
                         }
                     }
-                }
-                selectedMissionID = missionsData[index][1];
-                if (hasActiveMission) {
-                    if (i.replied) {
-                        await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
+                    selectedMissionID = missionsData[index][1];
+                    if (hasActiveMission) {
+                        if (i.replied) {
+                            await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
+                        } else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
+                        }
+
                     } else {
-                        await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
-                    }
+                        if (i.replied) {
+                            await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
+                        } else {
+                            await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
+                        }
 
-                } else {
+                    }
+                } else if (i.customId == "yes") {
+                    var query = `insert into user_missions (mission_id, mission_task_left, user_id) values (?,?,?)`;
+                    var missionId = await interaction.client.databaseEditDataReturnID(query, [selectedMissionID, missionsData[index][2], interaction.user.id])
+                    await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id])
                     if (i.replied) {
-                        await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
+                        await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
                     } else {
-                        await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
+                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
                     }
-
-                }
-            } else if (i.customId == "yes") {
-                var query = `insert into user_missions (mission_id, mission_task_left, user_id) values (?,?,?)`;
-                var missionId = await interaction.client.databaseEditDataReturnID(query, [selectedMissionID, missionsData[index][2], interaction.user.id])
-                await interaction.client.databaseEditData(`update users set missions_id = ? where user_id = ?`, [missionId, interaction.user.id])
-                if (i.replied) {
-                    await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
+                    if (hasActiveMission) {
+                        await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, activeMissionID])
+                    }
+                    return collector.stop();
                 } else {
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
+                    interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
                 }
-                if (hasActiveMission) {
-                    await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, activeMissionID])
-                }
-                return collector.stop();
-            } else {
-                interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'interactionCancel'), interaction.client.getWordLanguage(serverSettings.lang, 'cancelled_c'))], components: [] })
-            }
 
-            if (["left", "right"].includes(i.customId)) {
-                if (index < 0) {
-                    index += maxIndex + 1;
+                if (["left", "right"].includes(i.customId)) {
+                    if (index < 0) {
+                        index += maxIndex + 1;
+                    }
+                    if (index > maxIndex) {
+                        index -= maxIndex + 1;
+                    }
+                    await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
                 }
-                if (index > maxIndex) {
-                    index -= maxIndex + 1;
-                }
-                await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
             }
+            else
+                await i.update({});
         }
         catch (error) {
             await errorLog.error(error, interaction);
