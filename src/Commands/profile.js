@@ -47,7 +47,7 @@ module.exports = {
                 }
             }
 
-            if (userInfo.tutorial_counter < 8 && interaction.user.id !== userInfo.user_id) {
+            if (userInfo.tutorial_counter < 8 && interaction.user.id == userInfo.user_id) {
                 await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
