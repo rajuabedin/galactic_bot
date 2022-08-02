@@ -40,7 +40,7 @@ module.exports = {
                 return;
             }
             let selectedOption = interaction.options.getSubcommand();
-            if (userInfo.group_id != "0") {
+            if (userInfo.group_id == "0") {
                 let msg = await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo] });
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
