@@ -136,128 +136,132 @@ module.exports = {
             else
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
 
+            let msg = 0;
 
             if (selectedOption == 'ship')
-                await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
+                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
             else
-                await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4] });
+                msg = await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4] });
 
-            const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
+            const collector = msg.createMessageComponentCollector({ time: 25000 });
 
             let discardedMessage = true;
-
+            let index = 0;
 
             collector.on('collect', async i => {
                 collector.resetTimer({ time: 25000 });
                 if (!i.replied) {
                     try {
-                        let index = parseInt(i.customId);
-                        if (i.component.customId == "save") {
-                            await i.update({ content: message, components: [] });
-                            discardedMessage = false;
-                            if (selectedOption == 'laser') {
-                                let totalDamage = 0;
-                                await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                for (laser in itemsEquipped) {
-                                    totalDamage += itemsEquipped[laser][0];
-                                    await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 1 WHERE laser_id = ?`, [itemsEquipped[laser][2]]);
+                        if (i.user.id == interaction.user.id) {
+                            index = parseInt(i.customId);
+                            if (i.component.customId == "save") {
+                                await i.update({ content: message, components: [] });
+                                discardedMessage = false;
+                                if (selectedOption == 'laser') {
+                                    let totalDamage = 0;
+                                    await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    for (laser in itemsEquipped) {
+                                        totalDamage += itemsEquipped[laser][0];
+                                        await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 1 WHERE laser_id = ?`, [itemsEquipped[laser][2]]);
+                                    }
+                                    totalDamage = Math.floor(totalDamage)
+                                    await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [totalDamage, interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlength, interaction.user.id]);
+                                    //Send data to database
                                 }
-                                totalDamage = Math.floor(totalDamage)
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_damage = ? WHERE user_id = ?`, [totalDamage, interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE users SET user_damage = ?, laser_quantity = ? WHERE user_id = ?`, [totalDamage, displayEquippedItemlength, interaction.user.id]);
-                                //Send data to database
-                            }
-                            else if (selectedOption == 'shield') {
-                                let totalShield = 0;
-                                let absortionRate = 0;
-                                await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                for (shield in itemsEquipped) {
-                                    totalShield += itemsEquipped[shield][0];
-                                    absortionRate += itemsEquipped[shield][4] * itemsEquipped[shield][0];
-                                    await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 1 WHERE shield_id = ?`, [itemsEquipped[shield][2]]);
+                                else if (selectedOption == 'shield') {
+                                    let totalShield = 0;
+                                    let absortionRate = 0;
+                                    await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    for (shield in itemsEquipped) {
+                                        totalShield += itemsEquipped[shield][0];
+                                        absortionRate += itemsEquipped[shield][4] * itemsEquipped[shield][0];
+                                        await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 1 WHERE shield_id = ?`, [itemsEquipped[shield][2]]);
+                                    }
+                                    if (absortionRate > 0)
+                                        absortionRate = Math.floor(absortionRate / totalShield);
+                                    //totalShield = Math.floor(totalShield)
+                                    await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [totalShield, absortionRate, displayEquippedItemlength, interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE users SET max_shield = ?, user_shield = ?, absorption_rate = ? WHERE user_id = ?`, [totalShield, totalShield, absortionRate, interaction.user.id]);
                                 }
-                                if (absortionRate > 0)
-                                    absortionRate = Math.floor(absortionRate / totalShield);
-                                //totalShield = Math.floor(totalShield)
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_shield = ?, ship_absortion_rate = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [totalShield, absortionRate, displayEquippedItemlength, interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE users SET max_shield = ?, user_shield = ?, absorption_rate = ? WHERE user_id = ?`, [totalShield, totalShield, absortionRate, interaction.user.id]);
-                            }
-                            else {
-                                await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                for (engine in itemsEquipped) {
-                                    baseSpeed += itemsEquipped[engine][0];
-                                    await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 1 WHERE engine_id = ?`, [itemsEquipped[engine][2]]);
+                                else {
+                                    await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    for (engine in itemsEquipped) {
+                                        baseSpeed += itemsEquipped[engine][0];
+                                        await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 1 WHERE engine_id = ?`, [itemsEquipped[engine][2]]);
+                                    }
+                                    await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [baseSpeed, displayEquippedItemlength, interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE users SET user_speed = ? WHERE user_id = ?`, [baseSpeed, interaction.user.id]);
                                 }
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET ship_speed = ?, equipped_extra = ? WHERE user_id = ? AND equipped = 1`, [baseSpeed, displayEquippedItemlength, interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE users SET user_speed = ? WHERE user_id = ?`, [baseSpeed, interaction.user.id]);
+                                collector.stop("Saved");
                             }
-                            collector.stop("Saved");
-                        }
-                        else if (selectedOption == 'ship') {
-                            if (i.component.customId == "left") {
-                                shipIndex--;
-                                if (shipIndex < 0)
-                                    shipIndex = shipLenght;
+                            else if (selectedOption == 'ship') {
+                                if (i.component.customId == "left") {
+                                    shipIndex--;
+                                    if (shipIndex < 0)
+                                        shipIndex = shipLenght;
+                                }
+                                else if (i.component.customId == "right") {
+                                    shipIndex++;
+                                    if (shipIndex > shipLenght)
+                                        shipIndex = 0;
+                                }
+                                else if (i.component.customId == "discard2") {
+                                    await i.update({ content: "**DISCARDED**", components: [] });
+                                    discardedMessage = false;
+                                    collector.stop("Discarded");
+                                }
+                                else if (i.component.customId == "equip" && shipIndex > 0) {
+                                    await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
+                                    await interaction.client.databaseEditData(`UPDATE users SET user_damage = 0, max_hp = ?, user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][5], shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    discardedMessage = false;
+                                    collector.stop("Saved");
+                                    return
+                                }
+                                if (shipIndex == 0)
+                                    shipRow = await shipButton("SECONDARY");
+                                else
+                                    shipRow = await shipButton();
+                                await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
                             }
-                            else if (i.component.customId == "right") {
-                                shipIndex++;
-                                if (shipIndex > shipLenght)
-                                    shipIndex = 0;
-                            }
-                            else if (i.component.customId == "discard2") {
+                            else if (i.component.customId == "discard") {
                                 await i.update({ content: "**DISCARDED**", components: [] });
                                 discardedMessage = false;
                                 collector.stop("Discarded");
                             }
-                            else if (i.component.customId == "equip" && shipIndex > 0) {
-                                await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
-                                await interaction.client.databaseEditData(`UPDATE users SET user_damage = 0, max_hp = ?, user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][5], shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE user_shields SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
-                                discardedMessage = false;
-                                collector.stop("Saved");
-                                return
+                            else if (!i.component.label.trim()) {
+                                await i.update({});
                             }
-                            if (shipIndex == 0)
-                                shipRow = await shipButton("SECONDARY");
-                            else
-                                shipRow = await shipButton();
-                            await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
-                        }
-                        else if (i.component.customId == "discard") {
-                            await i.update({ content: "**DISCARDED**", components: [] });
-                            discardedMessage = false;
-                            collector.stop("Discarded");
-                        }
-                        else if (!i.component.label.trim()) {
-                            await i.update({});
-                        }
-                        else if (i.component.style == "PRIMARY") {
-                            equippedItemLength++;
-                            displayEquippedItemlength++;
-                            itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
-                            if (displayEquippedItemlength == maxEquipableItem)
-                                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
-                            else
+                            else if (i.component.style == "PRIMARY") {
+                                equippedItemLength++;
+                                displayEquippedItemlength++;
+                                itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
+                                if (displayEquippedItemlength == maxEquipableItem)
+                                    [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
+                                else
+                                    [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
+                                await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                            }
+                            else if (i.component.style == "SUCCESS") {
+                                equippedItemLength--;
+                                displayEquippedItemlength--;
+                                itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
                                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                            await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                                await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                            }
+                            else {
+                                await i.update({ content: interaction.client.getWordLanguage(serverSettings.lang, 'maxCapacity'), components: [] });
+                                await interaction.client.wait(1000);
+                                await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
+                            }
                         }
-                        else if (i.component.style == "SUCCESS") {
-                            equippedItemLength--;
-                            displayEquippedItemlength--;
-                            itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
-                            [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                            await i.update({ content: message, components: [row, row1, row2, row3, row4] });
-                        }
-                        else {
-                            await i.update({ content: interaction.client.getWordLanguage(serverSettings.lang, 'maxCapacity'), components: [] });
-                            await interaction.client.wait(1000);
-                            await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
-                        }
+                        else
+                            await i.update({});
                     }
                     catch (error) { }
                 }

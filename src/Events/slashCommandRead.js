@@ -170,56 +170,59 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
             .setDescription(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_MSG"))
 
 
-        interaction.reply({ embeds: [textToEmbed], components: [row], files: [attachment] });
+        let msg = interaction.reply({ embeds: [textToEmbed], components: [row], files: [attachment] });
 
-        const filter = i => i.user.id === interaction.user.id && i.message.interaction.id === interaction.id;
         let selected = false;
 
-        const collector = await interaction.channel.createMessageComponentCollector({ filter, time: 25000 });
+        const collector = msg.createMessageComponentCollector({ time: 25000 });
 
         let collectorRunning = true;
         var response = true;
 
         collector.on('collect', async i => {
-            selected = true;
-            if (i.values[0] !== text) {
+            if (i.user.id === interaction.user.id) {
                 selected = true;
-                await interaction.client.databaseEditData("update captcha_counter set fail_count = fail_count + 1 where user_id = ?", [interaction.user.id]);
-                //await userDailyLogger(interaction, interaction.user, "captcha", `Selected wrong captcha. Selected [${i.values[0]}] instead of [${text}]`);
-                await interaction.editReply({
-                    embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED"), interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED_TITLE"), i.user)], components: [], files: []
-                });
-                collector.stop();
-                if (captchaData.fail_count + 1 > 4) {
-                    const webhookClient = new WebhookClient({ id: process.env.webhookId, token: process.env.webhookToken });
-
-                    const embed = new MessageEmbed()
-                        .setAuthor({ name: `${interaction.client.user.username} banned ${interaction.user.username}`, iconURL: interaction.client.user.avatarURL() })
-                        .addField("User ID:", `\`${interaction.user.id}\``)
-                        .addField("Reason:", `\`Selected wrong captcha text\``)
-                        .setFooter({ text: "Ban Time" })
-                        .setTimestamp()
-                        .setColor('#0xed4245')
-                        .setThumbnail(interaction.user.avatarURL());
-
-                    webhookClient.send({
-                        content: `<@!${interaction.user.id}>`,
-                        username: 'Obelisk Logger',
-                        embeds: [embed],
+                if (i.values[0] !== text) {
+                    selected = true;
+                    await interaction.client.databaseEditData("update captcha_counter set fail_count = fail_count + 1 where user_id = ?", [interaction.user.id]);
+                    //await userDailyLogger(interaction, interaction.user, "captcha", `Selected wrong captcha. Selected [${i.values[0]}] instead of [${text}]`);
+                    await interaction.editReply({
+                        embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED"), interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED_TITLE"), i.user)], components: [], files: []
                     });
-                    await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, "COMMAND_STOP_BAN").format(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED")), interaction.client.getWordLanguage(serverSettings.lang, "CM_LOCKED"))] })
-                    await interaction.client.databaseEditData("insert into banned_users (user_id, banned_by, reason) values (?, ?, ?)", [interaction.user.id, `881243621293170738`, "Captcha validation failed. You have selected the wrong captcha text."])
-                }
-                response = false;
+                    collector.stop();
+                    if (captchaData.fail_count + 1 > 4) {
+                        const webhookClient = new WebhookClient({ id: process.env.webhookId, token: process.env.webhookToken });
 
-            } else {
-                selectedRightCapthca = true;
-                captchaRequired = false;
-                await interaction.client.databaseEditData("update captcha_counter set fail_count = 0, count = FLOOR(RAND()*(50-40+1))+40 where user_id = ?", [interaction.user.id]);
-                await interaction.editReply({ embeds: [interaction.client.greenEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_SUCCESSFUL"), interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_SUCCESSFUL_TITLE"), i.user)], components: [], files: [] })
-                collector.stop();
-                response = false;
+                        const embed = new MessageEmbed()
+                            .setAuthor({ name: `${interaction.client.user.username} banned ${interaction.user.username}`, iconURL: interaction.client.user.avatarURL() })
+                            .addField("User ID:", `\`${interaction.user.id}\``)
+                            .addField("Reason:", `\`Selected wrong captcha text\``)
+                            .setFooter({ text: "Ban Time" })
+                            .setTimestamp()
+                            .setColor('#0xed4245')
+                            .setThumbnail(interaction.user.avatarURL());
+
+                        webhookClient.send({
+                            content: `<@!${interaction.user.id}>`,
+                            username: 'Obelisk Logger',
+                            embeds: [embed],
+                        });
+                        await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, "COMMAND_STOP_BAN").format(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_FAILED")), interaction.client.getWordLanguage(serverSettings.lang, "CM_LOCKED"))] })
+                        await interaction.client.databaseEditData("insert into banned_users (user_id, banned_by, reason) values (?, ?, ?)", [interaction.user.id, `881243621293170738`, "Captcha validation failed. You have selected the wrong captcha text."])
+                    }
+                    response = false;
+
+                } else {
+                    selectedRightCapthca = true;
+                    captchaRequired = false;
+                    await interaction.client.databaseEditData("update captcha_counter set fail_count = 0, count = FLOOR(RAND()*(50-40+1))+40 where user_id = ?", [interaction.user.id]);
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_SUCCESSFUL"), interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_SUCCESSFUL_TITLE"), i.user)], components: [], files: [] })
+                    collector.stop();
+                    response = false;
+                }
             }
+            else
+                await i.update({});
         });
         collector.on('end', async collected => {
             collectorRunning = false;
