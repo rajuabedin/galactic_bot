@@ -24,14 +24,13 @@ module.exports = {
             let ship = await interaction.client.databaseSelectData("SELECt ships_info.credit, ships_info.units, ships_info.ship_hp FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND equipped = 1", [interaction.user.id]);
             let durability = 100 - ship[0].durability;
             let price = 0;
-            let unit = ""
+            let unit = "credit"
             if (ship[0].credit > 0) {
                 price = ship[0].credit * 0.075;
-                unit = "credit"
             }
             else if (ship[0].units > 0) {
                 price = ship[0].units * 0.5;
-                unit = "credit"
+                unit = "units"
             }
             else {
                 await interaction.client.databaseEditData(`UPDATE users SET user_hp = ? WHERE user_id = ?`, [ship[0].ship_hp, interaction.user.id]);
@@ -42,13 +41,13 @@ module.exports = {
             price *= Math.ceil(durability / 25);
             await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
 
-            if (ship[0].ship_hp == 0)
+            if (ship[0].ship_hp == 0) {
                 if (ship[0].units > 0) {
                     price = ship[0].units * 0.01;
-                    unit = "units"
-                }
-                else
+                } else {
                     price = ~~(price * 1.2);
+                }
+            }
 
             const filter = i => i.user.id == interaction.user.id && i.message.interaction.id == interaction.id;
 

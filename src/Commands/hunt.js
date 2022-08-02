@@ -2747,7 +2747,7 @@ async function getAlien(aliens, addition = 0) {
     if (index > aliens.length - 1) {
         index = 0;
     }
-    await errorLog.custom1({ error: JSON.stringify(aliens[index]) + " - " + aliens[index].alien_name + " - " + JSON.stringify(aliens) });
+    //await errorLog.custom1({ error: JSON.stringify(aliens[index]) + " - " + aliens[index].alien_name + " - " + JSON.stringify(aliens) });
     return {
         name: aliens[index].alien_name,
         damage: aliens[index].damage,
