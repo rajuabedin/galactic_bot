@@ -51,7 +51,7 @@ module.exports = {
                 else {
                     boostedFirm = firmCheck[0].firm;
                 }
-                msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'selectFirm').format(boostedFirm), interaction.client.getWordLanguage(serverSettings.lang, 'create'))], components: [firm] });
+                msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'selectFirm').format(boostedFirm), interaction.client.getWordLanguage(serverSettings.lang, 'create'))], components: [firm], fetchReply: true });
             }
             else {
                 tutorialCounter = userInfo.tutorial_counter
@@ -72,23 +72,23 @@ module.exports = {
                 else {
                     selectedTutorial = tutorialCounter;
                     if (tutorialCounter == 8) {
-                        msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialEnd'), "Tutorial Completed!")] });
+                        msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialEnd'), "Tutorial Completed!")], fetchReply: true });
                         return;
                     }
                 }
                 phaseCounter = 2;
                 if (selectedTutorial > tutorialCounter) {
-                    msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialBlocked'), "Error!!")] });
+                    msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialBlocked'), "Error!!")], fetchReply: true });
                 }
                 else if (selectedTutorial == 1) {
                     selectedFirm = userInfo.firm;
-                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial] });
+                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial], fetchReply: true });
                 }
                 else if (selectedTutorial == 2) {
-                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC2_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('3'))], components: [tutorial] });
+                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC2_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('3'))], components: [tutorial], fetchReply: true });
                 }
                 else if (selectedTutorial == 3) {
-                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [tutorial] });
+                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC3_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('4'))], components: [tutorial], fetchReply: true });
                     row = await buttonHandlerOnOff(0);
                 }
                 else if (selectedTutorial == 4) {
@@ -108,36 +108,36 @@ module.exports = {
 
                         items.push([message, ammunition.order_ammo, ammunition.credit, ammunition.units]);
                     });
-                    msg = await interaction.reply({ content: " ", embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('5'))], components: [tutorial] });
+                    msg = await interaction.reply({ content: " ", embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC4_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('5'))], components: [tutorial], fetchReply: true });
                 }
                 else if (selectedTutorial == 5) {
                     if (tutorialCounter == selectedTutorial) {
                         let mission = await interaction.client.databaseSelectData("SELECT * FROM user_missions WHERE user_missions.user_id = ?", [interaction.user.id]);
                         if (typeof mission == 'undefined' || mission.length == 0) {
-                            msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
+                            msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial], fetchReply: true });
                         }
                         else if (mission[0].mission_status == 'active') {
-                            msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))] })
+                            msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], fetchReply: true })
                             return;
                         }
                         else {
                             selectedTutorial++;
                             tutorialCounter++;
-                            msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
+                            msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_4_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial], fetchReply: true });
                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L4"]);
                             await interaction.client.databaseEditData(`UPDATE users SET tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
                             phaseCounter = 1;
                         }
                     }
                     else {
-                        msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial] });
+                        msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC5_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('6'))], components: [tutorial], fetchReply: true });
                     }
                 }
                 else if (selectedTutorial == 6) {
-                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC6_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial] });
+                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC6_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('7'))], components: [tutorial], fetchReply: true });
                 }
                 else if (selectedTutorial == 7) {
-                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('8'))], components: [tutorial] });
+                    msg = await interaction.reply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('8'))], components: [tutorial], fetchReply: true });
                 }
             }
 
@@ -539,7 +539,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                msg = await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true, fetchReply: true });
             }
         }
     }

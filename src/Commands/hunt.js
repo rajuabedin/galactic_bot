@@ -88,7 +88,7 @@ module.exports = {
 
                     if (typeof guildExist != `undefined`) {
                         let enemyJoined = false;
-                        let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")] });
+                        let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")], fetchReply: true });
                         await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
                         await interaction.client.wait(1000);
                         let enemyShipEmoji = await interaction.client.databaseSelectData("SELECT ship_emoji, ship_model FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
@@ -1918,7 +1918,7 @@ module.exports = {
             }
 
 
-            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")] });
+            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")], fetchReply: true });
             await interaction.client.wait(1000);
             let player = [await playerHandler(serverSettings, interaction, aliensName, alien[0].speed, mapId)];
             if (!player[0].active)
@@ -1931,7 +1931,7 @@ module.exports = {
                 + `\n**Alien Info**:\n**[${alien[0].emoji}]** <a:hp:896118360125870170>: **${alien[0].hp}**\t<a:sd:896118359966511104>: **${alien[0].shield}**`;
 
 
-            if (userInfo.group_id != "0") {
+            if (userInfo.group_id == "0") {
                 await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Engaging Combat with ->|${alien[0].name}|<-**`)], components: [runRow] });
                 await interaction.client.wait(1500);
                 const collector = msg.createMessageComponentCollector({ time: 120000 });

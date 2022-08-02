@@ -182,13 +182,13 @@ module.exports = {
             let msg = 0;
             if (searchMissionByStatus === null) {
                 if (missionExpired === false && missionListDB.length > 0) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                 } else {
-                    msg = await interaction.reply({ embeds: [embed], components: [] });
+                    msg = await interaction.reply({ embeds: [embed], components: [], fetchReply: true });
                 }
 
             } else {
-                msg = await interaction.reply({ embeds: [embed], components: [rowLeftRight] });
+                msg = await interaction.reply({ embeds: [embed], components: [rowLeftRight], fetchReply: true });
             }
 
             buttonHandler(interaction, missionList, userInfo, searchMissionByStatus, serverSettings, msg);

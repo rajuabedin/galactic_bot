@@ -111,7 +111,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIPS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIPS", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });
@@ -164,7 +164,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <LASERS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "LASERS", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });
@@ -219,7 +219,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <SHIELDS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "SHIELDS", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });
@@ -274,7 +274,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <ENGINE>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "ENGINE", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });
@@ -330,7 +330,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <AMMUNITION>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "AMMUNITION", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });
@@ -392,7 +392,7 @@ module.exports = {
 
                 embed = interaction.client.bluePagesEmbed(items[0], "SHOP <EXTRAS>", interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`);
                 if (items.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, priceUnits, interaction, items, "EXTRAS", serverSettings, msg);
                 } else {
                     await interaction.reply({ embeds: [embed] });

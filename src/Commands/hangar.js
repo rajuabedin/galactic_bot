@@ -139,9 +139,9 @@ module.exports = {
             let msg = 0;
 
             if (selectedOption == 'ship')
-                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
+                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow], fetchReply: true });
             else
-                msg = await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4] });
+                msg = await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4], fetchReply: true });
 
 
             const collector = msg.createMessageComponentCollector({ time: 25000 });

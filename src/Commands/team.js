@@ -41,7 +41,7 @@ module.exports = {
             }
             let selectedOption = interaction.options.getSubcommand();
             if (userInfo.group_id == "0") {
-                let msg = await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo] });
+                let msg = await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo], fetchReply: true });
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
@@ -129,7 +129,7 @@ module.exports = {
                                 await interaction.reply({ embeds: [interaction.client.redEmbedImage("The user is already part of a team", "ERROR!!", interaction.user)] });
                             }
                             else {
-                                let msg = await interaction.reply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo] });
+                                let msg = await interaction.reply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo], fetchReply: true });
 
                                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                                 collector.on('collect', async i => {

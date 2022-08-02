@@ -201,10 +201,10 @@ module.exports = {
                 }
                 let msg = 0;
                 if (missionList.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row] });
+                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(interaction, missionList, userInfo, serverSettings, msg);
                 } else {
-                    msg = await interaction.reply({ embeds: [embed] });
+                    msg = await interaction.reply({ embeds: [embed], fetchReply: true });
                 }
 
 
