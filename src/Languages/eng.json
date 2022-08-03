@@ -196,5 +196,6 @@
     "ERROR_SAME_USER": "Error! You can not play with yourself!",
     "ERROR_BOT_USER": "Error! You can not play with bots!",
     "ERROR_USER_NF": "No account found for this user!",
+    "ERROR_INTERACTION": "You can not use this.",
     "noPermission": "You do not have permission to use this command!\nYou require to have `{}` permissions."
 }
