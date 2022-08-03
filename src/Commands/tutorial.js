@@ -513,8 +513,10 @@ module.exports = {
                                 }
                                 else if (phaseCounter == 4) {
                                     await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC7_4'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('8'))], components: [tutorial] });
+                                    if (tutorialCounter == selectedTutorial)
+                                        await interaction.client.databaseEditData(`UPDATE users SET units = units + 5000, tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
                                     tutorialCounter++;
-                                    await interaction.client.databaseEditData(`UPDATE users SET units = units + 5000, tutorial_counter = ? WHERE user_id = ?`, [tutorialCounter, interaction.user.id]);
+                                    selectedTutorial++;
                                     collector.stop("Tutorial Ended");
                                 }
                             }

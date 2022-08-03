@@ -81,7 +81,7 @@ module.exports = {
                     let enemyPlayer = await interaction.client.databaseSelectData("SELECT username, firm, user_id, guild_id, channel_id, user_hp, max_hp, max_shield, user_shield, absorption_rate, user_penetration, user_speed, resources FROM users WHERE firm <> ? AND map_id = ? AND group_id <> ? AND in_hunt = 0 ORDER BY RAND() LIMIT 1", [userInfo.firm, mapId, userInfo.group_id]);
                     let secondInteraction;
                     let guildExist;
-                    if (typeof enemyPlayer != `undefined` || enemyPlayer.length > 0) {
+                    if (typeof enemyPlayer !== 'undefined' && enemyPlayer.length > 0) {
                         secondInteraction = interaction.client.channels.cache.get(enemyPlayer[0].channel_id)
                         guildExist = interaction.client.guilds.cache.get(enemyPlayer[0].guild_id)
                     }
@@ -1918,7 +1918,7 @@ module.exports = {
             }
 
 
-            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an aliens...")], fetchReply: true });
+            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an alien...")], fetchReply: true });
             await interaction.client.wait(1000);
             let player = [await playerHandler(serverSettings, interaction, aliensName, alien[0].speed, mapId)];
             if (!player[0].active)
