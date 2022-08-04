@@ -44,14 +44,14 @@ module.exports = {
                 await interaction.client.databaseEditData("UPDATE users SET user_hp = ? WHERE user_id = ?", [userInfo.user_hp, interaction.user.id]);
                 await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ? WHERE equipped = 1 AND user_id = ?", [userInfo.user_hp, interaction.user.id]);
             }
-            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);            
+            await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
 
-            var userShipData = await interaction.client.databaseSelectData('select ships_info.ship_model, ships_info.laser_quantity, ships_info.extra_quantity, ships_info.max_cargo from user_ships join ships_info on user_ships.ship_model = ships_info.ship_model where user_ships.user_id = ? and user_ships.equipped = 1', [interaction.user.id]);
+            var userShipData = await interaction.client.databaseSelectData('select user_ships.durability, ships_info.ship_model, ships_info.laser_quantity, ships_info.extra_quantity, ships_info.max_cargo from user_ships join ships_info on user_ships.ship_model = ships_info.ship_model where user_ships.user_id = ? and user_ships.equipped = 1', [interaction.user.id]);
             userShipData = userShipData[0];
 
             var userShieldData = await interaction.client.databaseSelectData('select * from user_shields where user_id = ? and equipped = 1', [interaction.user.id]);
             if (userShieldData[0] !== undefined) {
-                userShieldData = userShieldData[0].length;
+                userShieldData = userShieldData.length;
             } else {
                 userShieldData = 0
             }
@@ -59,7 +59,7 @@ module.exports = {
 
             var userEngineData = await interaction.client.databaseSelectData('select * from user_engines where user_id = ? and equipped = 1', [interaction.user.id]);
             if (userEngineData[0] !== undefined) {
-                userEngineData = userEngineData[0].length;
+                userEngineData = userEngineData.length;
             } else {
                 userEngineData = 0
             }
@@ -84,7 +84,7 @@ module.exports = {
                 max_hp: userInfo.max_hp,
                 shield_value: userInfo.user_shield,
                 max_shield: userInfo.max_shield,
-                boost: "coming-soon"
+                boost: (userShipData.durability).toString() + "%"
             }
 
             var data = await fetch(`https://api.obelisk.club/SpaceAPI/stats`, {
