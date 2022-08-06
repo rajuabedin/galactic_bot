@@ -44,7 +44,7 @@ module.exports = {
             }
             let selectedOption = interaction.options.getSubcommand();
             if (userInfo.group_id == "0") {
-                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo], fetchReply: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_create'), interaction.client.getWordLanguage(serverSettings.lang, 'Team_create_title'), interaction.user)], components: [rowYesNo], fetchReply: true });
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
@@ -82,7 +82,8 @@ module.exports = {
                 });
 
                 collector.on('end', collected => {
-                    interaction.editReply({ embeds: [interaction.client.redEmbedImage("Command cancelled", "Create a team?", interaction.user)], ephemeral: true, components: [] });
+                    interaction.editReply({
+                        embeds: [interaction.client.redEmbedImage("Command cancelled", interaction.client.getWordLanguage(serverSettings.lang, 'Team_create_title'), interaction.user)], ephemeral: true, components: [] });
                     return;
                 });
             }
@@ -108,13 +109,13 @@ module.exports = {
                 team = team[0];
                 if (team.leader_id == userInfo.user_id) {
                     await interaction.client.databaseEditData("DELETE FROM group_list WHERE group_id = ?", [team.group_id]);
-                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The team has been disbanded!", "Team disbanded", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_disband'), interaction.client.getWordLanguage(serverSettings.lang, 'Team_disband_tittle'), interaction.user)] });
                     return;
                 }
                 else {
                     await interaction.client.databaseEditData("UPDATE users SET group_id = 0 WHERE user_id = ?", [userInfo.user_id]);
                     await interaction.client.databaseEditData("UPDATE group_list SET members = members - 1 WHERE group_id = ?", [team.group_id]);
-                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You have left the team!", "Operation succesful", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_left'), interaction.client.getWordLanguage(serverSettings.lang, 'Team_succesful'), interaction.user)] });
                     return;
                 }
             }
@@ -126,13 +127,13 @@ module.exports = {
                         if (!selectedOption.bot && !selectedOption.system && selectedOption.id != interaction.user.id) {
                             let member = await interaction.client.databaseSelectData("SELECT group_id FROM users WHERE user_id = ?", [selectedOption.id]);
                             if (member[0].group_id == userInfo.group_id) {
-                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The user is already part of this team", "ERROR!!", interaction.user)] });
+                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_part_this'), "ERROR!!", interaction.user)] });
                             }
                             else if (member[0].group_id != 0) {
-                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The user is already part of a team", "ERROR!!", interaction.user)] });
+                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_part'), "ERROR!!", interaction.user)] });
                             }
                             else {
-                                await interaction.editReply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo], fetchReply: true });
+                                await interaction.editReply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_invite'), "Team Invite", interaction.user)], components: [rowYesNo], fetchReply: true });
 
                                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                                 collector.on('collect', async i => {
@@ -162,7 +163,7 @@ module.exports = {
                                                     collector.stop();
                                                 }
                                                 else if (i.customId == "no" && i.user.id != interaction.user.id) {
-                                                    await interaction.editReply({ content: " ", embeds: [interaction.client.redEmbedImage(`<@${selectedOption.id}> has declined the team invitation!`, "Invitation Failed!", interaction.user)], components: [] });
+                                                    await interaction.editReply({ content: " ", embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_declined').format(`<${selectedOption.id}>`), "Invitation Failed!", interaction.user)], components: [] });
                                                     collector.stop();
                                                 }
                                             }
@@ -178,14 +179,14 @@ module.exports = {
                             }
                         }
                         else
-                            await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You have not selected a valid user", "Command cancelled", interaction.user)] });
+                            await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_no_user'), "Command cancelled", interaction.user)] });
 
                     }
                     else
-                        await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The team has reached maximum capacity!", "ERROR!!", interaction.user)] });
+                        await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_capacity'), "ERROR!!", interaction.user)] });
                 }
                 else
-                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You are not the leader of this team!", "ERROR!!", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage(interaction.client.getWordLanguage(serverSettings.lang, 'Team_no_leader'), "ERROR!!", interaction.user)] });
                 return;
             }
         } catch (error) {

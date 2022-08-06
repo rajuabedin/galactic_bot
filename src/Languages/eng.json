@@ -197,5 +197,18 @@
     "ERROR_BOT_USER": "Error! You can not play with bots!",
     "ERROR_USER_NF": "No account found for this user!",
     "ERROR_INTERACTION": "You can not use this.",
+    "Team_create_title": "Create a team?",
+    "Team_create": "You are not part of any team, would you like to create one?",
+    "Team_disband_tittle": "Team disbanded",
+    "Team_disband": "The team has been disbanded!",
+    "Team_succesful": "Operation succesful",
+    "Team_left": "You have left the team!",
+    "Team_part_this": "The user is already part of this team",
+    "Team_part": "The user is already part of a team",
+    "Team_invite": "Would you like to join the team?",
+    "Team_declined": "{} has declined the team invitation!",
+    "Team_no_user": "You have not selected a valid user",
+    "Team_capacity": "The team has reached maximum capacity!",
+    "Team_no_leader": "You are not the leader of this team!",
     "noPermission": "You do not have permission to use this command!\nYou require to have `{}` permissions."
 }
