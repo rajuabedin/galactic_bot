@@ -137,9 +137,8 @@ module.exports = {
             if (displayEquippedItemlength == maxEquipableItem)
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
             else
-                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
+                [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
 
-                    ;
 
             if (selectedOption == 'ship')
                 await interaction.editReply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow], fetchReply: true });

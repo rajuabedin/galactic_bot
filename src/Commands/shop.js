@@ -58,7 +58,7 @@ module.exports = {
             let ammunitionList = 0;
             let extrasList = 0;
             let maxPages = 0;
-            ;
+
 
             // check if its a valid category            
 

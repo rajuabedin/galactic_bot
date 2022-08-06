@@ -31,7 +31,7 @@ module.exports = {
             let elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000);
             let elapsedTimeFromWarpMinutes = 0;
             let elapsedTimeFromWarpSeconds = 0;
-            ;
+
             if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1) {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 mapId = userInfo.next_map_id;
@@ -64,7 +64,7 @@ module.exports = {
 
             collector.on('collect', async i => {
                 i.deferUpdate();
-
+                collector.resetTimer({ time: 25000 });
 
                 if (i.user.id != interaction.user.id) {
                     return await interaction.editReply({});
@@ -80,9 +80,10 @@ module.exports = {
                 }
                 else {
                     mapId = i.values[0].split("-");
-                    if (i.values[0] == "111" || i.values[0] == "222" || i.values[0] == "333" || i.values[0] == "444")
+                    if (i.values[0] == "111" || i.values[0] == "222" || i.values[0] == "333" || i.values[0] == "444") {
                         interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'cancel'))], components: [] });
-                    else {
+                        collector.stop("Selected");
+                    } else {
                         let levelRequirement = 0;
                         if ((userInfo.firm == "Luna" && mapId[0] == "2") || (userInfo.firm == "Terra" && mapId[0] == "1") || (userInfo.firm == "Marte" && mapId[0] == "3")) {
                             levelRequirement = await interaction.client.databaseSelectData("SELECT level_requirement FROM map WHERE map_id = ?", [mapId[0] + mapId[1]]);
@@ -102,19 +103,31 @@ module.exports = {
                         //dateToReachMap = dateToReachMap.toJSON().split(".");
                         //dateToReachMap = dateToReachMap[0];
 
-                        if (userInfo.level >= levelRequirement) {
+                        elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000);
+
+                        if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1) {
+                            await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
+                            mapId = userInfo.next_map_id;
+                            await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
+                            map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
+                            row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
+                            await interaction.editReply({ embeds: [interaction.client.yellowEmbed("Refreshing...", interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
+                            await interaction.client.wait(1000);
+                            await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row] });
+                            selected = false;
+                        }
+                        else if (userInfo.level >= levelRequirement) {
                             await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
                             await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
                             interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
+                            collector.stop("Selected");
                         }
                         else {
                             interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warpFail').format(levelRequirement), "ERROR!")], components: [] });
+                            collector.stop("Selected");
                         }
-
                     }
                 }
-                collector.stop("Selected");
-
             });
 
             collector.on('end', collected => {

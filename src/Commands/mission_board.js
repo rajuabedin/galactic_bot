@@ -202,7 +202,7 @@ module.exports = {
                 } else {
                     embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
                 }
-                ;
+
                 if (missionList.length > 1) {
                     await interaction.editReply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(interaction, missionList, userInfo, serverSettings, msg);

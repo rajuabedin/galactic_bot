@@ -182,7 +182,7 @@ module.exports = {
 
 
             }
-            ;
+
             if (searchMissionByStatus === null) {
                 if (missionExpired === false && missionListDB.length > 0) {
                     await interaction.editReply({ embeds: [embed], components: [row], fetchReply: true });
