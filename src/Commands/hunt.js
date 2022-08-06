@@ -33,8 +33,8 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))], ephemeral: true });
                 return;
             }
-            if (userInfo.in_hunt == 1 && !enemyUser) {
-                await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)] });
+            if (userInfo.in_hunt == 1) {
+                await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)], ephemeral: true });
                 return;
             }
             let mapId = userInfo.map_id;
@@ -2969,11 +2969,11 @@ async function missionHandler(interaction, aliens, id, boost, serverSettings) {
 async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser) {
     let userInfo = await interaction.client.getUserAccount(interaction.user.id);
     if (userInfo.user_hp == 0) {
-        await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)] });
+        await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`Please **repair** ship before hunting`, "Ship destroyed!", interaction.user)], ephemeral: true });
         return { canHunt: false };
     }
     if (userInfo.in_hunt == 1 && !enemyUser) {
-        await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)] });
+        await interaction.followUp({ embeds: [interaction.client.redEmbedImage(`You are already in a battle`, "Battle in progress...", interaction.user)], ephemeral: true });
         return { canHunt: false };
     }
 
