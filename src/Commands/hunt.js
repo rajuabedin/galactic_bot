@@ -3079,7 +3079,7 @@ async function infoHandler(interaction, alienSpeed, mapID, pvpSetting, enemyUser
     let userLaserConfig = [
         { location: 1, threshold: huntConfiguration.x1, damage: userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x1_magazine, name: "x1" },
         { location: 2, threshold: huntConfiguration.x2, damage: 2 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x2_magazine, name: "x2" },
-        { location: 3, threshold: huntConfiguration.x3, damage: 3 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x4_magazine, name: "x3" },
+        { location: 3, threshold: huntConfiguration.x3, damage: 3 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x3_magazine, name: "x3" },
         { location: 4, threshold: huntConfiguration.x4, damage: 4 * userStats.laserDamage, shieldDamage: 0, magazine: ammunition.x4_magazine, name: "x4" },
         { location: 5, threshold: huntConfiguration.xS1, damage: 0, shieldDamage: 2 * userStats.laserDamage, magazine: ammunition.xS1_magazine, name: "xS1" }
     ];
