@@ -32,6 +32,9 @@ module.exports = {
                 .setDescription('Amount of credits to bet'))),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -49,11 +52,11 @@ module.exports = {
             }
 
             if (bet > maxBet) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'BET_LIMIT_ERROR').format(maxBet))] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'BET_LIMIT_ERROR').format(maxBet))] });
             }
 
             if (bet < 1) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_VALUE_LOWER_1').format('bet'))] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_VALUE_LOWER_1').format('bet'))] });
             }
 
             let rouletteNumber = utility.getRandomNumberBetween(0, 36);
@@ -81,7 +84,7 @@ module.exports = {
                     .setThumbnail('https://obelisk.club/npc/casino-roulette.gif')
                     .setDescription(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_DESCRIPTION_C').format(bet, colour))
 
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
                 await new Promise(r => setTimeout(r, 2000));
 
                 if (rouletteNumber % 2 == 0 && colour == 'red') {
@@ -97,7 +100,7 @@ module.exports = {
             } else if (interaction.options.getSubcommand() == 'number') {
                 let selectedNumber = interaction.options.getInteger('number');
                 if (selectedNumber < 0 || selectedNumber > 36) {
-                    return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_VALUE_BETWEEN').format('number', 0, 36))] });
+                    return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_VALUE_BETWEEN').format('number', 0, 36))] });
                 }
                 if (!canWin) {
                     let keepRunning = true;
@@ -115,7 +118,7 @@ module.exports = {
                     .setThumbnail('https://obelisk.club/npc/casino-roulette.gif')
                     .setDescription(interaction.client.getWordLanguage(serverSettings.lang, 'ROULETTE_DESCRIPTION_N').format(bet, selectedNumber))
 
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
                 await new Promise(r => setTimeout(r, 2000));
 
                 if (selectedNumber == rouletteNumber) {
@@ -129,7 +132,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

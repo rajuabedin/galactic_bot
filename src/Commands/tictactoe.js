@@ -13,6 +13,9 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -23,10 +26,10 @@ module.exports = {
         try {
             var secondPlayer = interaction.options.getUser('player');
             if (secondPlayer.id == interaction.user.id) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_SAME_USER'))] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_SAME_USER'))] });
             }
             if (secondPlayer.bot) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_BOT_USER'))] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'ERROR_BOT_USER'))] });
             }
             var players = { "X": interaction.user.id, "O": secondPlayer.id };
             var board = new Array(9).fill("⬜");
@@ -44,7 +47,7 @@ module.exports = {
                         .setLabel('NO')
                         .setStyle('DANGER'),
                 );
-            await interaction.reply({
+            await interaction.editReply({
                 content: `<@${players['O']}>`,
                 embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_INVITE').format(players[(turnShape == '❌') ? 'X' : 'O']))],
                 components: [rowYesNo]
@@ -61,7 +64,7 @@ module.exports = {
                 if (i.component.customId == id + 'yes' && i.member.id === players['O']) {
                     accepted = true;
                     collector1.stop();
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_TURN').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(false, board, id) });
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_TURN').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(false, board, id) });
                 }
             });
 
@@ -90,17 +93,17 @@ module.exports = {
                     collector1.stop();
                     draw = true;
                     completed = true;
-                    await i.update({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_DRAW'))], components: toComponents(true, board, id) });
+                    await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_DRAW'))], components: toComponents(true, board, id) });
                 } else if (hasWinner(board)) {
                     collector1.stop();
                     won = true;
                     completed = true;
                     changeColourBoard(board);
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_WON').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(true, board, id) });
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_WON').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(true, board, id) });
                 } else {
                     turnShape = turnShape === "❌" ? "⭕" : "❌";
                     collector.resetTimer({ time: timer });
-                    await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_TURN').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(false, board, id) });
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TICTACTOE_TURN').format(players[(turnShape == '❌') ? 'X' : 'O']))], components: toComponents(false, board, id) });
                 }
             });
             collector.on('end', async i => {
@@ -113,7 +116,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

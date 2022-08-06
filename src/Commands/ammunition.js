@@ -10,6 +10,9 @@ module.exports = {
         .setDescription('display possessed ammunition'),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -19,7 +22,7 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 8) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let ammo = await interaction.client.databaseSelectData("SELECT * FROM ammunition WHERE user_id = ?", [interaction.user.id]);
@@ -44,14 +47,14 @@ module.exports = {
                     message += hellstorm[index] + ammoHellstorm[index] + "\n";
             }
             message += "\`\`\`";
-            await interaction.reply({ embeds: [interaction.client.blueEmbedImage(message, "Ammunition", interaction.user)] });
+            await interaction.editReply({ embeds: [interaction.client.blueEmbedImage(message, "Ammunition", interaction.user)] });
         }
         catch (error) {
             let errorID = await errorLog.error(error, interaction);
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

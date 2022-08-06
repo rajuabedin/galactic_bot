@@ -10,6 +10,9 @@ module.exports = {
         .setDescription('Hunt Alien!'),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
 
         // REQUIRE IN EVERY FILE
         String.prototype.format = function () {
@@ -21,13 +24,13 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let userCd = await interaction.client.databaseSelectData("SELECT last_hunt, moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
             let elapsedTimeFromHunt = ~~((Date.now() - Date.parse(userCd[0].last_hunt)) / 1000);
             if (elapsedTimeFromHunt < 60) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'huntCD').format(60 - elapsedTimeFromHunt), interaction.client.getWordLanguage(serverSettings.lang, 'inCD'))], ephemeral: true });
                 return;
             }
             let mapId = userInfo.map_id;
@@ -88,7 +91,7 @@ module.exports = {
 
                     if (typeof guildExist != `undefined`) {
                         let enemyJoined = false;
-                        let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")], fetchReply: true });
+                        await interaction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an enemy...")], fetchReply: true });
                         await interaction.client.databaseEditData("UPDATE users SET in_hunt = 1 WHERE user_id = ?", [enemyPlayer[0].user_id]);
                         await interaction.client.wait(1000);
                         let enemyShipEmoji = await interaction.client.databaseSelectData("SELECT ship_emoji, ship_model FROM user_ships WHERE user_id = ? AND equipped = 1", [enemyPlayer[0].user_id]);
@@ -135,11 +138,14 @@ module.exports = {
 
                             const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
+                                i.deferUpdate();
+
+
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                                         collector.resetTimer({ time: 120000 });
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
                                                 if (inBattle.length == 1)
                                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -151,7 +157,7 @@ module.exports = {
                                             }
                                         }
                                         else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
                                                 next = true;
                                             }
@@ -162,15 +168,15 @@ module.exports = {
                                         else if (i.customId == "Run" && !run) {
                                             if (i.user.username == player[0].username) {
                                                 run = true;
-                                                await i.update({ components: [] });
+                                                await interaction.editReply({ components: [] });
                                             }
                                             else {
-                                                await i.update({});
+                                                await interaction.editReply({});
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                             }
                                         }
                                         else if (i.customId == "Join") {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (inBattle.includes(i.user.id)) {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                             }
@@ -181,20 +187,21 @@ module.exports = {
                                                 if (!player[player.length - 1].active) {
                                                     inBattle.pop();
                                                     numberOfPlayers--;
+                                                    player.pop();
                                                 }
                                             }
                                         }
                                         else if (i.customId == "download") {
                                             let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                            await i.update({ embeds: [], components: [], files: [attachment] });
+                                            await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                             collector.stop("Done downloading");
                                         }
                                         else
-                                            await i.update({});
+                                            await interaction.editReply({});
 
                                     }
                                     else
-                                        await i.update({});
+                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -464,11 +471,14 @@ module.exports = {
 
                             const collector = msg.createMessageComponentCollector({ time: 120000 });
                             collector.on('collect', async i => {
+                                i.deferUpdate();
+
+
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                                         collector.resetTimer({ time: 120000 });
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
                                                 if (inBattle.length == 1)
                                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -480,7 +490,7 @@ module.exports = {
                                             }
                                         }
                                         else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
                                                 next = true;
                                             }
@@ -491,15 +501,15 @@ module.exports = {
                                         else if (i.customId == "Run" && !run) {
                                             if (i.user.username == player[0].username) {
                                                 run = true;
-                                                await i.update({ components: [] });
+                                                await interaction.editReply({ components: [] });
                                             }
                                             else {
-                                                await i.update({});
+                                                await interaction.editReply({});
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                             }
                                         }
                                         else if (i.customId == "Join") {
-                                            await i.update({});
+                                            await interaction.editReply({});
                                             if (inBattle.includes(i.user.id)) {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                             }
@@ -510,19 +520,20 @@ module.exports = {
                                                 if (!player[player.length - 1].active) {
                                                     inBattle.pop();
                                                     numberOfPlayers--;
+                                                    player.pop();
                                                 }
                                             }
                                         }
                                         else if (i.customId == "download") {
                                             let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                            await i.update({ embeds: [], components: [], files: [attachment] });
+                                            await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                             collector.stop("Done downloading");
                                         }
                                         else
-                                            await i.update({});
+                                            await interaction.editReply({});
                                     }
                                     else
-                                        await i.update({});
+                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -538,6 +549,9 @@ module.exports = {
 
                             const collectorEnemy = msg.createMessageComponentCollector({ time: 120000 });
                             collectorEnemy.on('collect', async iEnemy => {
+                                i.deferUpdate();
+
+
                                 try {
                                     if (joinableEnemiesID.includes(iEnemy.user.id) || iEnemy.user.id == savedID) {
                                         collectorEnemy.resetTimer({ time: 120000 });
@@ -596,6 +610,7 @@ module.exports = {
                                                 if (!enemyPlayer[enemyPlayer.length - 1].active) {
                                                     enemyInBattle.pop();
                                                     numberOfEnemies--;
+                                                    enemyPlayer.pop();
                                                 }
                                             }
                                         }
@@ -609,7 +624,7 @@ module.exports = {
 
                                     }
                                     else
-                                        await i.update({});
+                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -1907,7 +1922,7 @@ module.exports = {
             else
                 aliens = await interaction.client.databaseSelectData("SELECT * FROM aliens WHERE map_id = ? and mothership = 0", [mapId]);
             if (typeof aliens == 'undefined') {
-                await interaction.reply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed("**No aliens found**", "ERROR!")] });
                 return;
             }
             let aliensName = aliens.map(x => x.alien_name);
@@ -1918,7 +1933,7 @@ module.exports = {
             }
 
 
-            let msg = await interaction.reply({ embeds: [interaction.client.blueEmbed("", "Looking for an alien...")], fetchReply: true });
+            await interaction.editReply({ embeds: [interaction.client.blueEmbed("", "Looking for an alien...")], fetchReply: true });
             await interaction.client.wait(1000);
             let player = [await playerHandler(serverSettings, interaction, aliensName, alien[0].speed, mapId)];
             if (!player[0].active)
@@ -1936,25 +1951,28 @@ module.exports = {
                 await interaction.client.wait(1500);
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
+                    i.deferUpdate();
+
+
                     try {
                         if (i.user.id == interaction.user.id) {
                             collector.resetTimer({ time: 120000 });
                             if (i.customId == "Run") {
                                 run = true;
-                                await i.update({ components: [] });
+                                await interaction.editReply({ components: [] });
                             }
                             else if (i.customId == "NextAlien" && alien.length > 0) {
                                 next = true;
-                                await i.update({});
+                                await interaction.editReply({});
                             }
                             else if (i.customId == "download") {
                                 let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                await i.update({ embeds: [], components: [], files: [attachment] });
+                                await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                 collector.stop();
                             }
                         }
                         else
-                            await i.update({});
+                            await interaction.editReply({});
                     }
                     catch (error) {
 
@@ -2260,11 +2278,14 @@ module.exports = {
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
+                    i.deferUpdate();
+
+
                     try {
                         if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                             collector.resetTimer({ time: 120000 });
                             if (i.customId == "Swap") {
-                                await i.update({});
+                                await interaction.editReply({});
                                 if (i.user.username == player[0].username && !swapping && player.length > 0) {
                                     if (inBattle.length == 1)
                                         await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -2276,7 +2297,7 @@ module.exports = {
                                 }
                             }
                             else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
-                                await i.update({});
+                                await interaction.editReply({});
                                 if (i.user.username == player[0].username) {
                                     next = true;
                                 }
@@ -2287,15 +2308,15 @@ module.exports = {
                             else if (i.customId == "Run" && !run) {
                                 if (i.user.username == player[0].username) {
                                     run = true;
-                                    await i.update({ components: [] });
+                                    await interaction.editReply({ components: [] });
                                 }
                                 else {
-                                    await i.update({});
+                                    await interaction.editReply({});
                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                 }
                             }
                             else if (i.customId == "Join") {
-                                await i.update({});
+                                await interaction.editReply({});
                                 if (inBattle.includes(i.user.id)) {
                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                 }
@@ -2306,19 +2327,20 @@ module.exports = {
                                     if (!player[player.length - 1].active) {
                                         inBattle.pop();
                                         numberOfPlayers--;
+                                        player.pop();
                                     }
                                 }
                             }
                             else if (i.customId == "download") {
                                 let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
-                                await i.update({ embeds: [], components: [], files: [attachment] });
+                                await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                 collector.stop("Done downloading");
                             }
                             else
-                                await i.update({});
+                                await interaction.editReply({});
                         }
                         else
-                            await i.update({});
+                            await interaction.editReply({});
                     }
                     catch (error) {
 
@@ -2732,7 +2754,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

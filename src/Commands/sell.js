@@ -17,6 +17,9 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -26,7 +29,7 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 7) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let selectedOption = interaction.options.getString('option').toLowerCase();
@@ -40,7 +43,7 @@ module.exports = {
                     }
                 }
                 if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
-                    await interaction.reply({ embeds: [interaction.client.redEmbed("There is **no hanger in this map**\nPlease go to a **base map** and try again", "ERROR!")] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbed("There is **no hanger in this map**\nPlease go to a **base map** and try again", "ERROR!")] });
                     return;
                 }
                 let message = "\`\`\`yaml\n";
@@ -64,9 +67,9 @@ module.exports = {
                 let resources2 = `0; 0; 0; 0; 0; 0; 0; 0; ${resources[8]}`
                 await interaction.client.databaseEditData("UPDATE users SET resources = ?, credit = credit + ?, cargo = ? WHERE user_id = ?", [resources2, credit, resources[8], interaction.user.id]);
                 if (sold)
-                    await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Resources sold")] });
+                    await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, "Resources sold")] });
                 else
-                    await interaction.reply({ embeds: [interaction.client.redEmbed("No resources in cargo that can be sold", "ERROR!")] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbed("No resources in cargo that can be sold", "ERROR!")] });
             }
             else {
                 let price = await interaction.client.databaseSelectData("SELECT price FROM resources", []);
@@ -83,7 +86,7 @@ module.exports = {
                         message += `${resourcesName[index]}:   N/A\n`;
                 }
                 message += "\n\`\`\`";
-                await interaction.reply({ embeds: [interaction.client.greenEmbed(message, "Resources price per item")] });
+                await interaction.editReply({ embeds: [interaction.client.greenEmbed(message, "Resources price per item")] });
             }
         }
         catch (error) {
@@ -91,7 +94,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

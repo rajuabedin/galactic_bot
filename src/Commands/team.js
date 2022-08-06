@@ -25,6 +25,9 @@ module.exports = {
 
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -36,15 +39,18 @@ module.exports = {
             let message = "";
 
             if (userInfo.tutorial_counter < 6) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let selectedOption = interaction.options.getSubcommand();
             if (userInfo.group_id == "0") {
-                let msg = await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo], fetchReply: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You are not part of any team, would you like to create one?", "Create a team?", interaction.user)], components: [rowYesNo], fetchReply: true });
 
                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                 collector.on('collect', async i => {
+                    i.deferUpdate();
+
+
                     if (i.user.id == interaction.user.id) {
                         if (!i.replied)
                             try {
@@ -64,18 +70,18 @@ module.exports = {
                                         message += "╔[Free]\n╚════ Available slot\n";
                                     }
                                     message += "**";
-                                    await i.update({ embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)], components: [] });
+                                    await interaction.editReply({ embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)], components: [] });
                                     return;
                                 }
                                 else {
-                                    await i.update({});
+                                    await interaction.editReply({});
                                     collector.stop();
                                 }
                             }
                             catch (error) { }
                     }
                     else
-                        await i.update({});
+                        await interaction.editReply({});
                 });
 
                 collector.on('end', collected => {
@@ -97,7 +103,7 @@ module.exports = {
                         message += "╔[Free]\n╚════ Available slot\n";
                 }
                 message += "**";
-                await interaction.reply({ embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)] });
+                await interaction.editReply({ embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)] });
                 return;
             }
             else if (selectedOption == "leave") {
@@ -105,13 +111,13 @@ module.exports = {
                 team = team[0];
                 if (team.leader_id == userInfo.user_id) {
                     await interaction.client.databaseEditData("DELETE FROM group_list WHERE group_id = ?", [team.group_id]);
-                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("The team has been disbanded!", "Team disbanded", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The team has been disbanded!", "Team disbanded", interaction.user)] });
                     return;
                 }
                 else {
                     await interaction.client.databaseEditData("UPDATE users SET group_id = 0 WHERE user_id = ?", [userInfo.user_id]);
                     await interaction.client.databaseEditData("UPDATE group_list SET members = members - 1 WHERE group_id = ?", [team.group_id]);
-                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("You have left the team!", "Operation succesful", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You have left the team!", "Operation succesful", interaction.user)] });
                     return;
                 }
             }
@@ -123,16 +129,19 @@ module.exports = {
                         if (!selectedOption.bot && !selectedOption.system && selectedOption.id != interaction.user.id) {
                             let member = await interaction.client.databaseSelectData("SELECT group_id FROM users WHERE user_id = ?", [selectedOption.id]);
                             if (member[0].group_id == userInfo.group_id) {
-                                await interaction.reply({ embeds: [interaction.client.redEmbedImage("The user is already part of this team", "ERROR!!", interaction.user)] });
+                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The user is already part of this team", "ERROR!!", interaction.user)] });
                             }
                             else if (member[0].group_id != 0) {
-                                await interaction.reply({ embeds: [interaction.client.redEmbedImage("The user is already part of a team", "ERROR!!", interaction.user)] });
+                                await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The user is already part of a team", "ERROR!!", interaction.user)] });
                             }
                             else {
-                                let msg = await interaction.reply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo], fetchReply: true });
+                                await interaction.editReply({ content: `<@${selectedOption.id}>`, embeds: [interaction.client.blueEmbedImage(`Would you like to join the team?`, "Team Invite", interaction.user)], components: [rowYesNo], fetchReply: true });
 
                                 const collector = msg.createMessageComponentCollector({ time: 120000 });
                                 collector.on('collect', async i => {
+                                    i.deferUpdate();
+
+
                                     if (i.user.id == selectedOption.id) {
                                         if (!i.replied)
                                             try {
@@ -152,22 +161,22 @@ module.exports = {
                                                             message += "╔[Free]\n╚════ Available slot\n";
                                                     }
                                                     message += "**";
-                                                    await i.update({ content: " ", embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)], components: [] });
+                                                    await interaction.editReply({ content: " ", embeds: [interaction.client.blueEmbedImage(message, "Team Info:", interaction.user)], components: [] });
                                                     collector.stop();
                                                 }
                                                 else if (i.customId == "no" && i.user.id != interaction.user.id) {
-                                                    await i.update({ content: " ", embeds: [interaction.client.redEmbedImage(`<@${selectedOption.id}> has declined the team invitation!`, "Invitation Failed!", interaction.user)], components: [] });
+                                                    await interaction.editReply({ content: " ", embeds: [interaction.client.redEmbedImage(`<@${selectedOption.id}> has declined the team invitation!`, "Invitation Failed!", interaction.user)], components: [] });
                                                     collector.stop();
                                                 }
                                                 else
-                                                    await i.update({});
+                                                    await interaction.editReply({});
                                             }
                                             catch (error) {
                                                 await errorLog.error(error, interaction);
                                             }
                                     }
                                     else
-                                        await i.update({});
+                                        await interaction.editReply({});
                                 });
 
                                 collector.on('end', collected => {
@@ -176,14 +185,14 @@ module.exports = {
                             }
                         }
                         else
-                            await interaction.reply({ embeds: [interaction.client.redEmbedImage("You have not selected a valid user", "Command cancelled", interaction.user)] });
+                            await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You have not selected a valid user", "Command cancelled", interaction.user)] });
 
                     }
                     else
-                        await interaction.reply({ embeds: [interaction.client.redEmbedImage("The team has reached maximum capacity!", "ERROR!!", interaction.user)] });
+                        await interaction.editReply({ embeds: [interaction.client.redEmbedImage("The team has reached maximum capacity!", "ERROR!!", interaction.user)] });
                 }
                 else
-                    await interaction.reply({ embeds: [interaction.client.redEmbedImage("You are not the leader of this team!", "ERROR!!", interaction.user)] });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbedImage("You are not the leader of this team!", "ERROR!!", interaction.user)] });
                 return;
             }
         } catch (error) {
@@ -191,7 +200,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

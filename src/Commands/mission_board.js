@@ -12,6 +12,9 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -21,12 +24,12 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 6) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             var missionListDB = await interaction.client.databaseSelectData("SELECT * from missions where mission_visible = 'yes'", [interaction.user.id]);
             if (missionListDB == undefined || missionListDB.length == 0) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error'))] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error'))] });
             } else {
                 var searchMission = interaction.options.getString('search')
                 var missionList = [];
@@ -199,12 +202,12 @@ module.exports = {
                 } else {
                     embed = interaction.client.yellowPagesImageEmbed(missionList[0][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} 1 of ${maxPages}`, "https://obelisk.club/npc/missions.png");
                 }
-                let msg = 0;
+                ;
                 if (missionList.length > 1) {
-                    msg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+                    await interaction.editReply({ embeds: [embed], components: [row], fetchReply: true });
                     buttonHandler(interaction, missionList, userInfo, serverSettings, msg);
                 } else {
-                    msg = await interaction.reply({ embeds: [embed], fetchReply: true });
+                    await interaction.editReply({ embeds: [embed], fetchReply: true });
                 }
 
 
@@ -214,7 +217,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }
@@ -260,6 +263,9 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg)
     const collector = msg.createMessageComponentCollector({ time: 15000 });
 
     collector.on('collect', async i => {
+        i.deferUpdate();
+
+
         collector.resetTimer({ time: 15000 });
         try {
             if (i.user.id == interaction.user.id) {
@@ -291,14 +297,14 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg)
                         if (i.replied) {
                             await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
                         } else {
-                            await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
+                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'missions_error_active'))], components: [rowYesNo] });
                         }
 
                     } else {
                         if (i.replied) {
                             await i.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
                         } else {
-                            await i.update({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
+                            await interaction.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_start_conf'), interaction.client.getWordLanguage(serverSettings.lang, 'mission_start'))], components: [rowYesNo] });
                         }
 
                     }
@@ -309,7 +315,7 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg)
                     if (i.replied) {
                         await i.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
                     } else {
-                        await i.update({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
+                        await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'mission_started'), interaction.client.getWordLanguage(serverSettings.lang, 'successful_c'))], components: [] })
                     }
                     if (hasActiveMission) {
                         await interaction.client.databaseEditData(`update user_missions set mission_status = ? where user_id = ? and id = ?`, ["cancelled", interaction.user.id, activeMissionID])
@@ -326,11 +332,11 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg)
                     if (index > maxIndex) {
                         index -= maxIndex + 1;
                     }
-                    await i.update({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
+                    await interaction.editReply({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
                 }
             }
             else
-                await i.update({});
+                await interaction.editReply({});
         }
         catch (error) {
             await errorLog.error(error, interaction);

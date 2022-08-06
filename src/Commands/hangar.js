@@ -20,6 +20,9 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -29,7 +32,7 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 3) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
             let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
@@ -39,7 +42,7 @@ module.exports = {
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, interaction.user.id]);
             }
             if (userInfo.map_id != 11 && userInfo.map_id != 21 && userInfo.map_id != 31 && userInfo.map_id != 18 && userInfo.map_id != 28 && userInfo.map_id != 38) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noHangar'), "ERROR!!")] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noHangar'), "ERROR!!")] });
                 return;
             }
             let baseSpeed = 0;
@@ -136,12 +139,12 @@ module.exports = {
             else
                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems)
 
-            let msg = 0;
+                    ;
 
             if (selectedOption == 'ship')
-                msg = await interaction.reply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow], fetchReply: true });
+                await interaction.editReply({ embeds: [interaction.client.yellowEmbed(`${shipList[0][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow], fetchReply: true });
             else
-                msg = await interaction.reply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4], fetchReply: true });
+                await interaction.editReply({ content: message, /*ephemeral: true,*/ components: [row, row1, row2, row3, row4], fetchReply: true });
 
 
             const collector = msg.createMessageComponentCollector({ time: 25000 });
@@ -150,13 +153,16 @@ module.exports = {
             let index = 0;
 
             collector.on('collect', async i => {
+                i.deferUpdate();
+
+
                 collector.resetTimer({ time: 25000 });
                 if (!i.replied) {
                     try {
                         if (i.user.id == interaction.user.id) {
                             index = parseInt(i.customId);
                             if (i.component.customId == "save") {
-                                await i.update({ content: message, components: [] });
+                                await interaction.editReply({ content: message, components: [] });
                                 discardedMessage = false;
                                 if (selectedOption == 'laser') {
                                     let totalDamage = 0;
@@ -208,7 +214,7 @@ module.exports = {
                                         shipIndex = 0;
                                 }
                                 else if (i.component.customId == "discard2") {
-                                    await i.update({ content: "**DISCARDED**", components: [] });
+                                    await interaction.editReply({ content: "**DISCARDED**", components: [] });
                                     discardedMessage = false;
                                     collector.stop("Discarded");
                                 }
@@ -227,15 +233,15 @@ module.exports = {
                                     shipRow = await shipButton("SECONDARY");
                                 else
                                     shipRow = await shipButton();
-                                await i.update({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
+                                await interaction.editReply({ embeds: [interaction.client.yellowEmbed(`${shipList[shipIndex][0]}`, "Hanger ships")], /*ephemeral: true,*/ components: [shipRow] });
                             }
                             else if (i.component.customId == "discard") {
-                                await i.update({ content: "**DISCARDED**", components: [] });
+                                await interaction.editReply({ content: "**DISCARDED**", components: [] });
                                 discardedMessage = false;
                                 collector.stop("Discarded");
                             }
                             else if (!i.component.label.trim()) {
-                                await i.update({});
+                                await interaction.editReply({});
                             }
                             else if (i.component.style == "PRIMARY") {
                                 equippedItemLength++;
@@ -245,23 +251,23 @@ module.exports = {
                                     [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems, "DANGER");
                                 else
                                     [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                                await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                                await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                             }
                             else if (i.component.style == "SUCCESS") {
                                 equippedItemLength--;
                                 displayEquippedItemlength--;
                                 itemsToEquip = itemsToEquip.concat(itemsEquipped.splice(index, 1));
                                 [row, row1, row2, row3, message] = await buttonHandler(maxEquipableItem, itemsToEquip, itemsEquipped, unequipableItems);
-                                await i.update({ content: message, components: [row, row1, row2, row3, row4] });
+                                await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                             }
                             else {
-                                await i.update({ content: interaction.client.getWordLanguage(serverSettings.lang, 'maxCapacity'), components: [] });
+                                await interaction.editReply({ content: interaction.client.getWordLanguage(serverSettings.lang, 'maxCapacity'), components: [] });
                                 await interaction.client.wait(1000);
                                 await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                             }
                         }
                         else
-                            await i.update({});
+                            await interaction.editReply({});
                     }
                     catch (error) { }
                 }
@@ -279,7 +285,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }

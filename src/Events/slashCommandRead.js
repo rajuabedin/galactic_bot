@@ -33,12 +33,12 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         const allowedList = await JSON.parse(serverSettings.allowed_channels);
         const lockedList = await JSON.parse(serverSettings.locked_channels);
 
-        if (lockedList.includes(interaction.channelId)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
-        if (Object.entries(allowedList).length !== 0 && !allowedList.includes(interaction.channelId)) return await interaction.reply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
+        if (lockedList.includes(interaction.channelId)) return await interaction.editReply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
+        if (Object.entries(allowedList).length !== 0 && !allowedList.includes(interaction.channelId)) return await interaction.editReply({ embeds: [interaction.client.redEmbed(`Server admins have locked this channel`)], ephemeral: true })
 
         let userInfo = await interaction.client.getUserAccount(interaction.user.id);
         if (typeof userInfo === 'undefined' && interaction.commandName !== initialCommand) {
-            return await interaction.reply({ embeds: [interaction.client.redEmbed("To be able to play, start the tutorial.", "ERROR, USER NOT FOUND!")], ephemeral: true });
+            return await interaction.editReply({ embeds: [interaction.client.redEmbed("To be able to play, start the tutorial.", "ERROR, USER NOT FOUND!")], ephemeral: true });
         }
 
         if (interaction.commandName !== initialCommand) {
@@ -66,7 +66,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
                 .setDescription(`You were banned by <@!${bannedData[0].banned_by}>.\n**Reason**: \`\`\`\n${bannedData[0].reason}\`\`\``)
                 .setTimestamp(bannedData[0].ban_time)
                 .setFooter({ text: "Banned since " });
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.editReply({ embeds: [embed], ephemeral: true });
         }
 
         // check if need to show captcha
@@ -84,7 +84,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         if (interaction.replied) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID))], ephemeral: true });
         } else {
-            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID), "Error!!")], ephemeral: true });
+            await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID), "Error!!")], ephemeral: true });
         }
     }
 });
@@ -170,7 +170,7 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
             .setDescription(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_MSG"))
 
 
-        let msg = await interaction.reply({ embeds: [textToEmbed], components: [row], files: [attachment], fetchReply: true });
+        await interaction.editReply({ embeds: [textToEmbed], components: [row], files: [attachment], fetchReply: true });
 
         let selected = false;
 
@@ -180,6 +180,9 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
         var response = true;
 
         collector.on('collect', async i => {
+            i.deferUpdate();
+
+
             if (i.user.id === interaction.user.id) {
                 selected = true;
                 if (i.values[0] !== text) {
@@ -222,7 +225,7 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
                 }
             }
             else
-                await i.update({});
+                await interaction.editReply({});
         });
         collector.on('end', async collected => {
             collectorRunning = false;

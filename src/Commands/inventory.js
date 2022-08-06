@@ -12,6 +12,9 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -27,7 +30,7 @@ module.exports = {
 
             var user_inventory = user_lasers.concat(user_shields).concat(user_engines);
             if (user_inventory == undefined || user_inventory.length == 0) {
-                return await interaction.reply({ embeds: [interaction.client.redEmbed("Your Inventory is empty!")] });
+                return await interaction.editReply({ embeds: [interaction.client.redEmbed("Your Inventory is empty!")] });
             } else {
                 var searchItem = interaction.options.getString('search')
                 var items = [];
@@ -73,10 +76,10 @@ module.exports = {
                     embed = interaction.client.bluePagesEmbed(items[0], "INVENTORY", interaction.user, `Page 1 of ${maxPages}`);
                 }
                 if (items.length > 1) {
-                    await interaction.reply({ embeds: [embed], components: [row] });
+                    await interaction.editReply({ embeds: [embed], components: [row] });
                     buttonHandler(interaction, items);
                 } else {
-                    await interaction.reply({ embeds: [embed] });
+                    await interaction.editReply({ embeds: [embed] });
                 }
 
 
@@ -86,7 +89,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }
@@ -116,6 +119,9 @@ function buttonHandler(interaction, inventoryData) {
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on('collect', async i => {
+        i.deferUpdate();
+
+
         collector.resetTimer({ time: 15000 });
         if (i.customId == 'left') {
             index--;
@@ -130,7 +136,7 @@ function buttonHandler(interaction, inventoryData) {
         if (index > maxIndex) {
             index -= maxIndex + 1;
         }
-        await i.update({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], "INVENTORY", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
+        await interaction.editReply({ embeds: [interaction.client.bluePagesEmbed(inventoryData[index], "INVENTORY", interaction.user, `Page ${index + 1} of ${maxIndex + 1}`)] });
         embed = interaction.client;
     });
 

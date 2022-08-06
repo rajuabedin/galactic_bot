@@ -10,6 +10,9 @@ module.exports = {
         .setDescription('This command is used to check your stats.'),
 
     async execute(interaction, userInfo, serverSettings) {
+        let msg = await interaction.deferReply({ fetchReply: true });
+
+
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -32,7 +35,7 @@ module.exports = {
 
         try {
             if (userInfo.tutorial_counter < 8) {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
 
@@ -98,10 +101,10 @@ module.exports = {
                 .then(response => response.json())
                 .then(data => { return data });
             if (data.success == true) {
-                await interaction.reply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
+                await interaction.editReply(`https://obelisk.club/user_files/${interaction.user.id}/${data.filename}`)
             } else {
                 let errorID = await errorLog.custom(data, interaction);
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
                 errorLog.error(data.Error, { 'command_name': interaction.commandName });
             }
 
@@ -110,7 +113,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }
