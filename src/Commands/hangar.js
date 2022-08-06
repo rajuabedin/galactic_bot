@@ -219,7 +219,7 @@ module.exports = {
                                     collector.stop("Discarded");
                                 }
                                 else if (i.component.customId == "equip" && shipIndex > 0) {
-                                    await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
+                                    await interaction.client.databaseEditData(`UPDATE user_ships SET equipped = 0, equipped_extra = 0 WHERE user_id = ?`, [interaction.user.id]);
                                     await interaction.client.databaseEditData("UPDATE user_ships SET equipped = 1 WHERE user_id = ? and ship_id = ?", [interaction.user.id, shipList[shipIndex][1]]);
                                     await interaction.client.databaseEditData(`UPDATE users SET user_damage = 0, max_hp = ?, user_hp = ?, user_shield = 0, max_shield = 0, absorption_rate = 0, laser_quantity = 0, user_speed = ?, max_cargo = ?, user_penetration = 0 WHERE user_id = ?`, [shipList[shipIndex][5], shipList[shipIndex][2], shipList[shipIndex][3], shipList[shipIndex][4], interaction.user.id]);
                                     await interaction.client.databaseEditData(`UPDATE user_engines SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);

@@ -42,18 +42,26 @@ module.exports = {
         await interaction.editReply({ embeds: [interaction.client.yellowEmbed("testing", "TEST")], components: [consoleRow1] });
 
 
-        const collector = msg.createMessageComponentCollector({ time: 25000 });
+        const collector = msg.createMessageComponentCollector({ time: 5000 });
 
+        let count = 0
         collector.on('collect', async i => {
             i.deferUpdate();
-
-
+            count = 0;
             await interaction.editReply({ embeds: [interaction.client.yellowEmbed(i.customId, "Pressed")], components: [consoleRow1] });
         });
 
         collector.on('end', collected => {
-            interaction.editReply({ embeds: [interaction.client.redEmbed("**Interaction time out**")], components: [] });
+            interaction.editReply({components: [] });
         });
+
+        while (count < 10) {
+            count++;
+            collector.resetTimer({ time: 5000 });
+            await interaction.editReply({ embeds: [interaction.client.yellowEmbed(count + "seconds", "Counting...")], components: [consoleRow1] });
+            await interaction.client.wait(1000);
+
+        }
     }
 
 }

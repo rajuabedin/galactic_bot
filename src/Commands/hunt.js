@@ -147,7 +147,6 @@ module.exports = {
 
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                                        collector.resetTimer({ time: 120000 });
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
                                             await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
@@ -216,6 +215,7 @@ module.exports = {
                                 interaction.editReply({ components: [] })
                             });
                             while (enemyPlayer[0].user_hp > 0) {
+                                collector.resetTimer({ time: 30000 });
                                 swappingCounter++;
                                 if (run) {
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
@@ -237,7 +237,7 @@ module.exports = {
                                     await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), enemyPlayer[0].user_id]);
                                     return;
                                 }
-                                if (swapping) {
+                                if (swapping && player.length > 0) {
                                     swapping = false
                                     if (swappingCounter > 3) {
                                         swappingCounter = 0;
@@ -480,7 +480,6 @@ module.exports = {
 
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                                        collector.resetTimer({ time: 120000 });
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
                                             await interaction.editReply({});
                                             if (i.user.username == player[0].username) {
@@ -558,7 +557,6 @@ module.exports = {
 
                                 try {
                                     if (joinableEnemiesID.includes(iEnemy.user.id) || iEnemy.user.id == savedID) {
-                                        collectorEnemy.resetTimer({ time: 120000 });
                                         if (iEnemy.customId == "Atk" && !enemyJoined) {
                                             let storedEnemy = enemyPlayer[0];
                                             enemyPlayer = [await playerHandler(serverSettings, iEnemy, ["Enemy"], userInfo.user_speed, mapId, true, true)];
@@ -641,6 +639,8 @@ module.exports = {
                             });
 
                             while (enemyPlayer[0].user_hp > 0 && !enemyJoined) {
+                                collector.resetTimer({ time: 30000 });
+                                collectorEnemy.resetTimer({ time: 30000 });
                                 swappingCounter++;
                                 if (run) {
                                     await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
@@ -886,7 +886,7 @@ module.exports = {
                                     await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                                     return;
                                 }
-                                else if (swapping) {
+                                else if (swapping && player.length > 0) {
                                     swapping = false
                                     if (swappingCounter > 3) {
                                         swappingCounter = 0;
@@ -1076,6 +1076,8 @@ module.exports = {
                                     noDamage = 0;
                             }
                             while (enemyPlayer.length > 0 && player.length > 0 && enemyJoined) {
+                                collector.resetTimer({ time: 30000 });
+                                collectorEnemy.resetTimer({ time: 30000 });
                                 swappingCounter++;
                                 swappingCounterEnemy++;
                                 if (run) {
@@ -1489,7 +1491,7 @@ module.exports = {
                                     await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                                     return;
                                 }
-                                else if (swapping) {
+                                else if (swapping && player.length > 0) {
                                     swapping = false
                                     if (swappingCounter > 3) {
                                         swappingCounter = 0;
@@ -1524,7 +1526,7 @@ module.exports = {
                                         await interaction.followUp({ embeds: [interaction.client.blueEmbed(`You can change lead operator again after ${4 - swappingCounter} turns!`, `**ERROR!**`)] });
                                     }
                                 }
-                                else if (swappingEnemy) {
+                                else if (swappingEnemy && enemyPlayer.length > 0) {
                                     swappingEnemy = false
                                     if (swappingCounterEnemy > 3) {
                                         swappingCounterEnemy = 0;
@@ -1960,7 +1962,6 @@ module.exports = {
 
                     try {
                         if (i.user.id == interaction.user.id) {
-                            collector.resetTimer({ time: 120000 });
                             if (i.customId == "Run") {
                                 run = true;
                                 await interaction.editReply({ components: [] });
@@ -1987,6 +1988,7 @@ module.exports = {
                     interaction.editReply({ components: [] })
                 });
                 while (player[0].info.userStats.hp > 0 && alien.length > 0) {
+                    collector.resetTimer({ time: 30000 });
                     if (run) {
                         await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
                         log += `*Initializing escape command...*\n\n+++++++++++++++++++++++++++++++++++++\n\n\n`;
@@ -2001,7 +2003,7 @@ module.exports = {
                             alienShieldDamage = 0;
                             for (let index in alien) {
                                 alienHullDamage += alien[index].damage;
-                                alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                                alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                                 alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                             }
                             alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
@@ -2065,7 +2067,7 @@ module.exports = {
                         await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                         return;
                     }
-                    if (next) {
+                    if (next && alien.length > 0) {
                         next = false;
                         storedAlien = alien[0];
                         alien.shift();
@@ -2075,7 +2077,7 @@ module.exports = {
                         await interaction.client.wait(1000);
                         alienMessage = "";
                         for (let index in alien) {
-                            alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                            alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                         }
                         message = `**User Info**:\n`
                             + `<:aim:902625135050235994>**[${player[0].info.userStats.shipEmoji}]** <a:hp:896118360125870170>: **${player[0].info.userStats.hp}**\t<a:sd:896118359966511104>: **${player[0].info.userStats.shield}**\n`
@@ -2086,6 +2088,10 @@ module.exports = {
                     alienHullDamage = 0;
                     alienShieldDamage = 0;
                     threshold = 100 / alien[0].maxHP * alien[0].hp + 100 / alien[0].maxShield * alien[0].shield;
+                    shieldAbsorption = 0;
+                    hullDamage = 0;
+                    shieldDamage = 0;
+                    total = 0;
                     if (alien[0].maxHP + alien[0].maxShield > 9500)
                         canHellstorm = true;
                     else
@@ -2148,7 +2154,7 @@ module.exports = {
                     alienInfo = "\n\nAlien Info:";
                     for (let index in alien) {
                         alienHullDamage += alien[index].damage;
-                        alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                        alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                         alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                     }
                     alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
@@ -2287,7 +2293,6 @@ module.exports = {
 
                     try {
                         if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
-                            collector.resetTimer({ time: 120000 });
                             if (i.customId == "Swap") {
                                 await interaction.editReply({});
                                 if (i.user.username == player[0].username && !swapping && player.length > 0) {
@@ -2357,6 +2362,7 @@ module.exports = {
                 });
 
                 while (player[0].info.userStats.hp > 0 && alien.length > 0) {
+                    collector.resetTimer({ time: 30000 });
                     swappingCounter++;
                     if (run) {
                         await interaction.editReply({ embeds: [interaction.client.blueEmbed("**Initializing escape command...**", `**Loading**`)], components: [] });
@@ -2372,7 +2378,7 @@ module.exports = {
                             alienShieldDamage = 0;
                             for (let index in alien) {
                                 alienHullDamage += alien[index].damage;
-                                alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                                alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                                 alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                             }
                             alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
@@ -2446,7 +2452,7 @@ module.exports = {
                         await interaction.client.databaseEditData("UPDATE user_cd SET last_hunt = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
                         return;
                     }
-                    if (next) {
+                    if (next && alien.length > 0) {
                         next = false;
                         storedAlien = alien[0];
                         alien.shift();
@@ -2456,7 +2462,7 @@ module.exports = {
                         await interaction.client.wait(1000);
                         alienMessage = "";
                         for (let index in alien) {
-                            alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                            alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                         }
                         message = `**User Info**:\n**`;
                         frontEmoji = `<:aim:902625135050235994>`;
@@ -2468,7 +2474,7 @@ module.exports = {
                         await interaction.editReply({ embeds: [interaction.client.blueEmbed(message, `**Changed aimed alien**`)], components: [teamRunRow] });
                         await interaction.client.wait(1500);
                     }
-                    if (swapping) {
+                    if (swapping && player.length > 0) {
                         swapping = false
                         if (swappingCounter > 3) {
                             swappingCounter = 0;
@@ -2480,7 +2486,7 @@ module.exports = {
                             await interaction.client.wait(1000);
                             alienMessage = "";
                             for (let index in alien) {
-                                alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                                alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                             }
                             message = `**User Info**:\n`;
                             frontEmoji = `<:aim:902625135050235994>`;
@@ -2500,6 +2506,8 @@ module.exports = {
                     alienShieldDamage = 0;
                     threshold = 100 / alien[0].maxHP * alien[0].hp + 100 / alien[0].maxShield * alien[0].shield;
                     shieldAbsorption = 0;
+                    playerShieldAbsorption = 0;
+                    totalShieldAbsorption = 0;
                     hullDamage = 0;
                     shieldDamage = 0;
                     total = 0;
@@ -2568,7 +2576,7 @@ module.exports = {
                     alienInfo = "\n\nAlien Info:";
                     for (let index in alien) {
                         alienHullDamage += alien[index].damage;
-                        alienMessage += `**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
+                        alienMessage += `**${alien[index].name}**\n<:Transparent:902212836770598922>**[${alien[index].emoji}]** <a:hp:896118360125870170>: **${alien[index].hp}**\t<a:sd:896118359966511104>: **${alien[index].shield}**\n<:Transparent:902212836770598922>`;
                         alienInfo += `\n${alien[index].name} HP: ${alien[index].hp}\tShield: ${alien[index].shield}`
                     }
                     alienAccuracy = interaction.client.random(player[0].info.userStats.minimumAccuracyAlien, 100);
