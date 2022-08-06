@@ -224,8 +224,7 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
                     response = false;
                 }
             }
-            else
-                await interaction.editReply({});
+
         });
         collector.on('end', async collected => {
             collectorRunning = false;

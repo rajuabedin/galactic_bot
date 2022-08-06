@@ -67,7 +67,7 @@ module.exports = {
                 collector.resetTimer({ time: 25000 });
 
                 if (i.user.id != interaction.user.id) {
-                    return await interaction.editReply({});
+                    return;
                 }
                 selected = true;
                 if (nextMapName == i.values[0]) {

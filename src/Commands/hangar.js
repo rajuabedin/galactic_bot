@@ -238,11 +238,7 @@ module.exports = {
                                 await interaction.editReply({ content: "**DISCARDED**", components: [] });
                                 discardedMessage = false;
                                 collector.stop("Discarded");
-                            }
-                            else if (!i.component.label.trim()) {
-                                await interaction.editReply({});
-                            }
-                            else if (i.component.style == "PRIMARY") {
+                            } else if (i.component.style == "PRIMARY") {
                                 equippedItemLength++;
                                 displayEquippedItemlength++;
                                 itemsEquipped = itemsEquipped.concat(itemsToEquip.splice(index - equippedItemLength, 1));
@@ -265,8 +261,7 @@ module.exports = {
                                 await interaction.editReply({ content: message, components: [row, row1, row2, row3, row4] });
                             }
                         }
-                        else
-                            await interaction.editReply({});
+
                     }
                     catch (error) { }
                 }

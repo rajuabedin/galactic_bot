@@ -305,22 +305,16 @@ module.exports = {
                                     await interaction.editReply({ embeds: [interaction.client.redEmbed(storedMessage, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionEnded')}**`)], components: [] });
                                     collector.stop("Ended");
                                 }
-                                else
-                                    await interaction.editReply({});
                             }
                             else if (i.customId == "discard" || i.customId == "discard2") {
                                 discarded = true;
                                 await interaction.editReply({ embeds: [interaction.client.redEmbed(`\n*${interaction.client.getWordLanguage(serverSettings.lang, 'interactionAbortedUser')}*`, `**${interaction.client.getWordLanguage(serverSettings.lang, 'interactionAborted')}**`)], components: [] });
                                 collector.stop("Ended");
                             }
-                            else
-                                await interaction.editReply({});
                         }
                         catch (error) { }
                     }
                 }
-                else
-                    await interaction.editReply({});
             });
             collector.on('end', collected => {
                 if (!discarded)

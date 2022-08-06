@@ -148,7 +148,7 @@ module.exports = {
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
-                                            await interaction.editReply({});
+
                                             if (i.user.username == player[0].username) {
                                                 if (inBattle.length == 1)
                                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -160,7 +160,7 @@ module.exports = {
                                             }
                                         }
                                         else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                            await interaction.editReply({});
+
                                             if (i.user.username == player[0].username) {
                                                 next = true;
                                             }
@@ -174,12 +174,12 @@ module.exports = {
                                                 await interaction.editReply({ components: [] });
                                             }
                                             else {
-                                                await interaction.editReply({});
+
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                             }
                                         }
                                         else if (i.customId == "Join") {
-                                            await interaction.editReply({});
+
                                             if (inBattle.includes(i.user.id)) {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                             }
@@ -199,12 +199,7 @@ module.exports = {
                                             await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                             collector.stop("Done downloading");
                                         }
-                                        else
-                                            await interaction.editReply({});
-
                                     }
-                                    else
-                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -481,7 +476,7 @@ module.exports = {
                                 try {
                                     if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                                         if (i.customId == "Swap" && !swapping && player.length > 0) {
-                                            await interaction.editReply({});
+
                                             if (i.user.username == player[0].username) {
                                                 if (inBattle.length == 1)
                                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -493,7 +488,7 @@ module.exports = {
                                             }
                                         }
                                         else if (i.customId == "NextAlien" && enemyPlayer.length > 0 && !next) {
-                                            await interaction.editReply({});
+
                                             if (i.user.username == player[0].username) {
                                                 next = true;
                                             }
@@ -507,12 +502,12 @@ module.exports = {
                                                 await interaction.editReply({ components: [] });
                                             }
                                             else {
-                                                await interaction.editReply({});
+
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                             }
                                         }
                                         else if (i.customId == "Join") {
-                                            await interaction.editReply({});
+
                                             if (inBattle.includes(i.user.id)) {
                                                 await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                             }
@@ -532,11 +527,7 @@ module.exports = {
                                             await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                             collector.stop("Done downloading");
                                         }
-                                        else
-                                            await interaction.editReply({});
                                     }
-                                    else
-                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -625,8 +616,6 @@ module.exports = {
                                             await iEnemy.update({});
 
                                     }
-                                    else
-                                        await interaction.editReply({});
                                 }
                                 catch (error) {
 
@@ -1968,7 +1957,7 @@ module.exports = {
                             }
                             else if (i.customId == "NextAlien" && alien.length > 0) {
                                 next = true;
-                                await interaction.editReply({});
+
                             }
                             else if (i.customId == "download") {
                                 let attachment = new MessageAttachment(Buffer.from(log, 'utf-8'), `Hunt-Log.txt`);
@@ -1976,8 +1965,7 @@ module.exports = {
                                 collector.stop();
                             }
                         }
-                        else
-                            await interaction.editReply({});
+
                     }
                     catch (error) {
 
@@ -2294,7 +2282,7 @@ module.exports = {
                     try {
                         if (groupMembers.includes(i.user.id) || i.user.id == interaction.user.id) {
                             if (i.customId == "Swap") {
-                                await interaction.editReply({});
+
                                 if (i.user.username == player[0].username && !swapping && player.length > 0) {
                                     if (inBattle.length == 1)
                                         await i.followUp({ embeds: [interaction.client.redEmbed("You are the sole member of this operation!", "Error!")], ephemeral: true });
@@ -2306,7 +2294,7 @@ module.exports = {
                                 }
                             }
                             else if (i.customId == "NextAlien" && alien.length > 0 && !next) {
-                                await interaction.editReply({});
+
                                 if (i.user.username == player[0].username) {
                                     next = true;
                                 }
@@ -2320,12 +2308,12 @@ module.exports = {
                                     await interaction.editReply({ components: [] });
                                 }
                                 else {
-                                    await interaction.editReply({});
+
                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are not the lead operator", "Error!")], ephemeral: true });
                                 }
                             }
                             else if (i.customId == "Join") {
-                                await interaction.editReply({});
+
                                 if (inBattle.includes(i.user.id)) {
                                     await i.followUp({ embeds: [interaction.client.redEmbed("You are already in this operation!", "Error!")], ephemeral: true });
                                 }
@@ -2345,11 +2333,8 @@ module.exports = {
                                 await interaction.editReply({ embeds: [], components: [], files: [attachment] });
                                 collector.stop("Done downloading");
                             }
-                            else
-                                await interaction.editReply({});
                         }
-                        else
-                            await interaction.editReply({});
+
                     }
                     catch (error) {
 

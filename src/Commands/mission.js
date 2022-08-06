@@ -299,8 +299,6 @@ function buttonHandler(interaction, missionsData, userInfo, searchMissionByStatu
             }
 
         }
-        else
-            await interaction.editReply({});
     });
 
     collector.on('end', collected => {

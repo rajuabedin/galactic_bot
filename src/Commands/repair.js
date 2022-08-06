@@ -97,8 +97,6 @@ module.exports = {
                             return;
                         }
                     }
-                    else
-                        await interaction.editReply({});
                 }
                 catch (error) { }
             });

@@ -74,14 +74,11 @@ module.exports = {
                                     return;
                                 }
                                 else {
-                                    await interaction.editReply({});
                                     collector.stop();
                                 }
                             }
                             catch (error) { }
                     }
-                    else
-                        await interaction.editReply({});
                 });
 
                 collector.on('end', collected => {
@@ -168,15 +165,11 @@ module.exports = {
                                                     await interaction.editReply({ content: " ", embeds: [interaction.client.redEmbedImage(`<@${selectedOption.id}> has declined the team invitation!`, "Invitation Failed!", interaction.user)], components: [] });
                                                     collector.stop();
                                                 }
-                                                else
-                                                    await interaction.editReply({});
                                             }
                                             catch (error) {
                                                 await errorLog.error(error, interaction);
                                             }
                                     }
-                                    else
-                                        await interaction.editReply({});
                                 });
 
                                 collector.on('end', collected => {

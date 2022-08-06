@@ -335,8 +335,7 @@ function buttonHandler(interaction, missionsData, userInfo, serverSettings, msg)
                     await interaction.editReply({ embeds: [interaction.client.yellowPagesImageEmbed(missionsData[index][0], interaction.client.getWordLanguage(serverSettings.lang, 'mission_board_u'), interaction.user, `${interaction.client.getWordLanguage(serverSettings.lang, 'page_u')} ${index + 1} of ${maxIndex + 1}`, "https://obelisk.club/npc/missions.png")] });
                 }
             }
-            else
-                await interaction.editReply({});
+
         }
         catch (error) {
             await errorLog.error(error, interaction);

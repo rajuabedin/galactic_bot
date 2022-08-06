@@ -628,8 +628,7 @@ function buttonHandler(userInfo, itemName, itemTable, itemColumn, priceCredit, p
                     }
                 }
             }
-            else
-                await interaction.editReply({});
+
         }
         catch (error) {
             await errorLog.error(error, interaction);

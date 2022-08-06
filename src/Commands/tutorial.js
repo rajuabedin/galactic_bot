@@ -534,8 +534,6 @@ module.exports = {
 
                     //collector.stop("Selected Firm");
                 }
-                else
-                    await interaction.editReply({});
             });
 
             collector.on('end', collected => {
