@@ -24,7 +24,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let ship = await interaction.client.databaseSelectData("SELECt ships_info.credit, ships_info.units, ships_info.ship_hp, user_ships.durability FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND equipped = 1", [interaction.user.id]);
+            let ship = await interaction.client.databaseSelectData("SELECt ships_info.credit, ships_info.units, ships_info.ship_hp, user_ships.durability, user_ships.ship_current_hp FROM user_ships INNER JOIN ships_info ON user_ships.ship_model = ships_info.ship_model WHERE user_ships.user_id = ? AND equipped = 1", [interaction.user.id]);
             let durability = 100 - ship[0].durability;
             let price = 0;
             let unit = "credit"
@@ -51,7 +51,7 @@ module.exports = {
             price = Math.ceil(price * (durability / 25));
             await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo], fetchReply: true });
 
-            if (ship[0].ship_hp == 0) {
+            if (ship[0].ship_current_hp == 0 || userInfo.user_hp == 0) {
                 if (ship[0].units > 0) {
                     price = ship[0].units * 0.01;
                     unit = "units"
