@@ -10,7 +10,7 @@ module.exports = {
         .setDescription('Hunt Alien!'),
 
     async execute(interaction, userInfo, serverSettings) {
-// REQUIRE IN EVERY FILE
+        // REQUIRE IN EVERY FILE
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -3393,17 +3393,17 @@ async function playerHandler(serverSettings, interaction, aliens, alienSpeed, ma
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
                     }
                     else
-                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = 0, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, next_map_id = 1, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = 0, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, mapID, 0, "0; 0; 0; 0; 0; 0; 0; 0; 0", this.aliensKilled, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = 0, durability = 0 WHERE user_id = ? and equipped = 1", [interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_log SET Died = Died + 1 WHERE user_id = ?", [interaction.user.id]);
                 }
                 else {
                     if (this.info.userStats.expToLvlUp <= this.reward.exp + this.info.userStats.currentExp) {
-                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, level = level + 1, user_hp = ?, in_hunt = 0, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp - this.info.userStats.expToLvlUp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
                         await interaction.followUp({ embeds: [interaction.client.greenEmbedImage(`Congratulations! You are now level ${this.info.userStats.level + 1}`, "Levelled UP!", interaction.user)], ephemeral: true });
                     }
                     else
-                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, map_id = ?, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, mapID, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
+                        await interaction.client.databaseEditData("UPDATE users SET username = ?, exp = exp + ?, credit = credit + ?, units = units + ?, honor = honor + ?, user_hp = ?, in_hunt = 0, cargo = ?, resources = ?, aliens_killed = aliens_killed + ? WHERE user_id = ?", [interaction.user.username.replace(/[^a-zA-Z0-9]/g, '-'), this.reward.exp, this.reward.credit, this.reward.units, this.reward.honor, this.info.userStats.hp, this.cargo.storage, this.cargo.resources, this.aliensKilled, interaction.user.id]);
                     await interaction.client.databaseEditData("UPDATE user_ships SET ship_current_hp = ?, durability = durability - 1 WHERE user_id = ? and equipped = 1", [this.info.userStats.hp, interaction.user.id]);
                 }
                 if (playerInfo.messageAmmo != "") {
