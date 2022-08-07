@@ -84,7 +84,7 @@ module.exports = new Event("interactionCreate", async (client, interaction) => {
         if (interaction.replied) {
             await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID))], ephemeral: true });
         } else {
-            await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID), "Error!!")], ephemeral: true });
+            await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage('eng', 'catchError').format(errorID), "Error!!")], ephemeral: true });
         }
     }
 });
