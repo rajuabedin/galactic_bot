@@ -101,6 +101,7 @@
     "refineFail": "Refinement failure",
     "refineFailMessage": "**Not enough material to refine**",
     "refine_in_battle": "You can not refine during battle!",
+    "sell_in_battle": "You can not sell during battle!",
     "itemNotFound": "Unable to find any item with: `{}`",
     "repair": "Would you like to repair your ship for {}{}?\nYou currently have {}{} | {}{}",
     "repairDone": "You have fully repaired your ship!",

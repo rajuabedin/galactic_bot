@@ -170,7 +170,7 @@ async function generateMacroDetector(captchaData, interaction, serverSettings) {
             .setDescription(interaction.client.getWordLanguage(serverSettings.lang, "CAPTCHA_MSG"))
 
 
-        await interaction.editReply({ embeds: [textToEmbed], components: [row], files: [attachment], fetchReply: true });
+        await interaction.reply({ embeds: [textToEmbed], components: [row], files: [attachment], fetchReply: true });
 
         let selected = false;
 

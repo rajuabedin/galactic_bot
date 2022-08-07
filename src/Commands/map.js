@@ -32,7 +32,7 @@ module.exports = {
             let elapsedTimeFromWarpMinutes = 0;
             let elapsedTimeFromWarpSeconds = 0;
 
-            if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1) {
+            if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1 && userInfo.next_map_id != userInfo.map_id) {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 mapId = userInfo.next_map_id;
                 await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);
@@ -40,7 +40,7 @@ module.exports = {
                 row = await selectMenu(map[0].linked_map_id_1, map[0].linked_map_id_2, map[0].linked_map_id_3, map[0].linked_map_id_4);
                 await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'currentMap').format(map[0].map_name), interaction.client.getWordLanguage(serverSettings.lang, 'selectedMap'))], components: [row], fetchReply: true });
             }
-            else if (userInfo.next_map_id !== 1) {
+            else if (userInfo.next_map_id !== 1 && userInfo.next_map_id != userInfo.map_id) {
                 mapId = userInfo.map_id;
                 map = await interaction.client.databaseSelectData("SELECT map_name, linked_map_id_1, linked_map_id_2, linked_map_id_3, linked_map_id_4 FROM map WHERE map_id = ?", [mapId]);
                 nextMapName = (userInfo.next_map_id).toString();
@@ -59,6 +59,7 @@ module.exports = {
             }
 
             let selected = false;
+            let refreshed = false;
 
             const collector = msg.createMessageComponentCollector({ time: 25000 });
 
@@ -105,7 +106,8 @@ module.exports = {
 
                         elapsedTimeFromWarp = Math.floor((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000);
 
-                        if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1) {
+                        if (elapsedTimeFromWarp >= 0 && userInfo.next_map_id !== 1 && !refreshed) {
+                            refreshed = true;
                             await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                             mapId = userInfo.next_map_id;
                             await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [mapId, interaction.user.id]);

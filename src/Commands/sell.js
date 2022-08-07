@@ -34,9 +34,13 @@ module.exports = {
             }
             let selectedOption = interaction.options.getString('option').toLowerCase();
             if (selectedOption == 'all') {
+                if (userInfo.in_hunt == 1) {
+                    await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'sell_in_battle')), "Battle in progress..."], ephemeral: true });
+                    return;
+                }
                 let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
                 if (userCd.length > 0) {
-                    if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1) {
+                    if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1 && userInfo.next_map_id != userInfo.map_id) {
                         await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                         userInfo.map_id = userInfo.next_map_id;
                         await interaction.client.databaseEditData("UPDATE users SET map_id = ?, next_map_id = 1 WHERE user_id = ?", [userInfo.map_id, interaction.user.id]);
