@@ -35,7 +35,7 @@ module.exports = {
             let selectedOption = interaction.options.getString('option').toLowerCase();
             if (selectedOption == 'all') {
                 if (userInfo.in_hunt == 1) {
-                    await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'sell_in_battle')), "Battle in progress..."], ephemeral: true });
+                    await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'sell_in_battle'), "Battle in progress...")], ephemeral: true });
                     return;
                 }
                 let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);

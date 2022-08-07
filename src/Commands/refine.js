@@ -24,7 +24,7 @@ module.exports = {
                 return;
             }
             if (userInfo.in_hunt == 1) {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'refine_in_battle')), "Battle in progress..."], ephemeral: true });
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'refine_in_battle'), "Battle in progress...")], ephemeral: true });
                 return;
             }
             let resources = userInfo.resources.split("; ").map(Number);
