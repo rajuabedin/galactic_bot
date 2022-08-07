@@ -83,7 +83,8 @@ module.exports = {
 
                 collector.on('end', collected => {
                     interaction.editReply({
-                        embeds: [interaction.client.redEmbedImage("Command cancelled", interaction.client.getWordLanguage(serverSettings.lang, 'Team_create_title'), interaction.user)], ephemeral: true, components: [] });
+                        embeds: [interaction.client.redEmbedImage("Command cancelled", interaction.client.getWordLanguage(serverSettings.lang, 'Team_create_title'), interaction.user)], ephemeral: true, components: []
+                    });
                     return;
                 });
             }
@@ -194,7 +195,7 @@ module.exports = {
             if (interaction.replied) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID))], ephemeral: true });
             } else {
-                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
+                await interaction.reply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'catchError').format(errorID), "Error!!")], ephemeral: true });
             }
         }
     }
