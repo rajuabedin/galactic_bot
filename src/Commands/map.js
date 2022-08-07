@@ -119,7 +119,13 @@ module.exports = {
                             selected = false;
                         }
                         else if (userInfo.level >= levelRequirement) {
-                            await interaction.client.databaseEditData("UPDATE users SET next_map_id = ? WHERE user_id = ?", [mapId[0] + mapId[1], interaction.user.id]);
+                            let baseMap = "1";
+                            if (userInfo.level >= 12) {
+                                if (parseInt(mapId[1]) > 4 || (mapId[0] == "4" && mapId[1] == "2") ) {
+                                    baseMap = "8";
+                                }
+                            }
+                            await interaction.client.databaseEditData("UPDATE users SET next_map_id = ?, base_map = ? WHERE user_id = ?", [mapId[0] + mapId[1], mapId[0] + baseMap, interaction.user.id]);
                             await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
                             interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
                             collector.stop("Selected");

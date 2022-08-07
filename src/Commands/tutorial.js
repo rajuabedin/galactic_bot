@@ -208,21 +208,21 @@ module.exports = {
                                         tutorialCounter++;
                                         if (selectedFirm == "Terra") {
                                             await interaction.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2').format('1-1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [] });
-                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [11, tutorialCounter, interaction.user.id]);
+                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, base_map = ?, tutorial_counter = ? WHERE user_id = ?`, [11, 11, tutorialCounter, interaction.user.id]);
                                             await interaction.client.wait(1000);
                                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2_1').format("Terra"), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial] });
                                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                                         }
                                         else if (selectedFirm == "Luna") {
                                             await interaction.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2').format('2-1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [] });
-                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [21, tutorialCounter, interaction.user.id]);
+                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, base_map = ?, tutorial_counter = ? WHERE user_id = ?`, [21, 21, tutorialCounter, interaction.user.id]);
                                             await interaction.client.wait(1000);
                                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2_1').format("Luna"), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial] });
                                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
                                         }
                                         else {
                                             await interaction.editReply({ embeds: [interaction.client.blueEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2').format('3-1'), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [] });
-                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, tutorial_counter = ? WHERE user_id = ?`, [31, tutorialCounter, interaction.user.id]);
+                                            await interaction.client.databaseEditData(`UPDATE users SET map_id = ?, base_map = ?, tutorial_counter = ? WHERE user_id = ?`, [31, 31, tutorialCounter, interaction.user.id]);
                                             await interaction.client.wait(1000);
                                             await interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'TC1_2_1').format("Marte"), interaction.client.getWordLanguage(serverSettings.lang, 'tutorialPhase').format('2'))], components: [tutorial] });
                                             await interaction.client.databaseEditData(`INSERT INTO user_lasers (user_id, laser_model) VALUES (?, ?)`, [interaction.user.id, "L3"]);
