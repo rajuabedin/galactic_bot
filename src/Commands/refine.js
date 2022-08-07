@@ -23,6 +23,10 @@ module.exports = {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
+            if (userInfo.in_hunt == 1) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'refine_in_battle')), "Battle in progress..."], ephemeral: true });
+                return;
+            }
             let resources = userInfo.resources.split("; ").map(Number);
             let cargo = userInfo.cargo;
             let message = interaction.client.getWordLanguage(serverSettings.lang, 'refine') + "\`\`\`yaml\n";

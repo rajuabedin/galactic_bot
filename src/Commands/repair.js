@@ -51,7 +51,7 @@ module.exports = {
             price = Math.ceil(price * (durability / 25));
             await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo], fetchReply: true });
 
-            if (ship[0].ship_current_hp == 0 || userInfo.user_hp == 0) {
+            if (ship[0].ship_current_hp == 0 || userInfo.user_hp == 0 || ship[0].durability == 0) {
                 if (ship[0].units > 0) {
                     price = ship[0].units * 0.01;
                     unit = "units"
