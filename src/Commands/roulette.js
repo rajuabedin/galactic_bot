@@ -32,10 +32,7 @@ module.exports = {
                 .setDescription('Amount of credits to bet'))),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -43,6 +40,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             let canWin = utility.weightedRandom([true, false], [0.3, 0.7]);
             let maxBet = 500;
             let bet = interaction.options.getInteger('bet');

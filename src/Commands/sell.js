@@ -17,10 +17,7 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -28,6 +25,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             if (userInfo.tutorial_counter < 7) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;

@@ -10,11 +10,7 @@ module.exports = {
         .setDescription('Hunt Alien!'),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-
-        // REQUIRE IN EVERY FILE
+// REQUIRE IN EVERY FILE
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -23,6 +19,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             if (userInfo.tutorial_counter < 6 && userInfo.missions_id == null) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
@@ -3369,7 +3367,7 @@ async function playerHandler(serverSettings, interaction, aliens, alienSpeed, ma
                 this.cargo.resources = this.cargo.resources.join("; ")
 
                 await interaction.client.databaseEditData("UPDATE user_cd SET last_repair = ? WHERE user_id = ?", [new Date(), interaction.user.id]);
-                
+
 
                 if (playerInfo.userStats.hp == 0) {
                     mapID = playerInfo.userStats.baseMap;

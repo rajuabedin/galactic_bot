@@ -8,11 +8,7 @@ module.exports = {
         .setDescription('repair current ship'),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-
-        // REQUIRE IN EVERY FILE
+// REQUIRE IN EVERY FILE
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -20,6 +16,8 @@ module.exports = {
             });
         };
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             if (userInfo.tutorial_counter < 8) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
@@ -48,7 +46,7 @@ module.exports = {
                     return;
                 }
             }
-            price = Math.ceil(price * (durability / 25));           
+            price = Math.ceil(price * (durability / 25));
 
             if (ship[0].ship_current_hp == 0 || userInfo.user_hp == 0 || ship[0].durability == 0) {
                 if (ship[0].units > 0) {
@@ -58,7 +56,7 @@ module.exports = {
                     price = ~~(price * 1.2);
                 }
             }
-            await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo]});
+            await interaction.editReply({ embeds: [interaction.client.yellowEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'repair').format(interaction.client.defaultEmojis[unit], price, interaction.client.defaultEmojis['credit'], userInfo.credit, interaction.client.defaultEmojis['units'], userInfo.units), "Repair")], components: [rowYesNo] });
 
             const collector = msg.createMessageComponentCollector({ time: 15000 });
 

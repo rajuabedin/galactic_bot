@@ -12,10 +12,7 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -23,6 +20,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             const user = interaction.options.getUser('user');
             const pfpEmbed = new MessageEmbed()
                 .setColor('0x009dff')

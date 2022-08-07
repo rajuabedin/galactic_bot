@@ -10,9 +10,6 @@ module.exports = {
         .setDescription('display possessed ammunition'),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
         String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
@@ -21,6 +18,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+            
             if (userInfo.tutorial_counter < 8) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;

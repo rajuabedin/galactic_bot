@@ -12,10 +12,7 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -23,6 +20,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             let user = userInfo;
             var user_lasers = await interaction.client.databaseSelectData("SELECT user_lasers.laser_model as item_name, user_lasers.level, user_lasers.equipped, lasers_info.sell_price, lasers_info.description from user_lasers INNER JOIN lasers_info on user_lasers.laser_model = lasers_info.laser_model WHERE user_lasers.user_id = ? ORDER BY user_lasers.laser_model", [interaction.user.id]);
             var user_shields = await interaction.client.databaseSelectData("SELECT user_shields.shield_model as item_name, user_shields.level, user_shields.equipped, shields_info.sell_price, shields_info.description from user_shields INNER JOIN shields_info on user_shields.shield_model = shields_info.shield_model WHERE user_shields.user_id = ? ORDER BY user_shields.shield_model", [interaction.user.id]);

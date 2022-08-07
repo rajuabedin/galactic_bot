@@ -20,16 +20,15 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
             });
         };
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             let selectedTutorial = 0;
             let selectedOption = interaction.options.getString('option');
             if (selectedOption != null)

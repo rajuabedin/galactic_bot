@@ -9,10 +9,7 @@ module.exports = {
         .setDescription('Ping command!'),
 
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -20,6 +17,8 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
+
             try {
                 await utility.userLog(interaction, interaction.user.id, "testing")
             } catch (error) {

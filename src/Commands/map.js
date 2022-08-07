@@ -7,10 +7,7 @@ module.exports = {
         .setName('map')
         .setDescription('choose the map to warp to'),
     async execute(interaction, userInfo, serverSettings) {
-        let msg = await interaction.deferReply({ fetchReply: true });
-
-
-        String.prototype.format = function () {
+String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -18,6 +15,7 @@ module.exports = {
         };
 
         try {
+            let msg = await interaction.deferReply({ fetchReply: true });
 
             if (userInfo.tutorial_counter < 2) {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
@@ -121,7 +119,7 @@ module.exports = {
                         else if (userInfo.level >= levelRequirement) {
                             let baseMap = "1";
                             if (userInfo.level >= 12) {
-                                if (parseInt(mapId[1]) > 4 || (mapId[0] == "4" && mapId[1] == "2") ) {
+                                if (parseInt(mapId[1]) > 4 || (mapId[0] == "4" && mapId[1] == "2")) {
                                     baseMap = "8";
                                 }
                             }
