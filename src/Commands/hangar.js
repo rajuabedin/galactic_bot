@@ -20,7 +20,7 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
-String.prototype.format = function () {
+        String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -34,7 +34,11 @@ String.prototype.format = function () {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'tutorialFinish'))] });
                 return;
             }
-            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            let userCd = await interaction.client.databaseSelectData("SELECT moving_to_map, hanger_active FROM user_cd WHERE user_id = ?", [interaction.user.id]);
+            if (userCd[0].hanger_active) {
+                await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'hangarOpen'), "ERROR!!")] });
+                return;
+            }
             if (~~((Date.now() - Date.parse(userCd[0].moving_to_map)) / 1000) >= 0 && userInfo.next_map_id !== 1 && userInfo.next_map_id != userInfo.map_id) {
                 await interaction.client.databaseEditData("UPDATE user_log SET warps = warps + 1 WHERE user_id = ?", [interaction.user.id]);
                 userInfo.map_id = userInfo.next_map_id;
@@ -44,6 +48,9 @@ String.prototype.format = function () {
                 await interaction.editReply({ embeds: [interaction.client.redEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'noHangar'), "ERROR!!")] });
                 return;
             }
+
+            await interaction.client.databaseEditData("UPDATE user_cd SET hanger_active = 1 WHERE user_id = ?", [interaction.user.id]);
+
             let baseSpeed = 0;
             let displayEquippedItemlength = 0;
             let maxEquipableItem = 0;
@@ -225,7 +232,6 @@ String.prototype.format = function () {
                                     await interaction.client.databaseEditData(`UPDATE user_lasers SET equipped = 0 WHERE user_id = ?`, [interaction.user.id]);
                                     discardedMessage = false;
                                     collector.stop("Saved");
-                                    return
                                 }
                                 if (shipIndex == 0)
                                     shipRow = await shipButton("SECONDARY");
@@ -236,6 +242,7 @@ String.prototype.format = function () {
                             else if (i.component.customId == "discard") {
                                 await interaction.editReply({ content: "**DISCARDED**", components: [] });
                                 discardedMessage = false;
+
                                 collector.stop("Discarded");
                             } else if (i.component.style == "PRIMARY") {
                                 equippedItemLength++;
@@ -267,6 +274,7 @@ String.prototype.format = function () {
             });
 
             collector.on('end', collected => {
+                await interaction.client.databaseEditData("UPDATE user_cd SET hanger_active = 0 WHERE user_id = ?", [interaction.user.id]);
                 if (discardedMessage)
                     interaction.editReply({ content: "**Discarded**", components: [] });
                 else

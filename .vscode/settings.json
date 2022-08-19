@@ -14,5 +14,6 @@
         "tictactoe",
         "topgg",
         "unequippable"
-    ]
+    ],
+    "editor.experimental.stickyScroll.enabled": true
 }

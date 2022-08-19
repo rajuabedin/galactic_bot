@@ -7,7 +7,7 @@ module.exports = {
         .setName('map')
         .setDescription('choose the map to warp to'),
     async execute(interaction, userInfo, serverSettings) {
-String.prototype.format = function () {
+        String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -118,12 +118,25 @@ String.prototype.format = function () {
                         }
                         else if (userInfo.level >= levelRequirement) {
                             let baseMap = "1";
-                            if (userInfo.level >= 12) {
-                                if (parseInt(mapId[1]) > 4 || (mapId[0] == "4" && mapId[1] == "2")) {
-                                    baseMap = "8";
-                                }
+                            if (userInfo.firm == "Terra") {
+                                baseMap = "1";
                             }
-                            await interaction.client.databaseEditData("UPDATE users SET next_map_id = ?, base_map = ? WHERE user_id = ?", [mapId[0] + mapId[1], mapId[0] + baseMap, interaction.user.id]);
+                            else if (userInfo.firm == "Luna") {
+                                baseMap = "2";
+                            }
+                            else {
+                                baseMap = "3";
+                            }
+                            if (userInfo.level >= 12) {
+                                if (parseInt(mapId[1]) > 4 || (mapId[0] == "4" && mapId[1] == "2"))
+                                    baseMap += "8";
+                                else
+                                    baseMap += "1";
+                            }
+                            else
+                                baseMap += "1";
+
+                            await interaction.client.databaseEditData("UPDATE users SET next_map_id = ?, base_map = ? WHERE user_id = ?", [mapId[0] + mapId[1], baseMap, interaction.user.id]);
                             await interaction.client.databaseEditData("UPDATE user_cd SET moving_to_map = ? WHERE user_id = ?", [dateToReachMap, interaction.user.id]);
                             interaction.editReply({ embeds: [interaction.client.greenEmbed(interaction.client.getWordLanguage(serverSettings.lang, 'warp').format(timeToReachMapMinutes, timeToReachMapSeconds, i.values[0]),)], components: [] });
                             collector.stop("Selected");

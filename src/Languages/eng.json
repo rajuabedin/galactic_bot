@@ -34,6 +34,7 @@
     "interactionAbortedUser": "Aborted by user",
     "create": "Create Account",
     "noHangar": "There is **no hanger in this map**\nPlease go to a **base map** and try again",
+    "hangarOpen": "One Hanger instance is already open!",
     "tutorialFinish": "**Please finish the tutorial first**",
     "tutorialEnd": "You already finished the tutorial, please come back when new content is added",
     "tutorialStop": "Tutorial ended by user",

@@ -2228,7 +2228,9 @@ module.exports = {
                     newAlienChance = 100 / (alien[0].maxHP + alien[0].maxShield) * player[0].info.laser.damage - (turnCounter - 1) * 20;
                     if (newAlienChance < 7 && turnCounter <= 7)
                         newAlienChance = 0.003 * player[0].info.laser.damage;
-                    if (interaction.client.random(0, 100) <= newAlienChance) {
+                    if (turnCounter > 7)
+                        newAlienChance = 0
+                    else if (interaction.client.random(0, 100) <= newAlienChance) {
                         newAlien = await getAlien(aliens);
                         alien.push(newAlien);
                         log += "NEW ALIEN ENCOUNTERED !!!\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
@@ -2687,7 +2689,9 @@ module.exports = {
                     newAlienChance = 100 / (alien[0].maxHP + alien[0].maxShield) * player[0].info.laser.damage - (turnCounter - 1) * 20;
                     if (newAlienChance < 7 && turnCounter <= 7)
                         newAlienChance = 0.003 * player[0].info.laser.damage;
-                    if (interaction.client.random(0, 100) <= newAlienChance) {
+                    if (turnCounter > 7)
+                        newAlienChance = 0
+                    else if (interaction.client.random(0, 100) <= newAlienChance) {
                         newAlien = await getAlien(aliens);
                         alien.push(newAlien);
                         log += "NEW ALIEN ENCOUNTERED !!!\n\n+++++++++++++++++++++++++++++++++++++\n\n\n";
