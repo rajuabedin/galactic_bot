@@ -17,7 +17,7 @@ module.exports = {
         ),
 
     async execute(interaction, userInfo, serverSettings) {
-String.prototype.format = function () {
+        String.prototype.format = function () {
             var i = 0, args = arguments;
             return this.replace(/{}/g, function () {
                 return typeof args[i] != 'undefined' ? args[i++] : '';
@@ -39,13 +39,16 @@ String.prototype.format = function () {
             let storedMessage = "";
             let selectedAmmo = "";
             let ammoValue = 0;
-            await interaction.editReply({ embeds: [interaction.client.yellowEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'user_config_msg'))], components: [row, settingRow], fetchReply: true });
+            if (selectedOption == 'hunt_configuration')
+                await interaction.editReply({ embeds: [interaction.client.yellowEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'user_config_msg'))], components: [row, settingRow], fetchReply: true });
+            else
+                await interaction.editReply({ embeds: [interaction.client.yellowEmbed(message, interaction.client.getWordLanguage(serverSettings.lang, 'user_config_msg'))], components: [rowPVP, settingRow], fetchReply: true });
             message = null;
             let activateDeactivate = await buttonHandlerOnOff(0);
             let missileHellstorm = 0;
             let isMissile = false;
             let mothership = 0;
-            let pvpEnable = 0;
+            let pvpEnable = userInfo.pvp_enable;
 
             let index = 0;
 
@@ -66,8 +69,7 @@ String.prototype.format = function () {
                                 index = (huntConfiguration[0][selectedAmmo]) / 20;
                                 ammoValue = (index) * 20;
                                 mothership = 0;
-                                missileHellstorm = 0;
-                                pvpEnable = userInfo.pvp_enable;
+                                missileHellstorm = 0;                                
                                 //console.log(index);
                                 if (selectedAmmo == "missile" || selectedAmmo == "hellstorm") {
                                     if (selectedAmmo == "missile") {
@@ -96,7 +98,7 @@ String.prototype.format = function () {
                                 else if (selectedAmmo == "mothership") {
                                     message = interaction.client.getWordLanguage(serverSettings.lang, "user_config_hunt_a");
                                     activateDeactivate = await buttonHandlerOnOff(index);
-                                    if (index == 0) {
+                                    if (!index) {
                                         mothership = 1;
                                         await interaction.editReply({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
                                         storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
@@ -110,7 +112,7 @@ String.prototype.format = function () {
                                 else if (selectedAmmo == "pvpEnable") {
                                     message = interaction.client.getWordLanguage(serverSettings.lang, "user_config_pvp");
                                     activateDeactivate = await buttonHandlerOnOff(pvpEnable);
-                                    if (pvpEnable) {
+                                    if (!pvpEnable) {
                                         pvpEnable = 1;
                                         await interaction.editReply({ embeds: [interaction.client.redEmbed(`**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`, message)], components: [row, activateDeactivate] });
                                         storedMessage = `**(${message})**` + `\t**${interaction.client.getWordLanguage(serverSettings.lang, 'disabled_u')}**`;
@@ -469,6 +471,75 @@ const row = new MessageActionRow()
                     description: 'Activate/Deactivate pvp',
                     value: 'pvpEnable',
                 },
+                {
+                    label: 'missile',
+                    description: 'Activate/Deactivate missiles',
+                    value: 'missile',
+                },
+                {
+                    label: 'hellstorm',
+                    description: 'Activate/Deactivate hellstorm',
+                    value: 'hellstorm',
+                },
+                {
+                    label: 'x2',
+                    description: 'Use laser x2 until... ',
+                    value: 'x2',
+                },
+                {
+                    label: 'x3',
+                    description: 'Use laser x3 until... ',
+                    value: 'x3',
+                },
+                {
+                    label: 'x4',
+                    description: 'Use laser x4 until... ',
+                    value: 'x4',
+                },
+                {
+                    label: 'xS1',
+                    description: 'Use laser xS1 until... ',
+                    value: 'xS1',
+                },
+                {
+                    label: 'm2',
+                    description: 'Use missile m2 until... ',
+                    value: 'm2',
+                },
+                {
+                    label: 'm3',
+                    description: 'Use missile m3 until... ',
+                    value: 'm3',
+                },
+                {
+                    label: 'm4',
+                    description: 'Use missile m4 until... ',
+                    value: 'm4',
+                },
+                {
+                    label: 'h2',
+                    description: 'Use hellstorm h2 until... ',
+                    value: 'h2',
+                },
+                {
+                    label: 'hS1',
+                    description: 'Use hellstorm hS1 until... ',
+                    value: 'hS1',
+                },
+                {
+                    label: 'hS2',
+                    description: 'Use hellstorm hS2 until... ',
+                    value: 'hS2',
+                },
+            ]),
+    )
+
+const rowPVP = new MessageActionRow()
+    .addComponents(
+        new MessageSelectMenu()
+            .setCustomId('select')
+            .setPlaceholder('Select ammo to configure')
+            .addOptions([
                 {
                     label: 'missile',
                     description: 'Activate/Deactivate missiles',

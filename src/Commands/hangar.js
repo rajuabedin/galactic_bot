@@ -274,7 +274,7 @@ module.exports = {
             });
 
             collector.on('end', collected => {
-                await interaction.client.databaseEditData("UPDATE user_cd SET hanger_active = 0 WHERE user_id = ?", [interaction.user.id]);
+                interaction.client.databaseEditData("UPDATE user_cd SET hanger_active = 0 WHERE user_id = ?", [interaction.user.id]);
                 if (discardedMessage)
                     interaction.editReply({ content: "**Discarded**", components: [] });
                 else
